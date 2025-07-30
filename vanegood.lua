@@ -1,185 +1,156 @@
 --[[
-    vanegood Hub - Clean & Beautiful
+    vanegood hub
     Created by vanegood
     GitHub: https://github.com/Vanegood-sus/vanegood.git
     
-    Simple black/grey hub with dark red accents
-    Features: Show/hide toggle, sidebar navigation, Muscle Legends integration
+    Simple dark hub with black & gray design
 ]]--
 
 -- Services
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- Variables
 local VanegoodHub = {}
 local GUI = {}
 local CurrentTab = "Main"
-local HubVisible = true
+local IsMinimized = false
 
--- Colors
+-- Color Scheme (Black & Gray with Dark Red accents)
 local Colors = {
-    Black = Color3.fromRGB(0, 0, 0),
-    DarkGray = Color3.fromRGB(40, 40, 40),
-    Gray = Color3.fromRGB(60, 60, 60),
-    White = Color3.fromRGB(255, 255, 255),
-    DarkRed = Color3.fromRGB(139, 0, 0)
+    Black = Color3.fromRGB(0, 0, 0),           -- Pure black
+    DarkGray = Color3.fromRGB(30, 30, 30),     -- Dark gray
+    Gray = Color3.fromRGB(60, 60, 60),         -- Gray
+    DarkRed = Color3.fromRGB(80, 20, 20),      -- Dark red
+    Red = Color3.fromRGB(120, 30, 30),         -- Red accent
+    White = Color3.fromRGB(255, 255, 255),     -- White text
+    LightGray = Color3.fromRGB(180, 180, 180)  -- Light gray text
 }
 
--- Helper Functions
+-- Utility Functions
 local function CreateTween(object, properties, duration)
-    duration = duration or 0.3
-    local tween = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), properties)
-    return tween
+    local tweenInfo = TweenInfo.new(duration or 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    return TweenService:Create(object, tweenInfo, properties)
 end
 
 local function AddCorner(object, radius)
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
+    corner.CornerRadius = UDim.new(0, radius or 8)
     corner.Parent = object
     return corner
 end
 
 local function AddStroke(object, color, thickness)
     local stroke = Instance.new("UIStroke")
-    stroke.Color = color
-    stroke.Thickness = thickness
+    stroke.Color = color or Colors.DarkRed
+    stroke.Thickness = thickness or 2
     stroke.Parent = object
     return stroke
 end
 
--- Main Hub Creation
-function VanegoodHub:Create()
-    -- Create ScreenGui
+-- Create Main GUI
+function VanegoodHub:CreateMainGUI()
+    -- Destroy existing GUI if it exists
+    if PlayerGui:FindFirstChild("VanegoodHub") then
+        PlayerGui.VanegoodHub:Destroy()
+    end
+    
+    -- Main ScreenGui
     GUI.Main = Instance.new("ScreenGui")
     GUI.Main.Name = "VanegoodHub"
     GUI.Main.ResetOnSpawn = false
-    GUI.Main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    GUI.Main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Show/Hide Toggle Button (left side)
-    GUI.ToggleButton = Instance.new("TextButton")
-    GUI.ToggleButton.Name = "ToggleButton"
-    GUI.ToggleButton.Size = UDim2.new(0, 40, 0, 40)
-    GUI.ToggleButton.Position = UDim2.new(0, 20, 0.5, -20)
-    GUI.ToggleButton.BackgroundColor3 = Colors.DarkRed
-    GUI.ToggleButton.BorderSizePixel = 0
-    GUI.ToggleButton.Text = "V"
-    GUI.ToggleButton.TextColor3 = Colors.White
-    GUI.ToggleButton.TextSize = 18
-    GUI.ToggleButton.Font = Enum.Font.GothamBold
-    GUI.ToggleButton.Parent = GUI.Main
-    
-    AddCorner(GUI.ToggleButton, 6)
+    -- Try CoreGui first, fallback to PlayerGui
+    pcall(function()
+        GUI.Main.Parent = CoreGui
+    end)
+    if not GUI.Main.Parent then
+        GUI.Main.Parent = PlayerGui
+    end
     
     -- Main Frame
-    GUI.Frame = Instance.new("Frame")
-    GUI.Frame.Name = "MainFrame"
-    GUI.Frame.Size = UDim2.new(0, 450, 0, 300)
-    GUI.Frame.Position = UDim2.new(0.5, -225, 0.5, -150)
-    GUI.Frame.BackgroundColor3 = Colors.Black
-    GUI.Frame.BorderSizePixel = 0
-    GUI.Frame.Parent = GUI.Main
+    GUI.MainFrame = Instance.new("Frame")
+    GUI.MainFrame.Name = "MainFrame"
+    GUI.MainFrame.Size = UDim2.new(0, 500, 0, 350)
+    GUI.MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+    GUI.MainFrame.BackgroundColor3 = Colors.Black
+    GUI.MainFrame.BorderSizePixel = 0
+    GUI.MainFrame.Active = true
+    GUI.MainFrame.Draggable = true
+    GUI.MainFrame.Parent = GUI.Main
     
-    AddCorner(GUI.Frame, 8)
-    AddStroke(GUI.Frame, Colors.DarkRed, 2)
-    
-    -- Title Bar
-    GUI.TitleBar = Instance.new("Frame")
-    GUI.TitleBar.Name = "TitleBar"
-    GUI.TitleBar.Size = UDim2.new(1, 0, 0, 30)
-    GUI.TitleBar.Position = UDim2.new(0, 0, 0, 0)
-    GUI.TitleBar.BackgroundColor3 = Colors.DarkRed
-    GUI.TitleBar.BorderSizePixel = 0
-    GUI.TitleBar.Parent = GUI.Frame
-    
-    AddCorner(GUI.TitleBar, 8)
-    
-    -- Title Text
-    GUI.Title = Instance.new("TextLabel")
-    GUI.Title.Name = "Title"
-    GUI.Title.Size = UDim2.new(1, -30, 1, 0)
-    GUI.Title.Position = UDim2.new(0, 5, 0, 0)
-    GUI.Title.BackgroundTransparency = 1
-    GUI.Title.Text = "vanegood"
-    GUI.Title.TextColor3 = Colors.White
-    GUI.Title.TextSize = 16
-    GUI.Title.Font = Enum.Font.GothamBold
-    GUI.Title.TextXAlignment = Enum.TextXAlignment.Left
-    GUI.Title.Parent = GUI.TitleBar
-    
-    -- Close Button
-    GUI.CloseButton = Instance.new("TextButton")
-    GUI.CloseButton.Name = "CloseButton"
-    GUI.CloseButton.Size = UDim2.new(0, 25, 0, 25)
-    GUI.CloseButton.Position = UDim2.new(1, -30, 0, 2.5)
-    GUI.CloseButton.BackgroundColor3 = Colors.DarkRed
-    GUI.CloseButton.BorderSizePixel = 0
-    GUI.CloseButton.Text = "✕"
-    GUI.CloseButton.TextColor3 = Colors.White
-    GUI.CloseButton.TextSize = 14
-    GUI.CloseButton.Font = Enum.Font.GothamBold
-    GUI.CloseButton.Parent = GUI.TitleBar
-    
-    AddCorner(GUI.CloseButton, 4)
+    AddCorner(GUI.MainFrame, 8)
+    AddStroke(GUI.MainFrame, Colors.DarkRed, 2)
     
     -- Sidebar
     GUI.Sidebar = Instance.new("Frame")
     GUI.Sidebar.Name = "Sidebar"
-    GUI.Sidebar.Size = UDim2.new(0, 80, 1, -30)
-    GUI.Sidebar.Position = UDim2.new(0, 0, 0, 30)
+    GUI.Sidebar.Size = UDim2.new(0, 120, 1, 0)
+    GUI.Sidebar.Position = UDim2.new(0, 0, 0, 0)
     GUI.Sidebar.BackgroundColor3 = Colors.DarkGray
     GUI.Sidebar.BorderSizePixel = 0
-    GUI.Sidebar.Parent = GUI.Frame
+    GUI.Sidebar.Parent = GUI.MainFrame
     
-    -- Content Area
+    AddCorner(GUI.Sidebar, 8)
+    
+    -- Content Frame
     GUI.Content = Instance.new("Frame")
     GUI.Content.Name = "Content"
-    GUI.Content.Size = UDim2.new(1, -80, 1, -30)
-    GUI.Content.Position = UDim2.new(0, 80, 0, 30)
-    GUI.Content.BackgroundColor3 = Colors.DarkGray
+    GUI.Content.Size = UDim2.new(1, -120, 1, 0)
+    GUI.Content.Position = UDim2.new(0, 120, 0, 0)
+    GUI.Content.BackgroundColor3 = Colors.Black
     GUI.Content.BorderSizePixel = 0
-    GUI.Content.Parent = GUI.Frame
+    GUI.Content.ClipsDescendants = true
+    GUI.Content.Parent = GUI.MainFrame
+    
+    AddCorner(GUI.Content, 8)
     
     self:CreateSidebar()
     self:CreateContent()
-    self:MakeDraggable()
-    self:SetupEvents()
+    self:CreateMinimizeButton()
     
     return GUI.Main
 end
 
 -- Create Sidebar
 function VanegoodHub:CreateSidebar()
-    -- Main Tab Button
+    -- Main Tab Button (prettier and smaller)
     GUI.MainTabButton = Instance.new("TextButton")
     GUI.MainTabButton.Name = "MainTabButton"
-    GUI.MainTabButton.Size = UDim2.new(1, -10, 0, 32)
-    GUI.MainTabButton.Position = UDim2.new(0, 5, 0, 8)
+    GUI.MainTabButton.Size = UDim2.new(1, -10, 0, 35)
+    GUI.MainTabButton.Position = UDim2.new(0, 5, 0, 10)
     GUI.MainTabButton.BackgroundColor3 = Colors.DarkRed -- Start selected
     GUI.MainTabButton.BorderSizePixel = 0
     GUI.MainTabButton.Text = "main"
     GUI.MainTabButton.TextColor3 = Colors.White
-    GUI.MainTabButton.TextSize = 13
+    GUI.MainTabButton.TextSize = 14
     GUI.MainTabButton.Font = Enum.Font.GothamBold
     GUI.MainTabButton.Parent = GUI.Sidebar
     
     AddCorner(GUI.MainTabButton, 4)
+    AddStroke(GUI.MainTabButton, Colors.DarkRed, 1)
     
-    -- Games Tab Button
+    -- Games Tab Button (prettier and smaller)
     GUI.GamesTabButton = Instance.new("TextButton")
     GUI.GamesTabButton.Name = "GamesTabButton"
-    GUI.GamesTabButton.Size = UDim2.new(1, -10, 0, 32)
-    GUI.GamesTabButton.Position = UDim2.new(0, 5, 0, 45)
+    GUI.GamesTabButton.Size = UDim2.new(1, -10, 0, 35)
+    GUI.GamesTabButton.Position = UDim2.new(0, 5, 0, 55)
     GUI.GamesTabButton.BackgroundColor3 = Colors.Gray
     GUI.GamesTabButton.BorderSizePixel = 0
     GUI.GamesTabButton.Text = "games"
     GUI.GamesTabButton.TextColor3 = Colors.White
-    GUI.GamesTabButton.TextSize = 13
+    GUI.GamesTabButton.TextSize = 14
     GUI.GamesTabButton.Font = Enum.Font.GothamBold
     GUI.GamesTabButton.Parent = GUI.Sidebar
     
     AddCorner(GUI.GamesTabButton, 4)
+    AddStroke(GUI.GamesTabButton, Colors.DarkRed, 1)
     
     -- Tab Events
     GUI.MainTabButton.MouseButton1Click:Connect(function()
@@ -189,6 +160,8 @@ function VanegoodHub:CreateSidebar()
     GUI.GamesTabButton.MouseButton1Click:Connect(function()
         self:SwitchTab("Games")
     end)
+    
+    -- Tab events will handle the switching
 end
 
 -- Create Content
@@ -199,7 +172,7 @@ function VanegoodHub:CreateContent()
     GUI.MainPage.Size = UDim2.new(1, -20, 1, -20)
     GUI.MainPage.Position = UDim2.new(0, 10, 0, 10)
     GUI.MainPage.BackgroundTransparency = 1
-    GUI.MainPage.Visible = true
+    GUI.MainPage.Visible = true -- Make sure it's visible
     GUI.MainPage.Parent = GUI.Content
     
     -- vanegood title (dark red)
@@ -215,33 +188,25 @@ function VanegoodHub:CreateContent()
     GUI.VanegoodTitle.TextXAlignment = Enum.TextXAlignment.Center
     GUI.VanegoodTitle.Parent = GUI.MainPage
     
-    -- Fly button (only this one for now)
+    -- Fly button (smaller and prettier)
     GUI.FlyButton = Instance.new("TextButton")
     GUI.FlyButton.Name = "FlyButton"
-    GUI.FlyButton.Size = UDim2.new(0, 200, 0, 40)
+    GUI.FlyButton.Size = UDim2.new(0, 120, 0, 30)
     GUI.FlyButton.Position = UDim2.new(0, 20, 0, 80)
     GUI.FlyButton.BackgroundColor3 = Colors.DarkGray
     GUI.FlyButton.BorderSizePixel = 0
     GUI.FlyButton.Text = "fly"
     GUI.FlyButton.TextColor3 = Colors.White
-    GUI.FlyButton.TextSize = 16
-    GUI.FlyButton.Font = Enum.Font.Gotham
+    GUI.FlyButton.TextSize = 14
+    GUI.FlyButton.Font = Enum.Font.GothamBold
     GUI.FlyButton.Parent = GUI.MainPage
     
-    AddCorner(GUI.FlyButton, 6)
-    AddStroke(GUI.FlyButton, Colors.DarkRed, 2)
+    AddCorner(GUI.FlyButton, 4)
+    AddStroke(GUI.FlyButton, Colors.DarkRed, 1)
     
-    -- Hover effect
-    GUI.FlyButton.MouseEnter:Connect(function()
-        CreateTween(GUI.FlyButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
-    end)
-    
-    GUI.FlyButton.MouseLeave:Connect(function()
-        CreateTween(GUI.FlyButton, {BackgroundColor3 = Colors.DarkGray}, 0.2):Play()
-    end)
-    
-    -- Fly button event (not implemented yet)
+    -- Fly button event (does nothing for now)
     GUI.FlyButton.MouseButton1Click:Connect(function()
+        -- Nothing happens yet
         print("fly button clicked (not implemented yet)")
     end)
     
@@ -254,175 +219,136 @@ function VanegoodHub:CreateContent()
     GUI.GamesPage.Visible = false
     GUI.GamesPage.Parent = GUI.Content
     
-    -- Muscle Legends Game Box
-    GUI.MuscleLegendsBox = Instance.new("TextButton")
+    -- Muscle Legends Game Box (smaller and prettier)
+    GUI.MuscleLegendsBox = Instance.new("Frame")
     GUI.MuscleLegendsBox.Name = "MuscleLegendsBox"
-    GUI.MuscleLegendsBox.Size = UDim2.new(0, 300, 0, 60)
+    GUI.MuscleLegendsBox.Size = UDim2.new(0, 250, 0, 45)
     GUI.MuscleLegendsBox.Position = UDim2.new(0, 20, 0, 20)
     GUI.MuscleLegendsBox.BackgroundColor3 = Colors.DarkGray
     GUI.MuscleLegendsBox.BorderSizePixel = 0
-    GUI.MuscleLegendsBox.Text = "Muscle Legends"
-    GUI.MuscleLegendsBox.TextColor3 = Colors.White
-    GUI.MuscleLegendsBox.TextSize = 18
-    GUI.MuscleLegendsBox.Font = Enum.Font.GothamBold
-    GUI.MuscleLegendsBox.TextXAlignment = Enum.TextXAlignment.Center
     GUI.MuscleLegendsBox.Parent = GUI.GamesPage
     
-    AddCorner(GUI.MuscleLegendsBox, 6)
-    AddStroke(GUI.MuscleLegendsBox, Colors.DarkRed, 2)
+    AddCorner(GUI.MuscleLegendsBox, 4)
+    AddStroke(GUI.MuscleLegendsBox, Colors.DarkRed, 1)
     
-    -- Hover effect
-    GUI.MuscleLegendsBox.MouseEnter:Connect(function()
-        CreateTween(GUI.MuscleLegendsBox, {
-            BackgroundColor3 = Colors.Gray,
-            TextColor3 = Colors.DarkRed
-        }, 0.2):Play()
-    end)
+    -- Muscle Legends Title (smaller text)
+    GUI.MuscleLegendsTitle = Instance.new("TextLabel")
+    GUI.MuscleLegendsTitle.Name = "MuscleLegendsTitle"
+    GUI.MuscleLegendsTitle.Size = UDim2.new(1, -20, 1, 0)
+    GUI.MuscleLegendsTitle.Position = UDim2.new(0, 10, 0, 0)
+    GUI.MuscleLegendsTitle.BackgroundTransparency = 1
+    GUI.MuscleLegendsTitle.Text = "Muscle Legends"
+    GUI.MuscleLegendsTitle.TextColor3 = Colors.White
+    GUI.MuscleLegendsTitle.TextSize = 15
+    GUI.MuscleLegendsTitle.TextXAlignment = Enum.TextXAlignment.Left
+    GUI.MuscleLegendsTitle.Font = Enum.Font.GothamBold
+    GUI.MuscleLegendsTitle.Parent = GUI.MuscleLegendsBox
     
-    GUI.MuscleLegendsBox.MouseLeave:Connect(function()
-        CreateTween(GUI.MuscleLegendsBox, {
-            BackgroundColor3 = Colors.DarkGray,
-            TextColor3 = Colors.White
-        }, 0.2):Play()
-    end)
+    -- Make Muscle Legends box clickable
+    local ClickDetector = Instance.new("TextButton")
+    ClickDetector.Size = UDim2.new(1, 0, 1, 0)
+    ClickDetector.BackgroundTransparency = 1
+    ClickDetector.Text = ""
+    ClickDetector.Parent = GUI.MuscleLegendsBox
     
-    -- Muscle Legends click event - FIXED
-    GUI.MuscleLegendsBox.MouseButton1Click:Connect(function()
-        print("Loading Muscle Legends script by vanegood...")
-        
-        -- Visual feedback
-        CreateTween(GUI.MuscleLegendsBox, {BackgroundColor3 = Colors.DarkRed}, 0.1):Play()
-        task.wait(0.1)
-        CreateTween(GUI.MuscleLegendsBox, {BackgroundColor3 = Colors.DarkGray}, 0.1):Play()
-        
-        -- Load script properly
-        task.spawn(function()
-            local success, result = pcall(function()
-                local HttpService = game:GetService("HttpService")
-                local scriptContent = game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle_legends_script.lua", true)
-                
-                if scriptContent and #scriptContent > 50 then
-                    local loadedScript = loadstring(scriptContent)
-                    if loadedScript then
-                        loadedScript()
-                        print("✓ Muscle Legends script loaded successfully!")
-                        
-                        -- Success notification
-                        game.StarterGui:SetCore("SendNotification", {
-                            Title = "vanegood",
-                            Text = "Muscle Legends script loaded!",
-                            Duration = 3
-                        })
-                        return true
-                    else
-                        error("Failed to compile script")
-                    end
-                else
-                    error("Script content is empty or too short")
-                end
-            end)
-            
-            if not success then
-                warn("❌ Error loading Muscle Legends:", result)
-                game.StarterGui:SetCore("SendNotification", {
-                    Title = "vanegood",
-                    Text = "Failed to load Muscle Legends. Check output.",
-                    Duration = 5
-                })
+    ClickDetector.MouseButton1Click:Connect(function()
+        -- Load Muscle Legends script with better error handling
+        local success, error = pcall(function()
+            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle_legends_script.lua")
+            if scriptContent and scriptContent ~= "" then
+                loadstring(scriptContent)()
+                print("Muscle Legends script loaded successfully by vanegood")
+            else
+                warn("Failed to load Muscle Legends script - empty response")
             end
         end)
+        
+        if not success then
+            warn("Error loading Muscle Legends script: " .. tostring(error))
+        end
     end)
 end
 
--- Switch Tab Function
+-- Create Minimize Button
+function VanegoodHub:CreateMinimizeButton()
+    GUI.MinimizeButton = Instance.new("TextButton")
+    GUI.MinimizeButton.Name = "MinimizeButton"
+    GUI.MinimizeButton.Size = UDim2.new(0, 40, 0, 40)
+    GUI.MinimizeButton.Position = UDim2.new(0, 10, 0, 10)
+    GUI.MinimizeButton.BackgroundColor3 = Colors.Gray
+    GUI.MinimizeButton.BorderSizePixel = 0
+    GUI.MinimizeButton.Text = ""
+    GUI.MinimizeButton.Parent = GUI.Main
+    
+    AddCorner(GUI.MinimizeButton, 20)
+    
+    -- Dark red circle in the middle
+    local Circle = Instance.new("Frame")
+    Circle.Size = UDim2.new(0, 20, 0, 20)
+    Circle.Position = UDim2.new(0.5, -10, 0.5, -10)
+    Circle.BackgroundColor3 = Colors.DarkRed
+    Circle.BorderSizePixel = 0
+    Circle.Parent = GUI.MinimizeButton
+    
+    AddCorner(Circle, 10)
+    
+    GUI.MinimizeButton.MouseButton1Click:Connect(function()
+        if IsMinimized then
+            -- Show hub
+            CreateTween(GUI.MainFrame, {Size = UDim2.new(0, 500, 0, 350)}, 0.3):Play()
+            GUI.MainFrame.Visible = true
+            IsMinimized = false
+        else
+            -- Hide hub
+            CreateTween(GUI.MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
+            task.wait(0.3)
+            GUI.MainFrame.Visible = false
+            IsMinimized = true
+        end
+    end)
+end
+
+-- Switch Tab
 function VanegoodHub:SwitchTab(tabName)
     CurrentTab = tabName
     
+    -- Reset all tab button colors
+    GUI.MainTabButton.BackgroundColor3 = Colors.Gray
+    GUI.GamesTabButton.BackgroundColor3 = Colors.Gray
+    
+    -- Hide all pages
+    GUI.MainPage.Visible = false
+    GUI.GamesPage.Visible = false
+    
     if tabName == "Main" then
-        GUI.MainPage.Visible = true
-        GUI.GamesPage.Visible = false
         GUI.MainTabButton.BackgroundColor3 = Colors.DarkRed
-        GUI.GamesTabButton.BackgroundColor3 = Colors.Gray
+        GUI.MainPage.Visible = true
+        print("Switched to Main tab")
     elseif tabName == "Games" then
-        GUI.MainPage.Visible = false
-        GUI.GamesPage.Visible = true
-        GUI.MainTabButton.BackgroundColor3 = Colors.Gray
         GUI.GamesTabButton.BackgroundColor3 = Colors.DarkRed
+        GUI.GamesPage.Visible = true
+        print("Switched to Games tab")
     end
 end
 
--- Make Draggable
-function VanegoodHub:MakeDraggable()
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
-    
-    GUI.TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = GUI.Frame.Position
-        end
-    end)
-    
-    GUI.TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            GUI.Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
-
--- Setup Events
-function VanegoodHub:SetupEvents()
-    -- Close Button
-    GUI.CloseButton.MouseButton1Click:Connect(function()
-        CreateTween(GUI.Frame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
-        CreateTween(GUI.ToggleButton, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
-        task.wait(0.3)
-        GUI.Main:Destroy()
-    end)
-    
-    -- Toggle Button (Show/Hide Hub)
-    GUI.ToggleButton.MouseButton1Click:Connect(function()
-        if HubVisible then
-            -- Hide hub
-            CreateTween(GUI.Frame, {Position = UDim2.new(0, -450, 0.5, -150)}, 0.3):Play()
-            HubVisible = false
-        else
-            -- Show hub
-            CreateTween(GUI.Frame, {Position = UDim2.new(0.5, -225, 0.5, -150)}, 0.3):Play()
-            HubVisible = true
-        end
-    end)
-    
-    -- Hover effects for buttons
-    GUI.CloseButton.MouseEnter:Connect(function()
-        CreateTween(GUI.CloseButton, {BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, 0.2):Play()
-    end)
-    
-    GUI.CloseButton.MouseLeave:Connect(function()
-        CreateTween(GUI.CloseButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
-    end)
-    
-    GUI.ToggleButton.MouseEnter:Connect(function()
-        CreateTween(GUI.ToggleButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
-    end)
-    
-    GUI.ToggleButton.MouseLeave:Connect(function()
-        CreateTween(GUI.ToggleButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
-    end)
-end
-
 -- Initialize Hub
-local hub = VanegoodHub:Create()
+function VanegoodHub:Init()
+    print("Starting vanegood hub initialization...")
+    self:CreateMainGUI()
+    
+    -- Make sure Main tab is selected and visible
+    self:SwitchTab("Main")
+    
+    print("vanegood hub loaded")
+    print("GitHub: https://github.com/Vanegood-sus/vanegood.git")
+end
 
-print("✓ vanegood Hub loaded successfully!")
-print("✓ Created by vanegood - GitHub: https://github.com/Vanegood-sus/vanegood.git")
-print("✓ Clean design with proper show/hide functionality")
+-- Auto-execute protection
+if not getgenv().VanegoodHubLoaded then
+    getgenv().VanegoodHubLoaded = true
+    VanegoodHub:Init()
+else
+    warn("vanegood hub is already loaded!")
+end
+
+return VanegoodHub
