@@ -32,7 +32,7 @@ setupAntiAFK()
 
 -- Create Main Window
 local window = library:AddWindow("Другие моменты", {
-    main_color = Color3.fromRGB(139, 0, 0), -- темно-красный
+main_color = Color3.fromRGB(139, 0, 0), -- темно-красный
     min_size = Vector2.new(800, 900),
     can_resize = true,
 })
@@ -1910,6 +1910,8 @@ end)
 updateWhitelistedPlayersLabel()
 updateTargetPlayerLabel()
 
+
+
 local teleportTab = window:AddTab("Телепорт")
 
 teleportTab:AddButton("Спавн", function()
@@ -2068,7 +2070,7 @@ teleportTab:AddButton("Бой на ринге", function()
     })
 end)
 
-local noteTab = window:AddTab("Создатели")
+local noteTab = window:AddTab("Создатель")
 
 -- Add a decorative header with centered text
 noteTab:AddLabel("Private Script")
@@ -2078,3 +2080,5 @@ noteTab:AddLabel("")
 -- Instead of one large text block, let's add each paragraph separately
 -- This gives better control over formatting
 noteTab:AddLabel("Созданно vanegood")
+
+
