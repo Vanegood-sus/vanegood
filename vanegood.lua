@@ -1,7 +1,7 @@
 --[[
     vanegood hub
     Created by vanegood
-    GitHub: https://github.com/Vanegood-sus/vanegood
+    GitHub: https://github.com/Vanegood-sus/vanegood.git
     
     Simple dark hub with black & gray design
 ]]--
@@ -106,6 +106,7 @@ function VanegoodHub:CreateMainGUI()
     GUI.Content.Position = UDim2.new(0, 120, 0, 0)
     GUI.Content.BackgroundColor3 = Colors.Black
     GUI.Content.BorderSizePixel = 0
+    GUI.Content.ClipsDescendants = true
     GUI.Content.Parent = GUI.MainFrame
     
     AddCorner(GUI.Content, 8)
@@ -124,7 +125,7 @@ function VanegoodHub:CreateSidebar()
     GUI.MainTabButton.Name = "MainTabButton"
     GUI.MainTabButton.Size = UDim2.new(1, -10, 0, 40)
     GUI.MainTabButton.Position = UDim2.new(0, 5, 0, 10)
-    GUI.MainTabButton.BackgroundColor3 = Colors.Gray
+    GUI.MainTabButton.BackgroundColor3 = Colors.DarkRed -- Start selected
     GUI.MainTabButton.BorderSizePixel = 0
     GUI.MainTabButton.Text = "main"
     GUI.MainTabButton.TextColor3 = Colors.White
@@ -160,8 +161,7 @@ function VanegoodHub:CreateSidebar()
         self:SwitchTab("Games")
     end)
     
-    -- Select Main tab by default
-    self:SwitchTab("Main")
+    -- Tab events will handle the switching
 end
 
 -- Create Content
@@ -172,6 +172,7 @@ function VanegoodHub:CreateContent()
     GUI.MainPage.Size = UDim2.new(1, -20, 1, -20)
     GUI.MainPage.Position = UDim2.new(0, 10, 0, 10)
     GUI.MainPage.BackgroundTransparency = 1
+    GUI.MainPage.Visible = true -- Make sure it's visible
     GUI.MainPage.Parent = GUI.Content
     
     -- vanegood title (dark red)
@@ -184,6 +185,7 @@ function VanegoodHub:CreateContent()
     GUI.VanegoodTitle.TextColor3 = Colors.DarkRed
     GUI.VanegoodTitle.TextSize = 24
     GUI.VanegoodTitle.Font = Enum.Font.GothamBold
+    GUI.VanegoodTitle.TextXAlignment = Enum.TextXAlignment.Center
     GUI.VanegoodTitle.Parent = GUI.MainPage
     
     -- Fly button (non-functional for now)
@@ -290,7 +292,7 @@ function VanegoodHub:CreateMinimizeButton()
         else
             -- Hide hub
             CreateTween(GUI.MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
-            wait(0.3)
+            task.wait(0.3)
             GUI.MainFrame.Visible = false
             IsMinimized = true
         end
@@ -312,15 +314,21 @@ function VanegoodHub:SwitchTab(tabName)
     if tabName == "Main" then
         GUI.MainTabButton.BackgroundColor3 = Colors.DarkRed
         GUI.MainPage.Visible = true
+        print("Switched to Main tab")
     elseif tabName == "Games" then
         GUI.GamesTabButton.BackgroundColor3 = Colors.DarkRed
         GUI.GamesPage.Visible = true
+        print("Switched to Games tab")
     end
 end
 
 -- Initialize Hub
 function VanegoodHub:Init()
+    print("Starting vanegood hub initialization...")
     self:CreateMainGUI()
+    
+    -- Make sure Main tab is selected and visible
+    self:SwitchTab("Main")
     
     print("vanegood hub loaded")
     print("GitHub: https://github.com/Vanegood-sus/vanegood.git")
