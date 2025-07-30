@@ -31,7 +31,7 @@ end
 setupAntiAFK()
 
 -- Create Main Window
-local window = library:AddWindow("Другие моменты", {
+local window = library:AddWindow("Muscle Legends", {
 main_color = Color3.fromRGB(139, 0, 0), -- темно-красный
     min_size = Vector2.new(800, 900),
     can_resize = true,
@@ -447,7 +447,7 @@ opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
     end
 end)
 
-local autoRockFolder = farmPlusTab:AddFolder("Auto Rock")
+local autoRockFolder = farmPlusTab:AddFolder("Бить камень")
 
 -- Define the gettool function first
 function gettool()
@@ -1337,112 +1337,7 @@ end)
 local miscTab = window:AddTab("Другое")
 
 -- Create the first folder
-local misc1Folder = miscTab:AddFolder("Остальное")
-
--- Add ad removal button to Misc 1
-misc1Folder:AddButton("Очистить порталы", function()
-    -- Remove existing ad portals
-    for _, portal in pairs(game:GetDescendants()) do
-        if portal.Name == "RobloxForwardPortals" then
-            portal:Destroy()
-        end
-    end
-    
-    -- Set up connection to remove future ad portals
-    if _G.AdRemovalConnection then
-        _G.AdRemovalConnection:Disconnect()
-    end
-    
-    _G.AdRemovalConnection = game.DescendantAdded:Connect(function(descendant)
-        if descendant.Name == "RobloxForwardPortals" then
-            descendant:Destroy()
-        end
-    end)
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Та!",
-        Text = "Бум!",
-        Duration = 0
-    })
-end)
-
--- Walk on Water feature
-local parts = {}
-local partSize = 2048
-local totalDistance = 50000
-local startPosition = Vector3.new(-2, -9.5, -2)
-local numberOfParts = math.ceil(totalDistance / partSize)
-
-local function createParts()
-    for x = 0, numberOfParts - 1 do
-        for z = 0, numberOfParts - 1 do
-            local newPartSide = Instance.new("Part")
-            newPartSide.Size = Vector3.new(partSize, 1, partSize)
-            newPartSide.Position = startPosition + Vector3.new(x * partSize, 0, z * partSize)
-            newPartSide.Anchored = true
-            newPartSide.Transparency = 1
-            newPartSide.CanCollide = true
-            newPartSide.Name = "Part_Side_" .. x .. "_" .. z
-            newPartSide.Parent = workspace
-            table.insert(parts, newPartSide)
-            
-            local newPartLeftRight = Instance.new("Part")
-            newPartLeftRight.Size = Vector3.new(partSize, 1, partSize)
-            newPartLeftRight.Position = startPosition + Vector3.new(-x * partSize, 0, z * partSize)
-            newPartLeftRight.Anchored = true
-            newPartLeftRight.Transparency = 1
-            newPartLeftRight.CanCollide = true
-            newPartLeftRight.Name = "Part_LeftRight_" .. x .. "_" .. z
-            newPartLeftRight.Parent = workspace
-            table.insert(parts, newPartLeftRight)
-            
-            local newPartUpLeft = Instance.new("Part")
-            newPartUpLeft.Size = Vector3.new(partSize, 1, partSize)
-            newPartUpLeft.Position = startPosition + Vector3.new(-x * partSize, 0, -z * partSize)
-            newPartUpLeft.Anchored = true
-            newPartUpLeft.Transparency = 1
-            newPartUpLeft.CanCollide = true
-            newPartUpLeft.Name = "Part_UpLeft_" .. x .. "_" .. z
-            newPartUpLeft.Parent = workspace
-            table.insert(parts, newPartUpLeft)
-            
-            local newPartUpRight = Instance.new("Part")
-            newPartUpRight.Size = Vector3.new(partSize, 1, partSize)
-            newPartUpRight.Position = startPosition + Vector3.new(x * partSize, 0, -z * partSize)
-            newPartUpRight.Anchored = true
-            newPartUpRight.Transparency = 1
-            newPartUpRight.CanCollide = true
-            newPartUpRight.Name = "Part_UpRight_" .. x .. "_" .. z
-            newPartUpRight.Parent = workspace
-            table.insert(parts, newPartUpRight)
-        end
-    end
-end
-
-local function makePartsWalkthrough()
-    for _, part in ipairs(parts) do
-        if part and part.Parent then
-            part.CanCollide = false
-        end
-    end
-end
-
-local function makePartsSolid()
-    for _, part in ipairs(parts) do
-        if part and part.Parent then
-            part.CanCollide = true
-        end
-    end
-end
-
--- Add Walk on Water toggle
-misc1Folder:AddSwitch("Бег по воде", function(bool)
-    if bool then
-        createParts()
-    else
-        makePartsWalkthrough()
-    end
-end)
+local misc1Folder = miscTab:AddFolder("Авто рулетка и подарки")
 
 -- Add Auto Spin Wheel toggle
 misc1Folder:AddSwitch("Авто прокрутка колеса удачи", function(bool)
@@ -1498,7 +1393,7 @@ local function unlockPlayerPosition()
 end
 
 -- Add position lock toggle
-rebirthFarmFolder:AddSwitch("Стоять на одном месте", function(bool)
+misc1Folder:AddSwitch("Стоять на одном месте", function(bool)
     if bool then
         -- Get current position and lock it
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -1511,7 +1406,7 @@ rebirthFarmFolder:AddSwitch("Стоять на одном месте", function(
     end
 end)
 
-local frameToggle = rebirthFarmFolder:AddSwitch("Скрывть рамки", function(bool)
+local frameToggle = misc1Folder:AddSwitch("Скрывать рамки", function(bool)
     local rSto = game:GetService("ReplicatedStorage")
     for _, obj in pairs(rSto:GetChildren()) do
         if obj.Name:match("Frame$") then
@@ -1520,7 +1415,7 @@ local frameToggle = rebirthFarmFolder:AddSwitch("Скрывть рамки", fun
     end
 end)
 
-local speedGrind = rebirthFarmFolder:AddSwitch("Быстрая сила", function(bool)
+local speedGrind = misc1Folder:AddSwitch("Быстрая сила", function(bool)
     local isGrinding = bool
     
     if not bool then
