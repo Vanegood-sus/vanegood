@@ -279,7 +279,7 @@ end)
 
 
 -- NEW: Farm Gyms Folder
-local farmGymsFolder = mainTab:AddFolder("Entrenar Gimnasios")
+local farmGymsFolder = mainTab:AddFolder("Залы")
 
 -- Workout positions data
 local workoutPositions = {
@@ -380,7 +380,7 @@ for _, workoutType in ipairs(workoutTypes) do
     local spanishWorkoutName = workoutTranslations[workoutType]
     
     -- Create the dropdown with the correct format
-    local dropdown = farmGymsFolder:AddDropdown(spanishWorkoutName .. " - Gimnasio", function(selected)
+    local dropdown = farmGymsFolder:AddDropdown(spanishWorkoutName .. " - Зал", function(selected)
         _G["selected" .. string.gsub(workoutType, " ", "") .. "Gym"] = selected
     end)
     
@@ -1334,7 +1334,7 @@ pets:AddSwitch("Купить", function(bool)
 end)
 
 -- Create the Misc tab
-local miscTab = window:AddTab("")
+local miscTab = window:AddTab("Другое")
 
 -- Create the first folder
 local misc1Folder = miscTab:AddFolder("Остальное")
