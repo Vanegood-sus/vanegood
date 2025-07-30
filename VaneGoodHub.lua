@@ -51,7 +51,7 @@ muscleLegendsFolder:AddButton("🚀 Load Muscle Legends Script", function()
     if game.PlaceId == 3623096087 then -- Muscle Legends game ID
         -- Load the complete muscle legends script
         local success, error = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/VaneGood/Scripts/main/games/MuscleLegendsScript.lua", true))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/games/MuscleLegendsScript.lua", true))()
         end)
         
         if success then
