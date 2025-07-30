@@ -688,7 +688,7 @@ rebirthsFolder:AddTextBox("Сколько нужно?", function(text)
         
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Понял",
-            Text = "Остановлю когда будет" (targetRebirthValue) .. " перерождений",
+            Text = "Остановлю когда будет " .. targetRebirthValue .. " перерождений",
             Duration = 0
         })
     else
@@ -1910,7 +1910,6 @@ end)
 -- Initialize UI
 updateWhitelistedPlayersLabel()
 updateTargetPlayerLabel()
-
 
 
 local teleportTab = window:AddTab("Телепорт")
