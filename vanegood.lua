@@ -1,29 +1,28 @@
 --[[
-    vanegood Hub v2.0 - Compact & Elegant Design
+    vanegood Hub - Clean & Beautiful
     Created by vanegood
     GitHub: https://github.com/Vanegood-sus/vanegood.git
     
-    Roblox hub script with black/grey theme and dark red accents
-    Features: Compact design, smooth animations, Muscle Legends integration
+    Simple black/grey hub with dark red accents
+    Features: Show/hide toggle, sidebar navigation, Muscle Legends integration
 ]]--
 
 -- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
 -- Variables
 local VanegoodHub = {}
 local GUI = {}
 local CurrentTab = "Main"
+local HubVisible = true
 
 -- Colors
 local Colors = {
     Black = Color3.fromRGB(0, 0, 0),
     DarkGray = Color3.fromRGB(40, 40, 40),
     Gray = Color3.fromRGB(60, 60, 60),
-    LightGray = Color3.fromRGB(80, 80, 80),
     White = Color3.fromRGB(255, 255, 255),
     DarkRed = Color3.fromRGB(139, 0, 0)
 }
@@ -58,6 +57,21 @@ function VanegoodHub:Create()
     GUI.Main.ResetOnSpawn = false
     GUI.Main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
+    -- Show/Hide Toggle Button (left side)
+    GUI.ToggleButton = Instance.new("TextButton")
+    GUI.ToggleButton.Name = "ToggleButton"
+    GUI.ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+    GUI.ToggleButton.Position = UDim2.new(0, 20, 0.5, -20)
+    GUI.ToggleButton.BackgroundColor3 = Colors.DarkRed
+    GUI.ToggleButton.BorderSizePixel = 0
+    GUI.ToggleButton.Text = "V"
+    GUI.ToggleButton.TextColor3 = Colors.White
+    GUI.ToggleButton.TextSize = 18
+    GUI.ToggleButton.Font = Enum.Font.GothamBold
+    GUI.ToggleButton.Parent = GUI.Main
+    
+    AddCorner(GUI.ToggleButton, 6)
+    
     -- Main Frame
     GUI.Frame = Instance.new("Frame")
     GUI.Frame.Name = "MainFrame"
@@ -84,7 +98,7 @@ function VanegoodHub:Create()
     -- Title Text
     GUI.Title = Instance.new("TextLabel")
     GUI.Title.Name = "Title"
-    GUI.Title.Size = UDim2.new(1, -40, 1, 0)
+    GUI.Title.Size = UDim2.new(1, -30, 1, 0)
     GUI.Title.Position = UDim2.new(0, 5, 0, 0)
     GUI.Title.BackgroundTransparency = 1
     GUI.Title.Text = "vanegood"
@@ -108,21 +122,6 @@ function VanegoodHub:Create()
     GUI.CloseButton.Parent = GUI.TitleBar
     
     AddCorner(GUI.CloseButton, 4)
-    
-    -- Hide Button
-    GUI.HideButton = Instance.new("TextButton")
-    GUI.HideButton.Name = "HideButton"
-    GUI.HideButton.Size = UDim2.new(0, 25, 0, 25)
-    GUI.HideButton.Position = UDim2.new(1, -60, 0, 2.5)
-    GUI.HideButton.BackgroundColor3 = Colors.DarkRed
-    GUI.HideButton.BorderSizePixel = 0
-    GUI.HideButton.Text = "–"
-    GUI.HideButton.TextColor3 = Colors.White
-    GUI.HideButton.TextSize = 16
-    GUI.HideButton.Font = Enum.Font.GothamBold
-    GUI.HideButton.Parent = GUI.TitleBar
-    
-    AddCorner(GUI.HideButton, 4)
     
     -- Sidebar
     GUI.Sidebar = Instance.new("Frame")
@@ -152,7 +151,7 @@ end
 
 -- Create Sidebar
 function VanegoodHub:CreateSidebar()
-    -- Main Tab Button (компактный стиль)
+    -- Main Tab Button
     GUI.MainTabButton = Instance.new("TextButton")
     GUI.MainTabButton.Name = "MainTabButton"
     GUI.MainTabButton.Size = UDim2.new(1, -10, 0, 32)
@@ -167,7 +166,7 @@ function VanegoodHub:CreateSidebar()
     
     AddCorner(GUI.MainTabButton, 4)
     
-    -- Games Tab Button (компактный стиль)
+    -- Games Tab Button
     GUI.GamesTabButton = Instance.new("TextButton")
     GUI.GamesTabButton.Name = "GamesTabButton"
     GUI.GamesTabButton.Size = UDim2.new(1, -10, 0, 32)
@@ -181,31 +180,6 @@ function VanegoodHub:CreateSidebar()
     GUI.GamesTabButton.Parent = GUI.Sidebar
     
     AddCorner(GUI.GamesTabButton, 4)
-    
-    -- Hover effects for sidebar buttons
-    GUI.MainTabButton.MouseEnter:Connect(function()
-        if CurrentTab ~= "Main" then
-            CreateTween(GUI.MainTabButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
-        end
-    end)
-    
-    GUI.MainTabButton.MouseLeave:Connect(function()
-        if CurrentTab ~= "Main" then
-            CreateTween(GUI.MainTabButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
-        end
-    end)
-    
-    GUI.GamesTabButton.MouseEnter:Connect(function()
-        if CurrentTab ~= "Games" then
-            CreateTween(GUI.GamesTabButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
-        end
-    end)
-    
-    GUI.GamesTabButton.MouseLeave:Connect(function()
-        if CurrentTab ~= "Games" then
-            CreateTween(GUI.GamesTabButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
-        end
-    end)
     
     -- Tab Events
     GUI.MainTabButton.MouseButton1Click:Connect(function()
@@ -228,36 +202,36 @@ function VanegoodHub:CreateContent()
     GUI.MainPage.Visible = true
     GUI.MainPage.Parent = GUI.Content
     
-    -- vanegood title (dark red) - более компактный
+    -- vanegood title (dark red)
     GUI.VanegoodTitle = Instance.new("TextLabel")
     GUI.VanegoodTitle.Name = "VanegoodTitle"
-    GUI.VanegoodTitle.Size = UDim2.new(1, 0, 0, 35)
-    GUI.VanegoodTitle.Position = UDim2.new(0, 0, 0, 5)
+    GUI.VanegoodTitle.Size = UDim2.new(1, 0, 0, 50)
+    GUI.VanegoodTitle.Position = UDim2.new(0, 0, 0, 10)
     GUI.VanegoodTitle.BackgroundTransparency = 1
     GUI.VanegoodTitle.Text = "vanegood"
     GUI.VanegoodTitle.TextColor3 = Colors.DarkRed
-    GUI.VanegoodTitle.TextSize = 20
+    GUI.VanegoodTitle.TextSize = 24
     GUI.VanegoodTitle.Font = Enum.Font.GothamBold
     GUI.VanegoodTitle.TextXAlignment = Enum.TextXAlignment.Center
     GUI.VanegoodTitle.Parent = GUI.MainPage
     
-    -- Fly button (компактный и стильный)
+    -- Fly button (only this one for now)
     GUI.FlyButton = Instance.new("TextButton")
     GUI.FlyButton.Name = "FlyButton"
-    GUI.FlyButton.Size = UDim2.new(0, 120, 0, 28)
-    GUI.FlyButton.Position = UDim2.new(0, 15, 0, 50)
+    GUI.FlyButton.Size = UDim2.new(0, 200, 0, 40)
+    GUI.FlyButton.Position = UDim2.new(0, 20, 0, 80)
     GUI.FlyButton.BackgroundColor3 = Colors.DarkGray
     GUI.FlyButton.BorderSizePixel = 0
     GUI.FlyButton.Text = "fly"
     GUI.FlyButton.TextColor3 = Colors.White
-    GUI.FlyButton.TextSize = 13
+    GUI.FlyButton.TextSize = 16
     GUI.FlyButton.Font = Enum.Font.Gotham
     GUI.FlyButton.Parent = GUI.MainPage
     
-    AddCorner(GUI.FlyButton, 4)
-    AddStroke(GUI.FlyButton, Colors.DarkRed, 1)
+    AddCorner(GUI.FlyButton, 6)
+    AddStroke(GUI.FlyButton, Colors.DarkRed, 2)
     
-    -- Hover effect for fly button
+    -- Hover effect
     GUI.FlyButton.MouseEnter:Connect(function()
         CreateTween(GUI.FlyButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
     end)
@@ -266,69 +240,10 @@ function VanegoodHub:CreateContent()
         CreateTween(GUI.FlyButton, {BackgroundColor3 = Colors.DarkGray}, 0.2):Play()
     end)
     
-    -- Speed button
-    GUI.SpeedButton = Instance.new("TextButton")
-    GUI.SpeedButton.Name = "SpeedButton"
-    GUI.SpeedButton.Size = UDim2.new(0, 120, 0, 28)
-    GUI.SpeedButton.Position = UDim2.new(0, 145, 0, 50)
-    GUI.SpeedButton.BackgroundColor3 = Colors.DarkGray
-    GUI.SpeedButton.BorderSizePixel = 0
-    GUI.SpeedButton.Text = "speed"
-    GUI.SpeedButton.TextColor3 = Colors.White
-    GUI.SpeedButton.TextSize = 13
-    GUI.SpeedButton.Font = Enum.Font.Gotham
-    GUI.SpeedButton.Parent = GUI.MainPage
-    
-    AddCorner(GUI.SpeedButton, 4)
-    AddStroke(GUI.SpeedButton, Colors.DarkRed, 1)
-    
-    -- Jump button
-    GUI.JumpButton = Instance.new("TextButton")
-    GUI.JumpButton.Name = "JumpButton"
-    GUI.JumpButton.Size = UDim2.new(0, 120, 0, 28)
-    GUI.JumpButton.Position = UDim2.new(0, 15, 0, 88)
-    GUI.JumpButton.BackgroundColor3 = Colors.DarkGray
-    GUI.JumpButton.BorderSizePixel = 0
-    GUI.JumpButton.Text = "jump"
-    GUI.JumpButton.TextColor3 = Colors.White
-    GUI.JumpButton.TextSize = 13
-    GUI.JumpButton.Font = Enum.Font.Gotham
-    GUI.JumpButton.Parent = GUI.MainPage
-    
-    AddCorner(GUI.JumpButton, 4)
-    AddStroke(GUI.JumpButton, Colors.DarkRed, 1)
-    
-    -- Noclip button
-    GUI.NoclipButton = Instance.new("TextButton")
-    GUI.NoclipButton.Name = "NoclipButton"
-    GUI.NoclipButton.Size = UDim2.new(0, 120, 0, 28)
-    GUI.NoclipButton.Position = UDim2.new(0, 145, 0, 88)
-    GUI.NoclipButton.BackgroundColor3 = Colors.DarkGray
-    GUI.NoclipButton.BorderSizePixel = 0
-    GUI.NoclipButton.Text = "noclip"
-    GUI.NoclipButton.TextColor3 = Colors.White
-    GUI.NoclipButton.TextSize = 13
-    GUI.NoclipButton.Font = Enum.Font.Gotham
-    GUI.NoclipButton.Parent = GUI.MainPage
-    
-    AddCorner(GUI.NoclipButton, 4)
-    AddStroke(GUI.NoclipButton, Colors.DarkRed, 1)
-    
-    -- Add hover effects for all buttons
-    local buttons = {GUI.FlyButton, GUI.SpeedButton, GUI.JumpButton, GUI.NoclipButton}
-    for _, button in pairs(buttons) do
-        button.MouseEnter:Connect(function()
-            CreateTween(button, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
-        end)
-        
-        button.MouseLeave:Connect(function()
-            CreateTween(button, {BackgroundColor3 = Colors.DarkGray}, 0.2):Play()
-        end)
-        
-        button.MouseButton1Click:Connect(function()
-            print(button.Text .. " button clicked (not implemented yet)")
-        end)
-    end
+    -- Fly button event (not implemented yet)
+    GUI.FlyButton.MouseButton1Click:Connect(function()
+        print("fly button clicked (not implemented yet)")
+    end)
     
     -- Games Page
     GUI.GamesPage = Instance.new("Frame")
@@ -339,24 +254,24 @@ function VanegoodHub:CreateContent()
     GUI.GamesPage.Visible = false
     GUI.GamesPage.Parent = GUI.Content
     
-    -- Muscle Legends Game Box (компактный дизайн)
+    -- Muscle Legends Game Box
     GUI.MuscleLegendsBox = Instance.new("TextButton")
     GUI.MuscleLegendsBox.Name = "MuscleLegendsBox"
-    GUI.MuscleLegendsBox.Size = UDim2.new(0, 280, 0, 36)
-    GUI.MuscleLegendsBox.Position = UDim2.new(0, 15, 0, 15)
+    GUI.MuscleLegendsBox.Size = UDim2.new(0, 300, 0, 60)
+    GUI.MuscleLegendsBox.Position = UDim2.new(0, 20, 0, 20)
     GUI.MuscleLegendsBox.BackgroundColor3 = Colors.DarkGray
     GUI.MuscleLegendsBox.BorderSizePixel = 0
     GUI.MuscleLegendsBox.Text = "Muscle Legends"
     GUI.MuscleLegendsBox.TextColor3 = Colors.White
-    GUI.MuscleLegendsBox.TextSize = 14
+    GUI.MuscleLegendsBox.TextSize = 18
     GUI.MuscleLegendsBox.Font = Enum.Font.GothamBold
     GUI.MuscleLegendsBox.TextXAlignment = Enum.TextXAlignment.Center
     GUI.MuscleLegendsBox.Parent = GUI.GamesPage
     
-    AddCorner(GUI.MuscleLegendsBox, 4)
-    AddStroke(GUI.MuscleLegendsBox, Colors.DarkRed, 1)
+    AddCorner(GUI.MuscleLegendsBox, 6)
+    AddStroke(GUI.MuscleLegendsBox, Colors.DarkRed, 2)
     
-    -- Hover effect for Muscle Legends button
+    -- Hover effect
     GUI.MuscleLegendsBox.MouseEnter:Connect(function()
         CreateTween(GUI.MuscleLegendsBox, {
             BackgroundColor3 = Colors.Gray,
@@ -371,7 +286,7 @@ function VanegoodHub:CreateContent()
         }, 0.2):Play()
     end)
     
-    -- Muscle Legends click event with improved error handling
+    -- Muscle Legends click event - FIXED
     GUI.MuscleLegendsBox.MouseButton1Click:Connect(function()
         print("Loading Muscle Legends script by vanegood...")
         
@@ -380,55 +295,43 @@ function VanegoodHub:CreateContent()
         task.wait(0.1)
         CreateTween(GUI.MuscleLegendsBox, {BackgroundColor3 = Colors.DarkGray}, 0.1):Play()
         
-        -- Load script with better error handling
+        -- Load script properly
         task.spawn(function()
-            local success, err = pcall(function()
-                local scriptUrl = "https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle_legends_script.lua"
-                local script = game:HttpGet(scriptUrl)
+            local success, result = pcall(function()
+                local HttpService = game:GetService("HttpService")
+                local scriptContent = game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle_legends_script.lua", true)
                 
-                if script and #script > 100 then -- Check if script actually loaded
-                    loadstring(script)()
-                    print("✓ Muscle Legends script loaded successfully!")
-                    
-                    -- Success notification
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "vanegood",
-                        Text = "Muscle Legends script loaded successfully!",
-                        Duration = 3
-                    })
+                if scriptContent and #scriptContent > 50 then
+                    local loadedScript = loadstring(scriptContent)
+                    if loadedScript then
+                        loadedScript()
+                        print("✓ Muscle Legends script loaded successfully!")
+                        
+                        -- Success notification
+                        game.StarterGui:SetCore("SendNotification", {
+                            Title = "vanegood",
+                            Text = "Muscle Legends script loaded!",
+                            Duration = 3
+                        })
+                        return true
+                    else
+                        error("Failed to compile script")
+                    end
                 else
-                    error("Failed to fetch script or script is too short")
+                    error("Script content is empty or too short")
                 end
             end)
             
             if not success then
-                warn("Failed to load Muscle Legends script:", err)
+                warn("❌ Error loading Muscle Legends:", result)
                 game.StarterGui:SetCore("SendNotification", {
                     Title = "vanegood",
-                    Text = "Failed to load Muscle Legends script. Check console.",
+                    Text = "Failed to load Muscle Legends. Check output.",
                     Duration = 5
                 })
             end
         end)
     end)
-    
-    -- Additional game button for aesthetics
-    GUI.ComingSoonBox = Instance.new("TextButton")
-    GUI.ComingSoonBox.Name = "ComingSoonBox"
-    GUI.ComingSoonBox.Size = UDim2.new(0, 280, 0, 36)
-    GUI.ComingSoonBox.Position = UDim2.new(0, 15, 0, 60)
-    GUI.ComingSoonBox.BackgroundColor3 = Colors.Gray
-    GUI.ComingSoonBox.BorderSizePixel = 0
-    GUI.ComingSoonBox.Text = "More Games Coming Soon..."
-    GUI.ComingSoonBox.TextColor3 = Color3.fromRGB(150, 150, 150)
-    GUI.ComingSoonBox.TextSize = 12
-    GUI.ComingSoonBox.Font = Enum.Font.Gotham
-    GUI.ComingSoonBox.TextXAlignment = Enum.TextXAlignment.Center
-    GUI.ComingSoonBox.Parent = GUI.GamesPage
-    GUI.ComingSoonBox.Active = false
-    
-    AddCorner(GUI.ComingSoonBox, 4)
-    AddStroke(GUI.ComingSoonBox, Color3.fromRGB(100, 100, 100), 1)
 end
 
 -- Switch Tab Function
@@ -469,7 +372,7 @@ function VanegoodHub:MakeDraggable()
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
             GUI.Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
@@ -478,24 +381,28 @@ end
 
 -- Setup Events
 function VanegoodHub:SetupEvents()
+    -- Close Button
     GUI.CloseButton.MouseButton1Click:Connect(function()
         CreateTween(GUI.Frame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
+        CreateTween(GUI.ToggleButton, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
         task.wait(0.3)
         GUI.Main:Destroy()
     end)
     
-    local hidden = false
-    GUI.HideButton.MouseButton1Click:Connect(function()
-        if not hidden then
-            CreateTween(GUI.Frame, {Size = UDim2.new(0, 450, 0, 30)}, 0.3):Play()
-            hidden = true
+    -- Toggle Button (Show/Hide Hub)
+    GUI.ToggleButton.MouseButton1Click:Connect(function()
+        if HubVisible then
+            -- Hide hub
+            CreateTween(GUI.Frame, {Position = UDim2.new(0, -450, 0.5, -150)}, 0.3):Play()
+            HubVisible = false
         else
-            CreateTween(GUI.Frame, {Size = UDim2.new(0, 450, 0, 300)}, 0.3):Play()
-            hidden = false
+            -- Show hub
+            CreateTween(GUI.Frame, {Position = UDim2.new(0.5, -225, 0.5, -150)}, 0.3):Play()
+            HubVisible = true
         end
     end)
     
-    -- Add hover effects for title bar buttons
+    -- Hover effects for buttons
     GUI.CloseButton.MouseEnter:Connect(function()
         CreateTween(GUI.CloseButton, {BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, 0.2):Play()
     end)
@@ -504,18 +411,18 @@ function VanegoodHub:SetupEvents()
         CreateTween(GUI.CloseButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
     end)
     
-    GUI.HideButton.MouseEnter:Connect(function()
-        CreateTween(GUI.HideButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
+    GUI.ToggleButton.MouseEnter:Connect(function()
+        CreateTween(GUI.ToggleButton, {BackgroundColor3 = Colors.Gray}, 0.2):Play()
     end)
     
-    GUI.HideButton.MouseLeave:Connect(function()
-        CreateTween(GUI.HideButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
+    GUI.ToggleButton.MouseLeave:Connect(function()
+        CreateTween(GUI.ToggleButton, {BackgroundColor3 = Colors.DarkRed}, 0.2):Play()
     end)
 end
 
 -- Initialize Hub
 local hub = VanegoodHub:Create()
 
-print("✓ vanegood Hub v2.0 loaded successfully!")
+print("✓ vanegood Hub loaded successfully!")
 print("✓ Created by vanegood - GitHub: https://github.com/Vanegood-sus/vanegood.git")
-print("✓ Compact & elegant design with improved Muscle Legends integration")
+print("✓ Clean design with proper show/hide functionality")
