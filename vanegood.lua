@@ -440,7 +440,20 @@ local function lockPlayerPosition(position)
     end)
 end
 
--- Function to unlock player position
+-- Объявление переменных, которые используются в функциях
+local positionLockConnection = nil
+local player = game:GetService("Players").LocalPlayer
+
+-- Функция для блокировки позиции игрока
+local function lockPlayerPosition(position)
+    unlockPlayerPosition() -- Сначала разблокируем, если уже заблокировано
+    
+    positionLockConnection = player.Character.HumanoidRootPart:GetPropertyChangedSignal("CFrame"):Connect(function()
+        player.Character.HumanoidRootPart.CFrame = position
+    end)
+end
+
+-- Функция для разблокировки позиции игрока
 local function unlockPlayerPosition()
     if positionLockConnection then
         positionLockConnection:Disconnect()
@@ -448,21 +461,35 @@ local function unlockPlayerPosition()
     end
 end
 
--- Add position lock toggle
+-- Функции для работы с питомцами (должны быть определены где-то в коде)
+local function equipUniquePet(petName)
+    -- реализация функции
+end
+
+local function unequipAllPets()
+    -- реализация функции
+end
+
+-- Создание папки должно быть ДО добавления элементов в нее
+local mainTab = {} -- предположим, что это какой-то UI-элемент
+local opThingsFolder = mainTab:AddFolder("Остальное")
+
+-- Переключатель блокировки позиции
 opThingsFolder:AddSwitch("Стоять на одном месте", function(bool)
     if bool then
-        -- Get current position and lock it
+        -- Получаем текущую позицию и блокируем ее
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local currentPosition = player.Character.HumanoidRootPart.CFrame
             lockPlayerPosition(currentPosition)
         end
     else
-        -- Unlock position
+        -- Разблокируем позицию
         unlockPlayerPosition()
     end
 end)
 
-local frameToggle = opThingsFolder:AddSwitch("Скрывать рамки", function(bool)
+-- Переключатель скрытия рамок
+opThingsFolder:AddSwitch("Скрывать рамки", function(bool)
     local rSto = game:GetService("ReplicatedStorage")
     for _, obj in pairs(rSto:GetChildren()) do
         if obj.Name:match("Frame$") then
@@ -471,8 +498,10 @@ local frameToggle = opThingsFolder:AddSwitch("Скрывать рамки", func
     end
 end)
 
-local speedGrind = opThingsFolder:AddSwitch("Быстрая сила", function(bool)
-    local isGrinding = bool
+-- Переключатель быстрой прокачки
+local isGrinding = false -- вынесли переменную из функции, чтобы управлять ею
+opThingsFolder:AddSwitch("Быстрая сила", function(bool)
+    isGrinding = bool
     
     if not bool then
         unequipAllPets()
@@ -483,7 +512,7 @@ local speedGrind = opThingsFolder:AddSwitch("Быстрая сила", function(
     
     for i = 1, 14 do
         task.spawn(function()
-            while isGrinding do
+            while isGrinding and player and player.muscleEvent do
                 player.muscleEvent:FireServer("rep")
                 task.wait()
             end
@@ -491,24 +520,29 @@ local speedGrind = opThingsFolder:AddSwitch("Быстрая сила", function(
     end
 end)
 
--- OP Things/Farms Folder
-local opThingsFolder = mainTab:AddFolder("Остальное")
-
--- Anti Knockback Toggle
+-- Анти-отбрасывание
 opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
+    local character = player.Character
+    if not character then return end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
     if Value then
-        local playerName = game.Players.LocalPlayer.Name
-        local rootPart = game.Workspace:FindFirstChild(playerName):FindFirstChild("HumanoidRootPart")
+        -- Удаляем старый BodyVelocity, если есть
+        local existingVelocity = rootPart:FindFirstChild("BodyVelocity")
+        if existingVelocity then
+            existingVelocity:Destroy()
+        end
+        
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
         bodyVelocity.Velocity = Vector3.new(0, 0, 0)
         bodyVelocity.P = 1250
         bodyVelocity.Parent = rootPart
     else
-        local playerName = game.Players.LocalPlayer.Name
-        local rootPart = game.Workspace:FindFirstChild(playerName):FindFirstChild("HumanoidRootPart")
         local existingVelocity = rootPart:FindFirstChild("BodyVelocity")
-        if existingVelocity and existingVelocity.MaxForce == Vector3.new(100000, 0, 100000) then
+        if existingVelocity then
             existingVelocity:Destroy()
         end
     end
