@@ -1,263 +1,337 @@
--- vanegood.lua - Roblox Hub Script
--- For GitHub repository: https://github.com/Vanegood-sus/vanegood.git
+--[[
+    vanegood hub
+    Created by vanegood
+    GitHub: https://github.com/Vanegood-sus/vanegood
+    
+    Simple dark hub with black & gray design
+]]--
 
+-- Services
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Create main screen GUI
-local hubGui = Instance.new("ScreenGui")
-hubGui.Name = "VanegoodHub"
-hubGui.Parent = playerGui
+-- Variables
+local VanegoodHub = {}
+local GUI = {}
+local CurrentTab = "Main"
+local IsMinimized = false
 
--- Main frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 400, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Parent = hubGui
+-- Color Scheme (Black & Gray with Dark Red accents)
+local Colors = {
+    Black = Color3.fromRGB(0, 0, 0),           -- Pure black
+    DarkGray = Color3.fromRGB(30, 30, 30),     -- Dark gray
+    Gray = Color3.fromRGB(60, 60, 60),         -- Gray
+    DarkRed = Color3.fromRGB(80, 20, 20),      -- Dark red
+    Red = Color3.fromRGB(120, 30, 30),         -- Red accent
+    White = Color3.fromRGB(255, 255, 255),     -- White text
+    LightGray = Color3.fromRGB(180, 180, 180)  -- Light gray text
+}
 
--- Corner rounding
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = mainFrame
+-- Utility Functions
+local function CreateTween(object, properties, duration)
+    local tweenInfo = TweenInfo.new(duration or 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    return TweenService:Create(object, tweenInfo, properties)
+end
 
--- Drop shadow
-local shadow = Instance.new("ImageLabel")
-shadow.Name = "Shadow"
-shadow.Size = UDim2.new(1, 10, 1, 10)
-shadow.Position = UDim2.new(0.5, -5, 0.5, -5)
-shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.new(0, 0, 0)
-shadow.ImageTransparency = 0.8
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-shadow.ZIndex = -1
-shadow.Parent = mainFrame
+local function AddCorner(object, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius or 8)
+    corner.Parent = object
+    return corner
+end
 
--- Title bar
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
+local function AddStroke(object, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or Colors.DarkRed
+    stroke.Thickness = thickness or 2
+    stroke.Parent = object
+    return stroke
+end
 
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 12)
-titleCorner.Parent = titleBar
+-- Create Main GUI
+function VanegoodHub:CreateMainGUI()
+    -- Destroy existing GUI if it exists
+    if PlayerGui:FindFirstChild("VanegoodHub") then
+        PlayerGui.VanegoodHub:Destroy()
+    end
+    
+    -- Main ScreenGui
+    GUI.Main = Instance.new("ScreenGui")
+    GUI.Main.Name = "VanegoodHub"
+    GUI.Main.ResetOnSpawn = false
+    GUI.Main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Try CoreGui first, fallback to PlayerGui
+    pcall(function()
+        GUI.Main.Parent = CoreGui
+    end)
+    if not GUI.Main.Parent then
+        GUI.Main.Parent = PlayerGui
+    end
+    
+    -- Main Frame
+    GUI.MainFrame = Instance.new("Frame")
+    GUI.MainFrame.Name = "MainFrame"
+    GUI.MainFrame.Size = UDim2.new(0, 500, 0, 350)
+    GUI.MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+    GUI.MainFrame.BackgroundColor3 = Colors.Black
+    GUI.MainFrame.BorderSizePixel = 0
+    GUI.MainFrame.Active = true
+    GUI.MainFrame.Draggable = true
+    GUI.MainFrame.Parent = GUI.Main
+    
+    AddCorner(GUI.MainFrame, 8)
+    AddStroke(GUI.MainFrame, Colors.DarkRed, 2)
+    
+    -- Sidebar
+    GUI.Sidebar = Instance.new("Frame")
+    GUI.Sidebar.Name = "Sidebar"
+    GUI.Sidebar.Size = UDim2.new(0, 120, 1, 0)
+    GUI.Sidebar.Position = UDim2.new(0, 0, 0, 0)
+    GUI.Sidebar.BackgroundColor3 = Colors.DarkGray
+    GUI.Sidebar.BorderSizePixel = 0
+    GUI.Sidebar.Parent = GUI.MainFrame
+    
+    AddCorner(GUI.Sidebar, 8)
+    
+    -- Content Frame
+    GUI.Content = Instance.new("Frame")
+    GUI.Content.Name = "Content"
+    GUI.Content.Size = UDim2.new(1, -120, 1, 0)
+    GUI.Content.Position = UDim2.new(0, 120, 0, 0)
+    GUI.Content.BackgroundColor3 = Colors.Black
+    GUI.Content.BorderSizePixel = 0
+    GUI.Content.Parent = GUI.MainFrame
+    
+    AddCorner(GUI.Content, 8)
+    
+    self:CreateSidebar()
+    self:CreateContent()
+    self:CreateMinimizeButton()
+    
+    return GUI.Main
+end
 
-local title = Instance.new("TextLabel")
-title.Name = "Title"
-title.Size = UDim2.new(1, 0, 1, 0)
-title.BackgroundTransparency = 1
-title.Text = "VANEGOOD HUB"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 18
-title.Font = Enum.Font.GothamBold
-title.Parent = titleBar
+-- Create Sidebar
+function VanegoodHub:CreateSidebar()
+    -- Main Tab Button
+    GUI.MainTabButton = Instance.new("TextButton")
+    GUI.MainTabButton.Name = "MainTabButton"
+    GUI.MainTabButton.Size = UDim2.new(1, -10, 0, 40)
+    GUI.MainTabButton.Position = UDim2.new(0, 5, 0, 10)
+    GUI.MainTabButton.BackgroundColor3 = Colors.Gray
+    GUI.MainTabButton.BorderSizePixel = 0
+    GUI.MainTabButton.Text = "main"
+    GUI.MainTabButton.TextColor3 = Colors.White
+    GUI.MainTabButton.TextSize = 16
+    GUI.MainTabButton.Font = Enum.Font.Gotham
+    GUI.MainTabButton.Parent = GUI.Sidebar
+    
+    AddCorner(GUI.MainTabButton, 6)
+    AddStroke(GUI.MainTabButton, Colors.DarkRed, 1)
+    
+    -- Games Tab Button
+    GUI.GamesTabButton = Instance.new("TextButton")
+    GUI.GamesTabButton.Name = "GamesTabButton"
+    GUI.GamesTabButton.Size = UDim2.new(1, -10, 0, 40)
+    GUI.GamesTabButton.Position = UDim2.new(0, 5, 0, 60)
+    GUI.GamesTabButton.BackgroundColor3 = Colors.Gray
+    GUI.GamesTabButton.BorderSizePixel = 0
+    GUI.GamesTabButton.Text = "games"
+    GUI.GamesTabButton.TextColor3 = Colors.White
+    GUI.GamesTabButton.TextSize = 16
+    GUI.GamesTabButton.Font = Enum.Font.Gotham
+    GUI.GamesTabButton.Parent = GUI.Sidebar
+    
+    AddCorner(GUI.GamesTabButton, 6)
+    AddStroke(GUI.GamesTabButton, Colors.DarkRed, 1)
+    
+    -- Tab Events
+    GUI.MainTabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab("Main")
+    end)
+    
+    GUI.GamesTabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab("Games")
+    end)
+    
+    -- Select Main tab by default
+    self:SwitchTab("Main")
+end
 
--- Close button
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 30, 0, 30)
-closeButton.Position = UDim2.new(1, -35, 0.5, -15)
-closeButton.AnchorPoint = Vector2.new(0.5, 0.5)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextSize = 14
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = titleBar
+-- Create Content
+function VanegoodHub:CreateContent()
+    -- Main Page
+    GUI.MainPage = Instance.new("Frame")
+    GUI.MainPage.Name = "MainPage"
+    GUI.MainPage.Size = UDim2.new(1, -20, 1, -20)
+    GUI.MainPage.Position = UDim2.new(0, 10, 0, 10)
+    GUI.MainPage.BackgroundTransparency = 1
+    GUI.MainPage.Parent = GUI.Content
+    
+    -- vanegood title (dark red)
+    GUI.VanegoodTitle = Instance.new("TextLabel")
+    GUI.VanegoodTitle.Name = "VanegoodTitle"
+    GUI.VanegoodTitle.Size = UDim2.new(1, 0, 0, 50)
+    GUI.VanegoodTitle.Position = UDim2.new(0, 0, 0, 10)
+    GUI.VanegoodTitle.BackgroundTransparency = 1
+    GUI.VanegoodTitle.Text = "vanegood"
+    GUI.VanegoodTitle.TextColor3 = Colors.DarkRed
+    GUI.VanegoodTitle.TextSize = 24
+    GUI.VanegoodTitle.Font = Enum.Font.GothamBold
+    GUI.VanegoodTitle.Parent = GUI.MainPage
+    
+    -- Fly button (non-functional for now)
+    GUI.FlyButton = Instance.new("TextButton")
+    GUI.FlyButton.Name = "FlyButton"
+    GUI.FlyButton.Size = UDim2.new(0, 200, 0, 40)
+    GUI.FlyButton.Position = UDim2.new(0, 20, 0, 80)
+    GUI.FlyButton.BackgroundColor3 = Colors.DarkGray
+    GUI.FlyButton.BorderSizePixel = 0
+    GUI.FlyButton.Text = "fly"
+    GUI.FlyButton.TextColor3 = Colors.White
+    GUI.FlyButton.TextSize = 16
+    GUI.FlyButton.Font = Enum.Font.Gotham
+    GUI.FlyButton.Parent = GUI.MainPage
+    
+    AddCorner(GUI.FlyButton, 6)
+    AddStroke(GUI.FlyButton, Colors.DarkRed, 2)
+    
+    -- Fly button event (does nothing for now)
+    GUI.FlyButton.MouseButton1Click:Connect(function()
+        -- Nothing happens yet
+        print("fly button clicked (not implemented yet)")
+    end)
+    
+    -- Games Page
+    GUI.GamesPage = Instance.new("Frame")
+    GUI.GamesPage.Name = "GamesPage"
+    GUI.GamesPage.Size = UDim2.new(1, -20, 1, -20)
+    GUI.GamesPage.Position = UDim2.new(0, 10, 0, 10)
+    GUI.GamesPage.BackgroundTransparency = 1
+    GUI.GamesPage.Visible = false
+    GUI.GamesPage.Parent = GUI.Content
+    
+    -- Muscle Legends Game Box
+    GUI.MuscleLegendsBox = Instance.new("Frame")
+    GUI.MuscleLegendsBox.Name = "MuscleLegendsBox"
+    GUI.MuscleLegendsBox.Size = UDim2.new(0, 300, 0, 60)
+    GUI.MuscleLegendsBox.Position = UDim2.new(0, 20, 0, 20)
+    GUI.MuscleLegendsBox.BackgroundColor3 = Colors.DarkGray
+    GUI.MuscleLegendsBox.BorderSizePixel = 0
+    GUI.MuscleLegendsBox.Parent = GUI.GamesPage
+    
+    AddCorner(GUI.MuscleLegendsBox, 6)
+    AddStroke(GUI.MuscleLegendsBox, Colors.DarkRed, 2)
+    
+    -- Muscle Legends Title
+    GUI.MuscleLegendsTitle = Instance.new("TextLabel")
+    GUI.MuscleLegendsTitle.Name = "MuscleLegendsTitle"
+    GUI.MuscleLegendsTitle.Size = UDim2.new(1, -20, 1, 0)
+    GUI.MuscleLegendsTitle.Position = UDim2.new(0, 10, 0, 0)
+    GUI.MuscleLegendsTitle.BackgroundTransparency = 1
+    GUI.MuscleLegendsTitle.Text = "Muscle Legends"
+    GUI.MuscleLegendsTitle.TextColor3 = Colors.White
+    GUI.MuscleLegendsTitle.TextSize = 18
+    GUI.MuscleLegendsTitle.TextXAlignment = Enum.TextXAlignment.Left
+    GUI.MuscleLegendsTitle.Font = Enum.Font.GothamBold
+    GUI.MuscleLegendsTitle.Parent = GUI.MuscleLegendsBox
+    
+    -- Make Muscle Legends box clickable
+    local ClickDetector = Instance.new("TextButton")
+    ClickDetector.Size = UDim2.new(1, 0, 1, 0)
+    ClickDetector.BackgroundTransparency = 1
+    ClickDetector.Text = ""
+    ClickDetector.Parent = GUI.MuscleLegendsBox
+    
+    ClickDetector.MouseButton1Click:Connect(function()
+        -- Load Muscle Legends script
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle_legends_script.lua"))()
+        end)
+        print("Loading Muscle Legends script by vanegood")
+    end)
+end
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = closeButton
+-- Create Minimize Button
+function VanegoodHub:CreateMinimizeButton()
+    GUI.MinimizeButton = Instance.new("TextButton")
+    GUI.MinimizeButton.Name = "MinimizeButton"
+    GUI.MinimizeButton.Size = UDim2.new(0, 40, 0, 40)
+    GUI.MinimizeButton.Position = UDim2.new(0, 10, 0, 10)
+    GUI.MinimizeButton.BackgroundColor3 = Colors.Gray
+    GUI.MinimizeButton.BorderSizePixel = 0
+    GUI.MinimizeButton.Text = ""
+    GUI.MinimizeButton.Parent = GUI.Main
+    
+    AddCorner(GUI.MinimizeButton, 20)
+    
+    -- Dark red circle in the middle
+    local Circle = Instance.new("Frame")
+    Circle.Size = UDim2.new(0, 20, 0, 20)
+    Circle.Position = UDim2.new(0.5, -10, 0.5, -10)
+    Circle.BackgroundColor3 = Colors.DarkRed
+    Circle.BorderSizePixel = 0
+    Circle.Parent = GUI.MinimizeButton
+    
+    AddCorner(Circle, 10)
+    
+    GUI.MinimizeButton.MouseButton1Click:Connect(function()
+        if IsMinimized then
+            -- Show hub
+            CreateTween(GUI.MainFrame, {Size = UDim2.new(0, 500, 0, 350)}, 0.3):Play()
+            GUI.MainFrame.Visible = true
+            IsMinimized = false
+        else
+            -- Hide hub
+            CreateTween(GUI.MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3):Play()
+            wait(0.3)
+            GUI.MainFrame.Visible = false
+            IsMinimized = true
+        end
+    end)
+end
 
--- Content frame
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, -20, 1, -60)
-contentFrame.Position = UDim2.new(0.5, 0, 0.5, 10)
-contentFrame.AnchorPoint = Vector2.new(0.5, 0)
-contentFrame.BackgroundTransparency = 1
-contentFrame.Parent = mainFrame
+-- Switch Tab
+function VanegoodHub:SwitchTab(tabName)
+    CurrentTab = tabName
+    
+    -- Reset all tab button colors
+    GUI.MainTabButton.BackgroundColor3 = Colors.Gray
+    GUI.GamesTabButton.BackgroundColor3 = Colors.Gray
+    
+    -- Hide all pages
+    GUI.MainPage.Visible = false
+    GUI.GamesPage.Visible = false
+    
+    if tabName == "Main" then
+        GUI.MainTabButton.BackgroundColor3 = Colors.DarkRed
+        GUI.MainPage.Visible = true
+    elseif tabName == "Games" then
+        GUI.GamesTabButton.BackgroundColor3 = Colors.DarkRed
+        GUI.GamesPage.Visible = true
+    end
+end
 
--- Tab buttons
-local tabButtons = Instance.new("Frame")
-tabButtons.Name = "TabButtons"
-tabButtons.Size = UDim2.new(1, 0, 0, 40)
-tabButtons.BackgroundTransparency = 1
-tabButtons.Parent = contentFrame
+-- Initialize Hub
+function VanegoodHub:Init()
+    self:CreateMainGUI()
+    
+    print("vanegood hub loaded")
+    print("GitHub: https://github.com/Vanegood-sus/vanegood.git")
+end
 
-local homeTab = Instance.new("TextButton")
-homeTab.Name = "HomeTab"
-homeTab.Size = UDim2.new(0.5, -5, 1, 0)
-homeTab.Position = UDim2.new(0, 0, 0, 0)
-homeTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-homeTab.Text = "HOME"
-homeTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-homeTab.TextSize = 14
-homeTab.Font = Enum.Font.GothamBold
-homeTab.Parent = tabButtons
+-- Auto-execute protection
+if not getgenv().VanegoodHubLoaded then
+    getgenv().VanegoodHubLoaded = true
+    VanegoodHub:Init()
+else
+    warn("vanegood hub is already loaded!")
+end
 
-local homeTabCorner = Instance.new("UICorner")
-homeTabCorner.CornerRadius = UDim.new(0, 8)
-homeTabCorner.Parent = homeTab
-
-local gamesTab = Instance.new("TextButton")
-gamesTab.Name = "GamesTab"
-gamesTab.Size = UDim2.new(0.5, -5, 1, 0)
-gamesTab.Position = UDim2.new(0.5, 5, 0, 0)
-gamesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-gamesTab.Text = "GAMES"
-gamesTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-gamesTab.TextSize = 14
-gamesTab.Font = Enum.Font.GothamBold
-gamesTab.Parent = tabButtons
-
-local gamesTabCorner = Instance.new("UICorner")
-gamesTabCorner.CornerRadius = UDim.new(0, 8)
-gamesTabCorner.Parent = gamesTab
-
--- Tab content
-local tabContent = Instance.new("Frame")
-tabContent.Name = "TabContent"
-tabContent.Size = UDim2.new(1, 0, 1, -50)
-tabContent.Position = UDim2.new(0, 0, 0, 50)
-tabContent.BackgroundTransparency = 1
-tabContent.Parent = contentFrame
-
--- Home tab content
-local homeContent = Instance.new("ScrollingFrame")
-homeContent.Name = "HomeContent"
-homeContent.Size = UDim2.new(1, 0, 1, 0)
-homeContent.BackgroundTransparency = 1
-homeContent.ScrollBarThickness = 5
-homeContent.Visible = true
-homeContent.Parent = tabContent
-
-local homeListLayout = Instance.new("UIListLayout")
-homeListLayout.Padding = UDim.new(0, 10)
-homeListLayout.Parent = homeContent
-
--- Welcome message
-local welcomeFrame = Instance.new("Frame")
-welcomeFrame.Name = "WelcomeFrame"
-welcomeFrame.Size = UDim2.new(1, -20, 0, 100)
-welcomeFrame.Position = UDim2.new(0.5, 0, 0, 10)
-welcomeFrame.AnchorPoint = Vector2.new(0.5, 0)
-welcomeFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-welcomeFrame.Parent = homeContent
-
-local welcomeCorner = Instance.new("UICorner")
-welcomeCorner.CornerRadius = UDim.new(0, 8)
-welcomeCorner.Parent = welcomeFrame
-
-local welcomeTitle = Instance.new("TextLabel")
-welcomeTitle.Name = "WelcomeTitle"
-welcomeTitle.Size = UDim2.new(1, -20, 0, 30)
-welcomeTitle.Position = UDim2.new(0.5, 0, 0, 10)
-welcomeTitle.AnchorPoint = Vector2.new(0.5, 0)
-welcomeTitle.BackgroundTransparency = 1
-welcomeTitle.Text = "WELCOME"
-welcomeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-welcomeTitle.TextSize = 18
-welcomeTitle.Font = Enum.Font.GothamBold
-welcomeTitle.Parent = welcomeFrame
-
-local welcomeText = Instance.new("TextLabel")
-welcomeText.Name = "WelcomeText"
-welcomeText.Size = UDim2.new(1, -20, 0, 50)
-welcomeText.Position = UDim2.new(0.5, 0, 0, 40)
-welcomeText.AnchorPoint = Vector2.new(0.5, 0)
-welcomeText.BackgroundTransparency = 1
-welcomeText.Text = "Welcome to Vanegood Hub!\nSelect a tab to get started."
-welcomeText.TextColor3 = Color3.fromRGB(200, 200, 200)
-welcomeText.TextSize = 14
-welcomeText.Font = Enum.Font.Gotham
-welcomeText.Parent = welcomeFrame
-
--- Games tab content
-local gamesContent = Instance.new("ScrollingFrame")
-gamesContent.Name = "GamesContent"
-gamesContent.Size = UDim2.new(1, 0, 1, 0)
-gamesContent.BackgroundTransparency = 1
-gamesContent.ScrollBarThickness = 5
-gamesContent.Visible = false
-gamesContent.Parent = tabContent
-
-local gamesGridLayout = Instance.new("UIGridLayout")
-gamesGridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
-gamesGridLayout.CellSize = UDim2.new(0, 100, 0, 120)
-gamesGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-gamesGridLayout.Parent = gamesContent
-
--- Sample game icons (you can add more)
-local game1 = Instance.new("TextButton")
-game1.Name = "Game1"
-game1.Size = UDim2.new(0, 100, 0, 120)
-game1.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-game1.Text = ""
-game1.Parent = gamesContent
-
-local game1Corner = Instance.new("UICorner")
-game1Corner.CornerRadius = UDim.new(0, 8)
-game1Corner.Parent = game1
-
-local game1Icon = Instance.new("ImageLabel")
-game1Icon.Name = "Icon"
-game1Icon.Size = UDim2.new(0.8, 0, 0.5, 0)
-game1Icon.Position = UDim2.new(0.5, 0, 0.2, 0)
-game1Icon.AnchorPoint = Vector2.new(0.5, 0)
-game1Icon.BackgroundTransparency = 1
-game1Icon.Image = "rbxassetid://7072718362" -- Default game icon
-game1Icon.Parent = game1
-
-local game1Title = Instance.new("TextLabel")
-game1Title.Name = "Title"
-game1Title.Size = UDim2.new(0.9, 0, 0.3, 0)
-game1Title.Position = UDim2.new(0.5, 0, 0.7, 0)
-game1Title.AnchorPoint = Vector2.new(0.5, 0)
-game1Title.BackgroundTransparency = 1
-game1Title.Text = "Game 1"
-game1Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-game1Title.TextSize = 14
-game1Title.Font = Enum.Font.GothamBold
-game1Title.Parent = game1
-
--- Add more games as needed...
-
--- Tab switching functionality
-homeTab.MouseButton1Click:Connect(function()
-    homeContent.Visible = true
-    gamesContent.Visible = false
-    homeTab.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
-    gamesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-end)
-
-gamesTab.MouseButton1Click:Connect(function()
-    homeContent.Visible = false
-    gamesContent.Visible = true
-    homeTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-    gamesTab.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
-end)
-
--- Close button functionality
-closeButton.MouseButton1Click:Connect(function()
-    hubGui:Destroy()
-end)
-
--- Initial state
-homeTab.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
-gamesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+return VanegoodHub
