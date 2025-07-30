@@ -425,7 +425,7 @@ for _, workoutType in ipairs(workoutTypes) do
 end
 
 -- OP Things/Farms Folder
-local opThingsFolder = mainTab:AddFolder("OP Things/Farms")
+local opThingsFolder = mainTab:AddFolder("Остальное")
 
 -- Anti Knockback Toggle
 opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
@@ -1038,7 +1038,7 @@ local sessionStartBrawls = 0
 local hasStartedTracking = false
 
 -- Statistics tracking folder
-local statsFolder = farmPlusTab:AddFolder("Stats")
+local statsFolder = farmPlusTab:AddFolder("Статистика")
 
 -- Crear etiquetas para las estadísticas solicitadas
 statsFolder:AddLabel("Сила")
@@ -1540,7 +1540,6 @@ local speedGrind = rebirthFarmFolder:AddSwitch("Быстрая сила", functi
     end
 end)
 
-
 local killerTab = window:AddTab("Убийства")
 
 
@@ -1910,7 +1909,6 @@ end)
 -- Initialize UI
 updateWhitelistedPlayersLabel()
 updateTargetPlayerLabel()
-
 
 local teleportTab = window:AddTab("Телепорт")
 
