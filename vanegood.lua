@@ -463,8 +463,16 @@ local function lockPlayerPosition(position)
     end)
 end
 
+-- Function to unlock player position
+local function unlockPlayerPosition()
+    if positionLockConnection then
+        positionLockConnection:Disconnect()
+        positionLockConnection = nil
+    end
+end
+
 -- Add position lock toggle
-opThingsFolder:AddSwitch("Стоять на одном месте", function(bool)
+opThingsFolder:AddSwitch("Стоять на месте", function(bool)
     if bool then
         -- Get current position and lock it
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
