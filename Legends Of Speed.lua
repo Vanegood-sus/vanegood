@@ -1,6 +1,6 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GhostDuckyy/Ui-Librarys/main/Gerad's/source.lua"))()
 
-local Window = Library:CreateWindow('vanegood hub ') -- :CreateWindow(Title)
+local Window = Library:CreateWindow('vanegoodhub') -- :CreateWindow(Title)
 
 local Section = Window:Section('Open script') -- :Section(Title)
 
