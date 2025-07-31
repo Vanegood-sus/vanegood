@@ -32,7 +32,7 @@ setupAntiAFK()
 
 -- Create Main Window
 local window = library:AddWindow("Muscle Legends", {
-main_color = Color3.fromRGB(139, 0, 0), -- темно-красный
+main_color = Color3.fromRGB(200, 200, 200), -- темно-красный
     min_size = Vector2.new(800, 900),
     can_resize = true,
 })
