@@ -32,7 +32,7 @@ local gamesTab = win:Tab({
 gamesTab:Button({
     Title = "Muscle Legends", 
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle legends.lua", true))()
     end
 })
 
