@@ -424,21 +424,8 @@ for _, workoutType in ipairs(workoutTypes) do
     gymToggles[workoutType] = toggle
 end
 
--- Variable to store the position lock connection
-local positionLockConnection = nil
-
--- Function to lock player position
-local function lockPlayerPosition(position)
-    if positionLockConnection then
-        positionLockConnection:Disconnect()
-    end
-    
-    positionLockConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = position
-        end
-    end)
-end
+-- OP Things/Farms Folder
+local opThingsFolder = mainTab:AddFolder("Остальное")
 
 -- Anti Knockback Toggle
 opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
@@ -460,13 +447,6 @@ opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
     end
 end)
 
--- Function to unlock player position
-local function unlockPlayerPosition()
-    if positionLockConnection then
-        positionLockConnection:Disconnect()
-        positionLockConnection = nil
-    end
-end
 
 local autoRockFolder = farmPlusTab:AddFolder("Бить камень")
 
