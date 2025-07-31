@@ -62,6 +62,6 @@ gamesTab:Button({
 gamesTab:Button({
     Title = "Legends Of Speed", 
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Legends Of Speed.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Legend Of Speed.lua", true))()
     end
 })
