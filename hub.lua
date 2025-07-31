@@ -22,6 +22,12 @@ mainTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/fly.lua", true))()
     end
 })
+mainTab:Button({
+    Title = "InfiniteYield", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+})
 -- Games tab (запуск скриптов)
 local gamesTab = win:Tab({
     Title = "Scripts",
