@@ -16,7 +16,12 @@ local mainTab = win:Tab({
     Title = "Main",
     Icon = "home",
 })
-
+mainTab:Button({
+    Title = "Fly", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/fly.lua", true))()
+    end
+})
 -- Games tab (запуск скриптов)
 local gamesTab = win:Tab({
     Title = "Scripts",
@@ -30,4 +35,5 @@ gamesTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua", true))()
     end
 })
+
 
