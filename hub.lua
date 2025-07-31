@@ -65,3 +65,9 @@ gamesTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/LegendOfSpeed.lua", true))()
     end
 })
+gamesTab:Button({
+    Title = "Npc or Die", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/NpcOrDie.lua", true))()
+    end
+})
