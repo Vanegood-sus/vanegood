@@ -11,7 +11,7 @@ local win = ui:CreateWindow({
     Theme = "Dark",
 })
 
--- Main tab (пустая)
+-- Main tab 
 local mainTab = win:Tab({
     Title = "Main",
     Icon = "home",
@@ -26,6 +26,12 @@ mainTab:Button({
     Title = "Infinite Yield", 
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+})
+mainTab:Button({
+    Title = "Anti-Afk", 
+    Callback = function()
+        loadstring(game:HttpGet("loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Anti-afk.lua", true))()"))()
     end
 })
 -- Games tab (запуск скриптов)
