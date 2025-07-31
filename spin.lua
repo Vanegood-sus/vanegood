@@ -1,4 +1,3 @@
-
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
@@ -41,39 +40,47 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
 titleLabel.Parent = topBar
 
-local dragging, dragInput, dragStart, startPos
+-- Улучшенный код для перемещения (работает на мобильных устройствах)
+local UserInputService = game:GetService("UserInputService")
+local dragging = false
+local dragStart, startPos
 
 local function updateInput(input)
-	local delta = input.Position - dragStart
-	mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(
+        startPos.X.Scale, 
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale, 
+        startPos.Y.Offset + delta.Y
+    )
 end
 
-topBar.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = mainFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+-- Обработка касаний для мобильных устройств
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        
+        -- Визуальная обратная связь при касании
+        mainFrame.BackgroundTransparency = 0.2
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                mainFrame.BackgroundTransparency = 0.1
+            end
+        end)
+    end
 end)
 
-topBar.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        updateInput(input)
+    end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		updateInput(input)
-	end
-end)
-
+-- Элементы управления
 local speedInput = Instance.new("TextBox")
 speedInput.Size = UDim2.new(0, 220, 0, 40)
 speedInput.Position = UDim2.new(0.5, -110, 0.4, 0)
@@ -106,14 +113,18 @@ local spinning = false
 local spinSpeed = 0
 
 submitButton.MouseButton1Click:Connect(function()
-	spinSpeed = tonumber(speedInput.Text) or 0
-	if spinSpeed > 0 then
-		spinning = true
-	end
+    spinSpeed = tonumber(speedInput.Text) or 0
+    if spinSpeed > 0 then
+        spinning = true
+        submitButton.Text = "STOP"
+    else
+        spinning = false
+        submitButton.Text = "Submit"
+    end
 end)
 
 game:GetService("RunService").RenderStepped:Connect(function()
-	if spinning and character and character:FindFirstChild("HumanoidRootPart") then
-		character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
-	end
+    if spinning and character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+    end
 end)
