@@ -28,7 +28,13 @@ mainTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
     end
 })
--- Games tab (запуск скриптов)
+mainTab:Button({
+    Title = "Anti-Afk", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Anti-Afk-lua", true))()
+    end
+})
+-- Games tab 
 local gamesTab = win:Tab({
     Title = "Scripts",
     Icon = "gamepad",
