@@ -1,35 +1,35 @@
-local plrs = game:GetService("Players")
+local plrs = game.Players
 local plr = plrs.LocalPlayer
+local char = plr.Character
 
--- Основной код интерфейса
-local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/source.lua", true))()
+local ui = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local win = ui:CreateWindow({
     Title = "Vanegood Hub",
     Icon = "terminal",
     Size = UDim2.fromOffset(580, 460),
-    Theme = "Dark"
+    Theme = "Dark",
 })
 
--- Вкладка Main
+-- Main tab
 local mainTab = win:Tab({
     Title = "Main",
-    Icon = "pickaxe"
+    Icon = "home",
 })
 
--- Вкладка Games
+-- Games tab
 local gamesTab = win:Tab({
-    Title = "Games",
-    Icon = "gamepad"
+    Title = "Scripts",
+    Icon = "gamepad",
 })
 
--- Кнопка запуска
+gamesTab:Section({
+    Title = "Muscle Legends",
+})
+
 gamesTab:Button({
-    Title = "Muscle Legends", 
+    Title = "Запустить Hub",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/hub.lua"))()
     end
 })
-
--- Принудительное отображение (на случай если UI скрыто по умолчанию)
-game:GetService("CoreGui").WindUI.Enabled = true
