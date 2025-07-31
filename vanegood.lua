@@ -447,6 +447,64 @@ opThingsFolder:AddSwitch("Анти отбрасывание", function(Value)
     end
 end)
 
+-- Variable to store the position lock connection
+local positionLockConnection = nil
+
+-- Function to lock player position
+local function lockPlayerPosition(position)
+    if positionLockConnection then
+        positionLockConnection:Disconnect()
+    end
+    
+    positionLockConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = position
+        end
+    end)
+end
+
+-- Add position lock toggle
+opThingsFolder:AddSwitch("Стоять на одном месте", function(bool)
+    if bool then
+        -- Get current position and lock it
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local currentPosition = player.Character.HumanoidRootPart.CFrame
+            lockPlayerPosition(currentPosition)
+        end
+    else
+        -- Unlock position
+        unlockPlayerPosition()
+    end
+end)
+
+local frameToggle = opThingsFolder:AddSwitch("Скрывать рамки", function(bool)
+    local rSto = game:GetService("ReplicatedStorage")
+    for _, obj in pairs(rSto:GetChildren()) do
+        if obj.Name:match("Frame$") then
+            obj.Visible = not bool
+        end
+    end
+end)
+
+local speedGrind = opThingsFolder:AddSwitch("Быстрая сила", function(bool)
+    local isGrinding = bool
+    
+    if not bool then
+        unequipAllPets()
+        return
+    end
+    
+    equipUniquePet("Swift Samurai")
+    
+    for i = 1, 14 do
+        task.spawn(function()
+            while isGrinding do
+                player.muscleEvent:FireServer("rep")
+                task.wait()
+            end
+        end)
+    end
+end)
 
 local autoRockFolder = farmPlusTab:AddFolder("Бить камень")
 
@@ -1368,48 +1426,6 @@ misc1Folder:AddSwitch("Авто сбор подарков", function(bool)
     end
 end)
 
--- Add position lock toggle
-misc1Folder:AddSwitch("Стоять на одном месте", function(bool)
-    if bool then
-        -- Get current position and lock it
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local currentPosition = player.Character.HumanoidRootPart.CFrame
-            lockPlayerPosition(currentPosition)
-        end
-    else
-        -- Unlock position
-        unlockPlayerPosition()
-    end
-end)
-
-local frameToggle = misc1Folder:AddSwitch("Скрывать рамки", function(bool)
-    local rSto = game:GetService("ReplicatedStorage")
-    for _, obj in pairs(rSto:GetChildren()) do
-        if obj.Name:match("Frame$") then
-            obj.Visible = not bool
-        end
-    end
-end)
-
-local speedGrind = misc1Folder:AddSwitch("Быстрая сила", function(bool)
-    local isGrinding = bool
-    
-    if not bool then
-        unequipAllPets()
-        return
-    end
-    
-    equipUniquePet("Swift Samurai")
-    
-    for i = 1, 14 do
-        task.spawn(function()
-            while isGrinding do
-                player.muscleEvent:FireServer("rep")
-                task.wait()
-            end
-        end)
-    end
-end)
 
 local killerTab = window:AddTab("Убийства")
 
