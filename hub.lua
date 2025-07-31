@@ -56,12 +56,12 @@ local gamesTab = win:Tab({
 gamesTab:Button({
     Title = "Muscle Legends", 
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle legends.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua", true))()
     end
 })
 gamesTab:Button({
     Title = "Legends Of Speed", 
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Legend Of Speed.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/LegendOfSpeed.lua", true))()
     end
 })
