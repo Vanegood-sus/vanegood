@@ -28,12 +28,6 @@ mainTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
     end
 })
-mainTab:Button({
-    Title = "Anti-Afk", 
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Anti-afk.lua", true))()
-    end
-})
 -- Games tab (запуск скриптов)
 local gamesTab = win:Tab({
     Title = "Scripts",
@@ -47,5 +41,3 @@ gamesTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/muscle legends.lua", true))()
     end
 })
-
-
