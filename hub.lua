@@ -15,41 +15,21 @@ local win = ui:CreateWindow({
     Background = "",
 })
 
--- Main tab (empty)
+-- Main tab (пустая)
 local mainTab = win:Tab({
     Title = "Main",
     Icon = "pickaxe",
 })
 
--- Games tab with vanegood script launcher
+-- Games tab (с кнопкой запуска Vanegood)
 local gamesTab = win:Tab({
     Title = "Games",
     Icon = "gamepad",
 })
 
-gamesTab:Section({
-    Title = "Скрипты",
-    TextXAlignment = "Left",
-    TextSize = 17,
-})
-
 gamesTab:Button({
-    Title = "Запуск",
-    Locked = false,
+    Title = "Muscle Legends", 
     Callback = function()
-        -- Добавляем проверку на ошибки при загрузке
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua", true))()
-        end)
-        
-        if not success then
-            warn("Failed to load Vanegood script: " .. err)
-        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua"))()
     end
-})
-
--- Optional: Добавляем статус загрузки
-gamesTab:Paragraph({
-    Title = "Готово",
-    Locked = false,
 })
