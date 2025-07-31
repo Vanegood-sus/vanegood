@@ -11,22 +11,23 @@ local win = ui:CreateWindow({
     Theme = "Dark",
 })
 
--- Main tab
+-- Main tab (пустая)
 local mainTab = win:Tab({
     Title = "Main",
     Icon = "home",
 })
 
--- Games tab
+-- Games tab (запуск скриптов)
 local gamesTab = win:Tab({
     Title = "Scripts",
     Icon = "gamepad",
 })
 
--- Секция Muscle Legends (кликабельная)
-gamesTab:Section({
-    Title = "Muscle Legends",
-    Callback = function()  -- Запуск скрипта при нажатии на секцию
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/hub.lua"))()
+-- Muscle Legends 
+gamesTab:Button({
+    Title = "Muscle Legends", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/vanegood.lua", true))()
     end
 })
+
