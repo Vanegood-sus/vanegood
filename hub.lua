@@ -31,7 +31,13 @@ mainTab:Button({
 mainTab:Button({
     Title = "Anti-Afk", 
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Anti-Afk.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/Anti-Afk-lua", true))()
+    end
+})
+mainTab:Button({
+    Title = "Spectator", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/spectator.lua", true))()
     end
 })
 -- Games tab 
