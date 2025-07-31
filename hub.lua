@@ -40,6 +40,12 @@ mainTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/spectator.lua", true))()
     end
 })
+mainTab:Button({
+    Title = "Spin", 
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/spin.lua", true))()
+    end
+})
 -- Games tab 
 local gamesTab = win:Tab({
     Title = "Scripts",
