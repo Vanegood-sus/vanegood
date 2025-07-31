@@ -28,13 +28,13 @@ local gamesTab = win:Tab({
 })
 
 gamesTab:Section({
-    Title = "Script Launcher",
+    Title = "Скрипты",
     TextXAlignment = "Left",
     TextSize = 17,
 })
 
 gamesTab:Button({
-    Title = "Run Vanegood Script",
+    Title = "Запуск",
     Locked = false,
     Callback = function()
         -- Добавляем проверку на ошибки при загрузке
@@ -50,6 +50,6 @@ gamesTab:Button({
 
 -- Optional: Добавляем статус загрузки
 gamesTab:Paragraph({
-    Title = "Status: Ready",
+    Title = "Готово",
     Locked = false,
 })
