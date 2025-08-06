@@ -41,9 +41,11 @@ NeonBorder.BorderSizePixel = 0
 NeonBorder.ZIndex = 0
 NeonBorder.Parent = MainFrame
 
-local NeonCorner = Instance.new("UICorner")
-NeonCorner.CornerRadius = UDim.new(0, 10)
-NeonCorner.Parent = NeonBorder
+local NeonUIStroke = Instance.new("UIStroke")
+NeonUIStroke.Color = Color3.fromRGB(0, 255, 255)  -- Голубой цвет как в Anti-AFK
+NeonUIStroke.Thickness = 2
+NeonUIStroke.Transparency = 0.5
+NeonUIStroke.Parent = NeonBorder
 
 local NeonUIStroke = Instance.new("UIStroke")
 NeonUIStroke.Color = Color3.fromRGB(255, 40, 40)
@@ -140,7 +142,7 @@ GamesTab.Parent = TabBar
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.5, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
-ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)  -- Голубой цвет
 ActiveTabIndicator.BorderSizePixel = 0
 ActiveTabIndicator.Parent = TabBar
 
@@ -226,10 +228,10 @@ local function createButton(name, description)
         TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 60, 60)}):Play()
     end)
     
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play()
-        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(80, 80, 80)}):Play()
-    end)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 255, 255)}):Play()  -- Голубой
+end)
     
     return button
 end
@@ -249,13 +251,13 @@ end
 
 -- Список скриптов
 local scripts = {
-    {Name = "Fly", File = "Fly.lua", Desc = "Полет"},
+    {Name = "FLY", File = "Fly.lua", Desc = "Полет"},
     {Name = "Anti-Afk", File = "Anti-Afk.lua", Desc = "Защита от кика за бездействие"},
     {Name = "Shiftlock", File = "Shiftlock.lua", Desc = "Фикс камеры от третьего лица"},
     {Name = "Spectator", File = "Spectator.lua", Desc = "Режим наблюдателя"},
-    {Name = "Spin", File = "Spin.lua", Desc = "Вращение персонажа"},
-    {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"},
-    {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"},
+    {Name = "Spin", File = "Spin.lua", Desc = "Вращение персонажа"}
+    {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"}
+    {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"}
     {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"}
 }
 
