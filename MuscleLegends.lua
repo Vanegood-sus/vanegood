@@ -32,9 +32,10 @@ setupAntiAFK()
 
 -- Create Main Window
 local window = library:AddWindow("Muscle Legends", {
-main_color = Color3.fromRGB(200, 200, 200), -- темно-красный
+    main_color = Color3.fromRGB(200, 200, 200),
     min_size = Vector2.new(800, 900),
     can_resize = true,
+    close_button = true, -- Добавьте эту строку
 })
 
 -- Main Tab
@@ -1975,5 +1976,4 @@ noteTab:AddLabel("")
 -- Instead of one large text block, let's add each paragraph separately
 -- This gives better control over formatting
 noteTab:AddLabel("Созданно vanegood")
-
 
