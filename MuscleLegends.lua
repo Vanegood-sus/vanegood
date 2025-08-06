@@ -1975,13 +1975,20 @@ noteTab:AddLabel("Private Script")
 noteTab:AddLabel("")
 noteTab:AddLabel("Созданно vanegood")
 
--- Добавляем кнопку закрытия вкладки
-noteTab:AddButton("Закрыть вкладку", function()
-    noteTab:Hide()  -- Скрывает текущую вкладку
-end)
-
--- Добавляем кнопку закрытия всего интерфейса
+-- Добавляем кнопку закрытия интерфейса (рабочая версия)
 noteTab:AddButton("Закрыть интерфейс", function()
-    window:Close()  -- Полностью закрывает интерфейс
+    -- Альтернативные способы закрытия интерфейса
+    if window.Hide then
+        window:Hide() -- Если есть метод Hide
+    else
+        -- Если нет стандартного метода закрытия, скрываем через видимость
+        for _, v in next, library.windows do
+            if v.title.Text == "Muscle Legends" then
+                v.main.Visible = false
+            end
+        end
+    end
+    
+    -- Дополнительно: можно уничтожить интерфейс полностью
+    library:Unload()
 end)
-
