@@ -249,11 +249,14 @@ end
 
 -- Список скриптов
 local scripts = {
-    {Name = "FLY", File = "flu.lua", Desc = "Полет"},
+    {Name = "FLY", File = "Fly.lua", Desc = "Полет"},
     {Name = "Anti-Afk", File = "Anti-Afk.lua", Desc = "Защита от кика за бездействие"},
     {Name = "Shiftlock", File = "Shiftlock.lua", Desc = "Фикс камеры от третьего лица"},
     {Name = "Spectator", File = "Spectator.lua", Desc = "Режим наблюдателя"},
     {Name = "Spin", File = "Spin.lua", Desc = "Вращение персонажа"}
+    {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"}
+    {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"}
+    {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"}
 }
 
 -- Список игр
