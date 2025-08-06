@@ -1973,7 +1973,15 @@ noteTab:AddLabel("Private Script")
 
 -- Add spacers for better layout
 noteTab:AddLabel("")
--- Instead of one large text block, let's add each paragraph separately
--- This gives better control over formatting
 noteTab:AddLabel("Созданно vanegood")
+
+-- Добавляем кнопку закрытия вкладки
+noteTab:AddButton("Закрыть вкладку", function()
+    noteTab:Hide()  -- Скрывает текущую вкладку
+end)
+
+-- Добавляем кнопку закрытия всего интерфейса
+noteTab:AddButton("Закрыть интерфейс", function()
+    window:Close()  -- Полностью закрывает интерфейс
+end)
 
