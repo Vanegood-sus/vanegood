@@ -1975,20 +1975,57 @@ noteTab:AddLabel("Private Script")
 noteTab:AddLabel("")
 noteTab:AddLabel("Созданно vanegood")
 
--- Добавляем кнопку закрытия интерфейса (рабочая версия)
-noteTab:AddButton("Закрыть интерфейс", function()
-    -- Альтернативные способы закрытия интерфейса
-    if window.Hide then
-        window:Hide() -- Если есть метод Hide
-    else
-        -- Если нет стандартного метода закрытия, скрываем через видимость
-        for _, v in next, library.windows do
-            if v.title.Text == "Muscle Legends" then
-                v.main.Visible = false
+-- Список локаций для рандомного телепорта (CFrame из вашего телепорт-раздела)
+local randomLocations = {
+    ["Спавн"] = CFrame.new(2, 8, 115),
+    ["Секретная арена"] = CFrame.new(1947, 2, 6191),
+    ["Маленький остров"] = CFrame.new(-34, 7, 1903),
+    ["Ледяной зал"] = CFrame.new(-2600.00244, 3.67686558, -403.884369),
+    ["Мифический портал"] = CFrame.new(2255, 7, 1071),
+    ["Адский портал"] = CFrame.new(-6768, 7, -1287),
+    ["Легендарный остров"] = CFrame.new(4604, 991, -3887),
+    ["Портал короля"] = CFrame.new(-8646, 17, -5738),
+    ["Джунгли"] = CFrame.new(-8659, 6, 2384),
+    ["Бой в лаве"] = CFrame.new(4471, 119, -8836),
+    ["Бой в пустыне"] = CFrame.new(960, 17, -7398),
+    ["Бой на ринге"] = CFrame.new(-1849, 20, -6335)
+}
+
+-- Функция для безопасного телепорта
+local function safeTeleport(cframe)
+    pcall(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character then
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                humanoidRootPart.CFrame = cframe
             end
         end
+    end)
+end
+
+-- Кнопка для рандомного телепорта
+noteTab:AddButton("Рандомный телепорт", function()
+    -- Получаем случайную локацию
+    local locationNames = {}
+    for name in pairs(randomLocations) do
+        table.insert(locationNames, name)
     end
     
-    -- Дополнительно: можно уничтожить интерфейс полностью
-    library:Unload()
+    local randomIndex = math.random(1, #locationNames)
+    local selectedLocation = locationNames[randomIndex]
+    local cframe = randomLocations[selectedLocation]
+    
+    -- Телепортируем
+    safeTeleport(cframe)
+    
+    -- Уведомление
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Телепорт",
+        Text = "Телепортирован в: "..selectedLocation,
+        Duration = 3
+    })
+    
+    print("Телепорт в:", selectedLocation)
 end)
