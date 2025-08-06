@@ -35,8 +35,28 @@ local window = library:AddWindow("Muscle Legends", {
     main_color = Color3.fromRGB(200, 200, 200),
     min_size = Vector2.new(800, 900),
     can_resize = true,
-    close_button = true, -- Добавьте эту строку
+    close_button = true, 
 })
+-- Создаем черный крестик в правом верхнем углу
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "CustomCloseButton"
+closeBtn.Text = "×" -- Символ крестика
+closeBtn.TextSize = 20
+closeBtn.TextColor3 = Color3.new(0, 0, 0) -- Черный цвет
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- Серый фон
+closeBtn.BorderSizePixel = 0
+closeBtn.Size = UDim2.new(0, 30, 0, 30) -- Размер кнопки
+closeBtn.Position = UDim2.new(1, -35, 0, 5) -- Правый верхний угол
+closeBtn.ZIndex = 100 -- Чтобы был поверх других элементов
+
+-- Делаем его кликабельным
+closeBtn.MouseButton1Click:Connect(function()
+    window:Close() -- Закрываем окно
+end)
+
+-- Добавляем крестик в UI
+local gui = game:GetService("CoreGui") -- Или PlayerGui, если скрипт локальный
+closeBtn.Parent = gui -- Помещаем в интерфейс
 
 -- Main Tab
 local mainTab = window:AddTab("Меню")
