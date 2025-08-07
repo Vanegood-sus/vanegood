@@ -28,8 +28,8 @@ ShiftLockButton.Name = "ShiftLockButton"
 ShiftLockButton.Parent = ShiftLockScreenGui
 ShiftLockButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ShiftLockButton.BackgroundTransparency = 1.000
-ShiftLockButton.Position = UDim2.new(0.92, 0, 0.55, 0)  -- Смещено правее и к центру
-ShiftLockButton.Size = UDim2.new(0.05, 0, 0.05, 0)       -- Уменьшенный размер
+ShiftLockButton.Position = UDim2.new(0.95, 0, 0.02, 0)  -- Правее и ближе к центру сверху
+ShiftLockButton.Size = UDim2.new(0.04, 0, 0.04, 0)      -- Компактный размер
 ShiftLockButton.SizeConstraint = Enum.SizeConstraint.RelativeXX
 ShiftLockButton.Image = States.Off
 ShiftLockButton.ZIndex = 10
@@ -120,7 +120,7 @@ end)
 
 -- Обработчик изменения размера экрана
 UserInputService.WindowSizeChanged:Connect(function()
-    ShiftLockButton.Position = UDim2.new(0.92, 0, 0.55, 0)  -- Всегда сохраняем позицию
+    ShiftLockButton.Position = UDim2.new(0.95, 0, 0.02, 0)  -- Фиксированная позиция
 end)
 
 -- Автоматическое выключение при смерти
