@@ -9,7 +9,7 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Основное окно
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 250, 0, 105) -- Увеличена начальная высота
+MainFrame.Size = UDim2.new(0, 250, 0, 80)
 MainFrame.Position = UDim2.new(0.5, -125, 0, 20)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 MainFrame.BackgroundTransparency = 0.25
@@ -123,67 +123,6 @@ local TeamCoordinates = {
     Yellow = {X = -485.49, Y = -8.75, Z = 641.32}
 }
 
--- Координаты точек фарма (по порядку)
-local FarmSpots = {
-    {X = -100, Y = 85, Z = 1365},   -- 1
-    {X = -100, Y = 85, Z = 2140},   -- 2
-    {X = -100, Y = 85, Z = 2910},   -- 3
-    {X = -100, Y = 85, Z = 3670},   -- 4
-    {X = -100, Y = 85, Z = 4455},   -- 5
-    {X = -100, Y = 85, Z = 5210},   -- 6
-    {X = -100, Y = 85, Z = 5980},   -- 7
-    {X = -100, Y = 85, Z = 6758},   -- 8
-    {X = -100, Y = 85, Z = 7535},   -- 9
-    {X = -100, Y = 85, Z = 8300},   -- 10
-    {X = -50,  Y = -360, Z = 9490}  -- 11 (сундук)
-}
-
--- Создаем платформы для каждой точки фарма (кроме последней)
-local Platforms = {}
-for i = 1, #FarmSpots - 1 do
-    local spot = FarmSpots[i]
-    local platform = Instance.new("Part")
-    platform.Size = Vector3.new(15, 1, 15)
-    platform.Position = Vector3.new(spot.X, spot.Y - 3, spot.Z)
-    platform.Anchored = true
-    platform.CanCollide = true
-    platform.Transparency = 1
-    platform.Name = "FarmPlatform_" .. i
-    platform.Parent = workspace
-    Platforms[i] = platform
-end
-
--- Функция телепортации для команд (мгновенная)
-local function teamTeleport(position)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position.X, position.Y + 3, position.Z)
-    end
-end
-
--- Функция плавного перелета между точками
-local function smoothFlyTo(targetPos, duration)
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
-        return 
-    end
-    
-    local hrp = LocalPlayer.Character.HumanoidRootPart
-    local startPos = hrp.Position
-    local startTime = os.clock()
-    
-    while os.clock() - startTime < duration do
-        if not isFarming or not hrp then break end
-        
-        local t = (os.clock() - startTime) / duration
-        local currentPos = startPos:Lerp(targetPos, t)
-        hrp.CFrame = CFrame.new(currentPos)
-        RunService.Heartbeat:Wait()
-    end
-    
-    if hrp then
-        hrp.CFrame = CFrame.new(targetPos)
-    end
-end
-
 -- Меню телепорта
 local TeamsFrame = Instance.new("Frame")
 TeamsFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -205,45 +144,47 @@ local TeamsListLayout = Instance.new("UIListLayout")
 TeamsListLayout.Padding = UDim.new(0, 5)
 TeamsListLayout.Parent = TeamsList
 
--- Добавляем отступы для красоты
-local TeamsListPadding = Instance.new("UIPadding")
-TeamsListPadding.PaddingLeft = UDim.new(0, 5)
-TeamsListPadding.PaddingRight = UDim.new(0, 5)
-TeamsListPadding.PaddingTop = UDim.new(0, 5)
-TeamsListPadding.PaddingBottom = UDim.new(0, 5)
-TeamsListPadding.Parent = TeamsList
-
 TeamsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     TeamsList.CanvasSize = UDim2.new(0, 0, 0, TeamsListLayout.AbsoluteContentSize.Y)
     TeamsFrame.Size = UDim2.new(1, 0, 0, math.min(TeamsListLayout.AbsoluteContentSize.Y, 200))
-    MainFrame.Size = UDim2.new(0, 250, 0, 105 + math.min(TeamsListLayout.AbsoluteContentSize.Y, 200))
+    MainFrame.Size = UDim2.new(0, 250, 0, 120 + math.min(TeamsListLayout.AbsoluteContentSize.Y, 200))
 end)
 
--- Заголовок для меню команд
-local TeamsTitle = Instance.new("TextLabel")
-TeamsTitle.Size = UDim2.new(1, -10, 0, 20)
-TeamsTitle.Position = UDim2.new(0, 5, 0, 5)
-TeamsTitle.BackgroundTransparency = 1
-TeamsTitle.Text = "Select Team:"
-TeamsTitle.TextColor3 = Color3.fromRGB(180, 180, 180)
-TeamsTitle.Font = Enum.Font.Gotham
-TeamsTitle.TextSize = 12
-TeamsTitle.TextXAlignment = Enum.TextXAlignment.Left
-TeamsTitle.Parent = TeamsFrame
-TeamsList.Position = UDim2.new(0, 0, 0, 25)
-TeamsList.Size = UDim2.new(1, 0, 1, -25)
+-- Создаем кнопки для команд в 2 колонки
+local TeamButtons = {}
+local Column1 = Instance.new("Frame")
+Column1.Size = UDim2.new(0.48, 0, 1, 0)
+Column1.Position = UDim2.new(0, 0, 0, 0)
+Column1.BackgroundTransparency = 1
+Column1.Parent = TeamsList
 
--- Создаем кнопки для команд
-for teamName, _ in pairs(TeamCoordinates) do
+local Column2 = Instance.new("Frame")
+Column2.Size = UDim2.new(0.48, 0, 1, 0)
+Column2.Position = UDim2.new(0.52, 0, 0, 0)
+Column2.BackgroundTransparency = 1
+Column2.Parent = TeamsList
+
+local Column1Layout = Instance.new("UIListLayout")
+Column1Layout.Padding = UDim.new(0, 5)
+Column1Layout.Parent = Column1
+
+local Column2Layout = Instance.new("UIListLayout")
+Column2Layout.Padding = UDim.new(0, 5)
+Column2Layout.Parent = Column2
+
+local teamOrder = {"White", "Red", "Black", "Blue", "Green", "Pink", "Yellow"}
+
+for i, teamName in ipairs(teamOrder) do
+    local column = i % 2 == 1 and Column1 or Column2
+    
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 30) -- Увеличена высота
+    button.Size = UDim2.new(1, 0, 0, 25)
     button.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
     button.TextColor3 = Color3.fromRGB(220, 220, 220)
     button.Font = Enum.Font.Gotham
     button.TextSize = 12
     button.Text = teamName
-    button.TextXAlignment = Enum.TextXAlignment.Center -- Выравнивание по центру
-    button.Parent = TeamsList
+    button.Parent = column
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 4)
@@ -252,6 +193,15 @@ for teamName, _ in pairs(TeamCoordinates) do
     button.MouseButton1Click:Connect(function()
         teamTeleport(TeamCoordinates[teamName])
     end)
+    
+    TeamButtons[teamName] = button
+end
+
+-- Функция телепортации для команд (мгновенная)
+local function teamTeleport(position)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position.X, position.Y + 3, position.Z)
+    end
 end
 
 -- Меню автофарма
@@ -260,7 +210,7 @@ FarmFrame.Size = UDim2.new(1, 0, 0, 25)
 FarmFrame.Position = UDim2.new(0, 0, 0, 30)
 FarmFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 FarmFrame.ClipsDescendants = true
-FarmFrame.Visible = true -- По умолчанию открыта
+FarmFrame.Visible = false
 FarmFrame.Parent = ContentFrame
 
 local StartFarmButton = Instance.new("TextButton")
@@ -277,98 +227,126 @@ local StartFarmButtonCorner = Instance.new("UICorner")
 StartFarmButtonCorner.CornerRadius = UDim.new(0, 4)
 StartFarmButtonCorner.Parent = StartFarmButton
 
--- Автофарм
-local isFarming = false
-local currentFarmSpot = 1
+-- Автофарм из первого скрипта
+local autoFarming = false
+local flySpeed = 390.45 -- Fly speed for 1400 km/h (updated speed)
+local flyDuration = 21 -- Flying duration in seconds
+local centerPosition = Vector3.new(0, 100, 0) -- Center of the map
+local chestPosition = Vector3.new(15, -5, 9495) -- Chest position
+local bodyVelocity -- Variable to manage flying
+local totalCoins = 0 -- Coins counter
+local antiAFKEnabled = false -- Anti-AFK toggle state
 
-local function resetCharacter()
-    if LocalPlayer.Character then
-        LocalPlayer.Character:BreakJoints()
-    end
-    repeat 
-        task.wait(0.1) 
-    until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    task.wait(0.5)
-end
-
-local function farmLoop()
-    while isFarming do
-        resetCharacter()
-        task.wait(1)
-        
-        for i = 1, #FarmSpots do
-            if not isFarming then break end
-            
-            -- Проверка на респавн во время фарма
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                resetCharacter()
-                task.wait(1)
-                i = i - 1 -- Повторяем текущую точку
-                continue
-            end
-            
-            currentFarmSpot = i
-            local spot = FarmSpots[i]
-            
-            -- Определяем цель телепортации
-            local targetPos
-            if i <= #FarmSpots - 1 and Platforms[i] then
-                targetPos = Platforms[i].Position + Vector3.new(0, 3, 0)
-            else
-                targetPos = Vector3.new(spot.X, spot.Y + 3, spot.Z)
-            end
-            
-            -- Плавный перелет к точке
-            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - targetPos).Magnitude
-            local flyDuration = math.max(5, distance / 100)
-            
-            smoothFlyTo(targetPos, flyDuration)
-            
-            -- Ждем 2 секунды на точке
-            local waitStart = os.clock()
-            while os.clock() - waitStart < 2 and isFarming do
-                task.wait(0.1)
+-- Auto Farm Functionality
+local function startAutoFarm()
+    spawn(function()
+        while autoFarming do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Teleport to the center of the map
+                hrp.CFrame = CFrame.new(centerPosition)
+                
+                -- Enable noclip
+                enableNoclip(character)
+                
+                -- Fly with boosted speed
+                bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+                bodyVelocity.Velocity = Vector3.new(0, 0, flySpeed)
+                bodyVelocity.Parent = hrp
+                
+                -- Allow flying for a fixed duration
+                wait(flyDuration)
+                
+                -- Stop flying and destroy the velocity object
+                if bodyVelocity then
+                    bodyVelocity:Destroy()
+                end
+                
+                -- Adjust position slightly and teleport to chest
+                hrp.CFrame = CFrame.new(chestPosition)
+                
+                -- Kill the player to end the farm cycle
+                character:BreakJoints()
+                
+                -- Increment coins after death
+                if totalCoins < 10000000 then
+                    totalCoins = totalCoins + 100
+                end
+                
+                -- Wait for the player to respawn before restarting the loop
+                wait(9) -- Adjust respawn wait time as necessary
             end
         end
+    end)
+end
+
+-- Stop flying (when Auto Farm is stopped)
+local function stopFlying()
+    if bodyVelocity then
+        bodyVelocity:Destroy()
     end
+end
+
+-- Teleport to team base when Auto Farm is stopped
+local function teleportToTeamBase()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        -- Replace with your team base position
+        local teamBasePosition = Vector3.new(0, 10, 0) -- Change to your desired coordinates
+        hrp.CFrame = CFrame.new(teamBasePosition)
+    end
+end
+
+-- Enable noclip (No Collision)
+local function enableNoclip(character)
+    for _, part in pairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
+-- Anti-AFK Functionality
+local function startAntiAFK()
+    spawn(function()
+        while antiAFKEnabled do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Simulate movement to avoid AFK detection
+                hrp.CFrame = hrp.CFrame * CFrame.new(0, 0, math.random(-1, 1))
+            end
+            wait(2) -- Move every 2 seconds
+        end
+    end)
 end
 
 -- Обработчики кнопок
 TeleportButton.MouseButton1Click:Connect(function()
     TeamsFrame.Visible = not TeamsFrame.Visible
     FarmFrame.Visible = false
-    
-    -- Изменение размера окна
-    if TeamsFrame.Visible then
-        TeamsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Wait()
-        MainFrame.Size = UDim2.new(0, 250, 0, 105 + math.min(TeamsListLayout.AbsoluteContentSize.Y, 200))
-    else
-        MainFrame.Size = UDim2.new(0, 250, 0, 105)
-    end
 end)
 
 FarmButton.MouseButton1Click:Connect(function()
     FarmFrame.Visible = not FarmFrame.Visible
     TeamsFrame.Visible = false
-    
-    -- Изменение размера окна
-    if FarmFrame.Visible then
-        MainFrame.Size = UDim2.new(0, 250, 0, 105)
-    else
-        MainFrame.Size = UDim2.new(0, 250, 0, 80)
-    end
 end)
 
 StartFarmButton.MouseButton1Click:Connect(function()
-    isFarming = not isFarming
+    autoFarming = not autoFarming
     
-    if isFarming then
+    if autoFarming then
         StartFarmButton.Text = "Stop Farm"
         StartFarmButton.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
-        coroutine.wrap(farmLoop)()
+        startAutoFarm()
     else
         StartFarmButton.Text = "Start Farm"
         StartFarmButton.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+        stopFlying()
+        teleportToTeamBase()
     end
 end)
 
@@ -384,9 +362,8 @@ local function toggleMinimize()
         FarmFrame.Visible = false
         MinimizeButton.Text = "+"
     else
-        MainFrame.Size = UDim2.new(0, 250, 0, 105)
+        MainFrame.Size = UDim2.new(0, 250, 0, 80)
         ContentFrame.Visible = true
-        FarmFrame.Visible = true -- Восстанавливаем вкладку фарма
         MinimizeButton.Text = "-"
     end
 end
@@ -467,7 +444,6 @@ LocalPlayer.Idled:Connect(function()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- Изначально открыта вкладка автофарма
+-- Изначально скрываем вкладки
 TeamsFrame.Visible = false
-FarmFrame.Visible = true
-MainFrame.Size = UDim2.new(0, 250, 0, 105) -- Размер с открытой вкладкой фарма
+FarmFrame.Visible = false
