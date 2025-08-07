@@ -260,7 +260,10 @@ local scripts = {
     {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"},
     {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"},
     {Name = "Set Speed", File = "Speed.lua", Desc = "Изменить скорость"},
-    {Name = "Infinity Jump", File = "InfJump.lua", Desc = "Бесконечные прыжки"}
+    {Name = "Infinity Jump", File = "InfJump.lua", Desc = "Бесконечные прыжки"},
+    {Name = "Rejoin", File = "Rejoin.lua", Desc = "Перезаход на тот сервер,где ты сейчас"},
+    {Name = "Aimbot", File = "Aim.lua", Desc = "Автонаводка"},
+    {Name = "Server-Hope", File = "Hope.lua", Desc = "Зайти на сервер с большим онлайном"},
 }
 
 -- Список игр
