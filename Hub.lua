@@ -268,8 +268,7 @@ local scripts = {
 local games = {
     {Name = "Legend of Speed", File = "LegendOfSpeed.lua", Desc = "Автофарм орбов,перерождений"},
     {Name = "Muscle Legends", File = "MuscleLegends.lua", Desc = "Автофарм,автооткрытие яиц и многое другое"},
-    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Авто выполнение заданий,авто паркур"},
-    {Name = "Build A Boat For Treasure", File = "BuildaBoat.lua", Desc = "Телепорт к командам,автофарм"}
+    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Авто выполнение заданий,авто паркур"}
 }
 
 -- Создаем кнопки скриптов
