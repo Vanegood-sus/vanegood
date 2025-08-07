@@ -12,7 +12,7 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Основное окно (перемещаемое)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 200, 0, 150) -- Увеличил размер для новых элементов
+MainFrame.Size = UDim2.new(0, 200, 0, 150)
 MainFrame.Position = UDim2.new(0.5, -100, 0, 20)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 MainFrame.BackgroundTransparency = 0.25
@@ -125,6 +125,145 @@ local function toggleMinimize()
     end
 end
 
+-- ========== ФУНКЦИОНАЛ ПОЛЕТА ========== --
+local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
+local buttonIsOn = false
+local speed = 50
+local bv, bg
+local flyConnections = {}
+
+-- Функция для отключения полета
+local function disableFly()
+    buttonIsOn = false
+    FlyButton.Text = "Fly: Off"
+    FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.PlatformStand = false
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
+        end
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+            LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
+        end
+    end
+    
+    -- Отключаем все соединения полета
+    for _, connection in pairs(flyConnections) do
+        connection:Disconnect()
+    end
+    flyConnections = {}
+end
+
+local function setupCharacter(character)
+    if buttonIsOn then
+        if character:FindFirstChild("HumanoidRootPart") then
+            -- Удаляем старые обработчики, если они есть
+            if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+                character.HumanoidRootPart.VelocityHandler:Destroy()
+            end
+            if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                character.HumanoidRootPart.GyroHandler:Destroy()
+            end
+            
+            -- Создаем новые обработчики
+            bv = Instance.new("BodyVelocity")
+            bv.Name = "VelocityHandler"
+            bv.Parent = character.HumanoidRootPart
+            bv.MaxForce = Vector3.new(9e9,9e9,9e9)
+            bv.Velocity = Vector3.new(0,0,0)
+            
+            bg = Instance.new("BodyGyro")
+            bg.Name = "GyroHandler"
+            bg.Parent = character.HumanoidRootPart
+            bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            bg.P = 1000
+            bg.D = 50
+            
+            character.Humanoid.PlatformStand = true
+        end
+    end
+end
+
+local function enableFly()
+    buttonIsOn = true
+    FlyButton.Text = "Fly: On"
+    FlyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    
+    -- Устанавливаем соединения только если их еще нет
+    if #flyConnections == 0 then
+        -- Обработчик добавления персонажа
+        table.insert(flyConnections, LocalPlayer.CharacterAdded:Connect(function(character)
+            setupCharacter(character)
+            
+            -- Обработчик смерти персонажа
+            character:WaitForChild("Humanoid").Died:Connect(function()
+                if buttonIsOn then
+                    -- После смерти автоматически восстанавливаем полет
+                    task.wait() -- Даем время для респавна
+                    if LocalPlayer.Character then
+                        setupCharacter(LocalPlayer.Character)
+                    end
+                end
+            end)
+        end))
+        
+        -- Обработчик рендера
+        table.insert(flyConnections, RunService.RenderStepped:Connect(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                
+                if buttonIsOn then
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.Humanoid.PlatformStand = true
+                    
+                    local camera = workspace.CurrentCamera
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
+                    
+                    local direction = controlModule:GetMoveVector()
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
+                    
+                    if direction.X > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
+                    end
+                    if direction.X < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
+                    end
+                    if direction.Z > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
+                    end
+                    if direction.Z < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
+                    end
+                end
+            end
+        end))
+        
+        -- Обработчик изменения скорости
+        table.insert(flyConnections, FlySpeedBox:GetPropertyChangedSignal("Text"):Connect(function()
+            if tonumber(FlySpeedBox.Text) then
+                speed = tonumber(FlySpeedBox.Text)
+            end
+        end))
+    end
+    
+    -- Устанавливаем полет для текущего персонажа
+    if LocalPlayer.Character then
+        setupCharacter(LocalPlayer.Character)
+    end
+end
+
+FlyButton.MouseButton1Click:Connect(function()
+    if buttonIsOn then
+        disableFly()
+    else
+        enableFly()
+    end
+end)
+
 -- Функция создания окна подтверждения
 local function createConfirmationDialog()
     local MessageFrame = Instance.new("Frame")
@@ -181,6 +320,7 @@ local function createConfirmationDialog()
     ButtonCorner:Clone().Parent = NoButton
     
     YesButton.MouseButton1Click:Connect(function()
+        disableFly() -- Отключаем полет перед закрытием
         ScreenGui:Destroy()
     end)
     
@@ -195,111 +335,10 @@ MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
 -- Обработчик кнопки закрытия
 CloseButton.MouseButton1Click:Connect(createConfirmationDialog)
 
--- ========== ФУНКЦИОНАЛ ПОЛЕТА ========== --
-local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
-local buttonIsOn = false
-local speed = 50
-local bv, bg
-local Signal1, Signal2, Signal3
-
-local function setupCharacter(character)
-    if character:FindFirstChild("HumanoidRootPart") then
-        if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
-            character.HumanoidRootPart.VelocityHandler:Destroy()
-        end
-        if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
-            character.HumanoidRootPart.GyroHandler:Destroy()
-        end
-        
-        bv = Instance.new("BodyVelocity")
-        bv.Name = "VelocityHandler"
-        bv.Parent = character.HumanoidRootPart
-        bv.MaxForce = Vector3.new(0,0,0)
-        bv.Velocity = Vector3.new(0,0,0)
-        
-        bg = Instance.new("BodyGyro")
-        bg.Name = "GyroHandler"
-        bg.Parent = character.HumanoidRootPart
-        bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
-        bg.P = 1000
-        bg.D = 50
-    end
-end
-
--- Инициализация при старте
-if LocalPlayer.Character then
-    setupCharacter(LocalPlayer.Character)
-end
-
-Signal1 = LocalPlayer.CharacterAdded:Connect(setupCharacter)
-
-Signal2 = RunService.RenderStepped:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
-       LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
-       LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
-       LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
-        
-        if buttonIsOn then
-            FlyButton.Text = "Fly: On"
-            FlyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
-            LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
-            LocalPlayer.Character.Humanoid.PlatformStand = true
-        else
-            FlyButton.Text = "Fly: Off"
-            FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(0,0,0)
-            LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(0,0,0)
-            LocalPlayer.Character.Humanoid.PlatformStand = false
-            return
-        end
-        
-        local camera = workspace.CurrentCamera
-        LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
-        
-        local direction = controlModule:GetMoveVector()
-        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
-        
-        if direction.X > 0 then
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
-        end
-        if direction.X < 0 then
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
-        end
-        if direction.Z > 0 then
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
-        end
-        if direction.Z < 0 then
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
-        end
-    end
-end)
-
-FlyButton.MouseButton1Click:Connect(function()
-    buttonIsOn = not buttonIsOn
-end)
-
-Signal3 = FlySpeedBox:GetPropertyChangedSignal("Text"):Connect(function()
-    if tonumber(FlySpeedBox.Text) then
-        speed = tonumber(FlySpeedBox.Text)
-    end
-end)
-
 -- Обработчик команды !stop в чате
 LocalPlayer.Chatted:Connect(function(msg)
     if msg:lower() == "!stop" then
-        if Signal1 then Signal1:Disconnect() end
-        if Signal2 then Signal2:Disconnect() end
-        if Signal3 then Signal3:Disconnect() end
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.PlatformStand = false
-            if LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
-                LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
-            end
-            if LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
-                LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
-            end
-        end
+        disableFly()
         ScreenGui:Destroy()
     end
 end)
