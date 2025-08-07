@@ -263,7 +263,7 @@ local scripts = {
     {Name = "Infinity Jump", File = "InfJump.lua", Desc = "Бесконечные прыжки"},
     {Name = "Rejoin", File = "Rejoin.lua", Desc = "Перезаход на тот сервер,где ты сейчас"},
     {Name = "Aimbot", File = "Aim.lua", Desc = "Автонаводка"},
-    {Name = "Server-Hope", File = "Hope.lua", Desc = "Зайти на сервер с большим онлайном"},
+    {Name = "Server-Hope", File = "Hope.lua", Desc = "Зайти на сервер с большим онлайном"}
 }
 
 -- Список игр
