@@ -259,7 +259,8 @@ local scripts = {
     {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"},
     {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"},
     {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"},
-        {Name = "Set Speed", File = "Speed.lua", Desc = "Изменить скорость"}
+    {Name = "Set Speed", File = "Speed.lua", Desc = "Изменить скорость"},
+    {Name = "Infinity Jump", File = "InfJump.lua", Desc = "Бесконечные прыжки"}
 }
 
 -- Список игр
