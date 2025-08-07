@@ -255,17 +255,18 @@ local scripts = {
     {Name = "Anti-Afk", File = "Anti-Afk.lua", Desc = "Защита от кика за бездействие"},
     {Name = "Shiftlock", File = "Shiftlock.lua", Desc = "Фикс камеры от третьего лица"},
     {Name = "Spectator", File = "Spectator.lua", Desc = "Режим наблюдателя"},
-    {Name = "Spin", File = "Spin.lua", Desc = "Вращение персонажа"}
-    {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"}
-    {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"}
-    {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"}
+    {Name = "Spin", File = "Spin.lua", Desc = "Вращение персонажа"},
+    {Name = "Esp", File = "Esp.lua", Desc = "Обозначение людей"},
+    {Name = "HitBox", File = "HitBox.lua", Desc = "Прибавить хитбокс"},
+    {Name = "Teleport", File = "Tp.lua", Desc = "Телепортация к игроку"},
+        {Name = "Set Speed", File = "Speed.lua", Desc = "Изменить скорость"}
 }
 
 -- Список игр
 local games = {
-    {Name = "Legend of Speed", File = "LegendOfSpeed.lua", Desc = "Автофарм"},
-    {Name = "Muscle Legends", File = "MuscleLegends.lua", Desc = "Автофарм"},
-    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Автофарм"}
+    {Name = "Legend of Speed", File = "LegendOfSpeed.lua", Desc = "Автофарм орбов,перерождений"},
+    {Name = "Muscle Legends", File = "MuscleLegends.lua", Desc = "Автофарм,автооткрытие яиц и многое другое"},
+    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Авто выполнение заданий,авто паркур"}
 }
 
 -- Создаем кнопки скриптов
