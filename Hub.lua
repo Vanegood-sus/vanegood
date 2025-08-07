@@ -42,25 +42,10 @@ NeonBorder.ZIndex = 0
 NeonBorder.Parent = MainFrame
 
 local NeonUIStroke = Instance.new("UIStroke")
-NeonUIStroke.Color = Color3.fromRGB(0, 255, 255)  -- Голубой цвет как в Anti-AFK
+NeonUIStroke.Color = Color3.fromRGB(0, 255, 255)
 NeonUIStroke.Thickness = 2
 NeonUIStroke.Transparency = 0.5
 NeonUIStroke.Parent = NeonBorder
-
-local NeonUIStroke = Instance.new("UIStroke")
-NeonUIStroke.Color = Color3.fromRGB(255, 40, 40)
-NeonUIStroke.Thickness = 2
-NeonUIStroke.Transparency = 0.5
-NeonUIStroke.Parent = NeonBorder
-
--- Анимация неоновой обводки
-local pulseSpeed = 1
-local pulseIntensity = 0.7
-RunService.Heartbeat:Connect(function(dt)
-    local time = os.clock() * pulseSpeed
-    local alpha = (math.sin(time) + 1) / 2 * pulseIntensity + (1 - pulseIntensity)
-    NeonUIStroke.Transparency = 1 - alpha
-end)
 
 -- Верхняя панель
 local TopBar = Instance.new("Frame")
@@ -142,7 +127,7 @@ GamesTab.Parent = TabBar
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.5, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
-ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)  -- Голубой цвет
+ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
 ActiveTabIndicator.BorderSizePixel = 0
 ActiveTabIndicator.Parent = TabBar
 
@@ -225,13 +210,13 @@ local function createButton(name, description)
     
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 60, 60)}):Play()
+        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 255, 255)}):Play()
     end)
     
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 255, 255)}):Play()  -- Голубой
-end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play()
+        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(80, 80, 80)}):Play()
+    end)
     
     return button
 end
@@ -246,6 +231,19 @@ local function loadScript(scriptName)
     
     if not success then
         warn("Ошибка загрузки скрипта: "..err)
+    end
+end
+
+-- Функция загрузки игры
+local function loadGameScript(scriptName)
+    local success, err = pcall(function()
+        local url = "https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/"..scriptName
+        local response = game:HttpGet(url, true)
+        loadstring(response)()
+    end)
+    
+    if not success then
+        warn("Ошибка загрузки скрипта игры: "..err)
     end
 end
 
@@ -287,6 +285,10 @@ end
 for _, game in pairs(games) do
     local button = createButton(game.Name, game.Desc)
     button.Parent = GamesFrame
+    
+    button.MouseButton1Click:Connect(function()
+        loadGameScript(game.File)
+    end)
 end
 
 -- Функция переключения вкладок
