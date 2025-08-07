@@ -251,7 +251,7 @@ end
 
 -- Список скриптов
 local scripts = {
-    {Name = "FLY", File = "Fly.lua", Desc = "Полет"},
+    {Name = "Fly", File = "Fly.lua", Desc = "Полет"},
     {Name = "Anti-Afk", File = "Anti-Afk.lua", Desc = "Защита от кика за бездействие"},
     {Name = "Shiftlock", File = "Shiftlock.lua", Desc = "Фикс камеры от третьего лица"},
     {Name = "Spectator", File = "Spectator.lua", Desc = "Режим наблюдателя"},
