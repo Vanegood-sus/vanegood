@@ -262,14 +262,13 @@ local scripts = {
     {Name = "Rejoin", File = "Rejoin.lua", Desc = "Перезаход на тот сервер,где ты сейчас"},
     {Name = "Aimbot", File = "Aim.lua", Desc = "Автонаводка"},
     {Name = "Server-Low", File = "ServerLow.lua", Desc = "Зайти на сервер с маленьким онлайном"}
-    {Name = "soon", File = "", Desc = ""}
 }
 
 -- Список игр
 local games = {
     {Name = "Legend of Speed", File = "LegendOfSpeed.lua", Desc = "Автофарм орбов,перерождений"},
     {Name = "Muscle Legends", File = "MuscleLegends.lua", Desc = "Автофарм,автооткрытие яиц и многое другое"},
-    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Авто выполнение заданий,авто паркур"}
+    {Name = "NPC or Die", File = "NpcOrDie.lua", Desc = "Авто выполнение заданий,авто паркур"},
     {Name = "Build A Boat For Treasure", File = "BuildaBoat.lua", Desc = "Телепорт к командам,автофарм"}
 }
 
