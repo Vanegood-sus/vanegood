@@ -1,141 +1,19 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-
--- Флаг для отслеживания состояния полета
-local isFlying = false
-local flyConnection = nil
-local bodyVelocity = nil
-
--- Функция для включения/выключения полета
-local function toggleFlight()
-    if not isFlying then
-        -- Включаем полет
-        isFlying = true
-        
-        -- Создаем BodyVelocity, если его нет
-        if not bodyVelocity or not bodyVelocity.Parent then
-            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            
-            bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-            bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
-            bodyVelocity.P = 1000
-            bodyVelocity.Name = "FlightVelocity"
-            bodyVelocity.Parent = humanoidRootPart
-        end
-        
-        -- Устанавливаем максимальную силу для полета
-        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        
-        -- Подключаем обработчик полета
-        flyConnection = RunService.Heartbeat:Connect(function()
-            if not bodyVelocity or not bodyVelocity.Parent then
-                -- Если BodyVelocity был удален (например, при смерти), создаем новый
-                local character = LocalPlayer.Character
-                if character then
-                    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-                    if humanoidRootPart then
-                        bodyVelocity = Instance.new("BodyVelocity")
-                        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-                        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                        bodyVelocity.P = 1000
-                        bodyVelocity.Name = "FlightVelocity"
-                        bodyVelocity.Parent = humanoidRootPart
-                    end
-                end
-            else
-                -- Управление полетом
-                local camera = workspace.CurrentCamera
-                local rootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                if rootPart and camera then
-                    local direction = Vector3.new()
-                    
-                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                        direction = direction + camera.CFrame.LookVector
-                    end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                        direction = direction - camera.CFrame.LookVector
-                    end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                        direction = direction - camera.CFrame.RightVector
-                    end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                        direction = direction + camera.CFrame.RightVector
-                    end
-                    
-                    direction = direction.Unit
-                    
-                    -- Умножаем на скорость полета
-                    local flySpeed = 50
-                    bodyVelocity.Velocity = direction * flySpeed + Vector3.new(0, 0, 0)
-                    
-                    -- Добавляем подъем/опускание
-                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                        bodyVelocity.Velocity = bodyVelocity.Velocity + Vector3.new(0, flySpeed/2, 0)
-                    elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-                        bodyVelocity.Velocity = bodyVelocity.Velocity + Vector3.new(0, -flySpeed/2, 0)
-                    end
-                end
-            end
-        end)
-        
-        -- Обработчик для восстановления полета после смерти
-        LocalPlayer.CharacterAdded:Connect(function(character)
-            if isFlying then
-                -- Ждем появления HumanoidRootPart
-                character:WaitForChild("HumanoidRootPart")
-                
-                -- Создаем новый BodyVelocity
-                if bodyVelocity then
-                    bodyVelocity:Destroy()
-                end
-                
-                bodyVelocity = Instance.new("BodyVelocity")
-                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-                bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                bodyVelocity.P = 1000
-                bodyVelocity.Name = "FlightVelocity"
-                bodyVelocity.Parent = character.HumanoidRootPart
-            end
-        end)
-    else
-        -- Выключаем полет
-        isFlying = false
-        
-        if flyConnection then
-            flyConnection:Disconnect()
-            flyConnection = nil
-        end
-        
-        if bodyVelocity then
-            bodyVelocity:Destroy()
-            bodyVelocity = nil
-        end
-    end
-end
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Обработчик для остановки полета при закрытии GUI
-ScreenGui.DescendantRemoving:Connect(function(descendant)
-    if descendant == ScreenGui then
-        if isFlying then
-            toggleFlight() -- Выключаем полет
-        end
-    end
-end)
-
 -- Основное окно (перемещаемое)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 180, 0, 80)
-MainFrame.Position = UDim2.new(0.5, -90, 0, 20)
+MainFrame.Size = UDim2.new(0, 200, 0, 150) -- Увеличил размер для новых элементов
+MainFrame.Position = UDim2.new(0.5, -100, 0, 20)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 MainFrame.BackgroundTransparency = 0.25
 MainFrame.BorderSizePixel = 0
@@ -202,198 +80,34 @@ ContentFrame.Parent = MainFrame
 
 -- Кнопка полета
 local FlyButton = Instance.new("TextButton")
-FlyButton.Size = UDim2.new(1, 0, 0, 25)
-FlyButton.Position = UDim2.new(0, 0, 0, 5)
-FlyButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-FlyButton.Text = "Toggle Flight"
+FlyButton.Size = UDim2.new(1, 0, 0, 30)
+FlyButton.Position = UDim2.new(0, 0, 0, 0)
+FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
 FlyButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-FlyButton.Font = Enum.Font.Gotham
-FlyButton.TextSize = 12
+FlyButton.Text = "Fly: Off"
+FlyButton.Font = Enum.Font.GothamBold
+FlyButton.TextSize = 14
 FlyButton.Parent = ContentFrame
 
-local FlyButtonCorner = Instance.new("UICorner")
-FlyButtonCorner.CornerRadius = UDim.new(0, 4)
-FlyButtonCorner.Parent = FlyButton
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 6)
+ButtonCorner.Parent = FlyButton
 
--- Обработчик кнопки полета
-FlyButton.MouseButton1Click:Connect(function()
-    toggleFlight()
-    if isFlying then
-        FlyButton.BackgroundColor3 = Color3.fromRGB(60, 45, 45)
-        FlyButton.Text = "Flying: ON"
-    else
-        FlyButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-        FlyButton.Text = "Flying: OFF"
-    end
-end)
+-- Поле ввода скорости полета
+local FlySpeedBox = Instance.new("TextBox")
+FlySpeedBox.Size = UDim2.new(1, 0, 0, 30)
+FlySpeedBox.Position = UDim2.new(0, 0, 0, 40)
+FlySpeedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+FlySpeedBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+FlySpeedBox.PlaceholderText = "Fly Speed (default: 50)"
+FlySpeedBox.Text = "50"
+FlySpeedBox.Font = Enum.Font.Gotham
+FlySpeedBox.TextSize = 14
+FlySpeedBox.Parent = ContentFrame
 
--- Кнопка телепортации
-local TeleportButton = Instance.new("TextButton")
-TeleportButton.Size = UDim2.new(1, 0, 0, 25)
-TeleportButton.Position = UDim2.new(0, 0, 0, 35)
-TeleportButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-TeleportButton.Text = "Teleport to Player ▼"
-TeleportButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-TeleportButton.Font = Enum.Font.Gotham
-TeleportButton.TextSize = 12
-TeleportButton.Parent = ContentFrame
-
-local TeleportButtonCorner = Instance.new("UICorner")
-TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
-TeleportButtonCorner.Parent = TeleportButton
-
--- Выпадающее меню игроков
-local PlayersFrame = Instance.new("Frame")
-PlayersFrame.Size = UDim2.new(1, 0, 0, 0)
-PlayersFrame.Position = UDim2.new(0, 0, 0, 65)
-PlayersFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-PlayersFrame.ClipsDescendants = true
-PlayersFrame.Visible = false
-PlayersFrame.Parent = ContentFrame
-
-local PlayersList = Instance.new("ScrollingFrame")
-PlayersList.Size = UDim2.new(1, 0, 1, 0)
-PlayersList.Position = UDim2.new(0, 0, 0, 0)
-PlayersList.BackgroundTransparency = 1
-PlayersList.CanvasSize = UDim2.new(0, 0, 0, 0)
-PlayersList.ScrollBarThickness = 3
-PlayersList.Parent = PlayersFrame
-
-local PlayersListLayout = Instance.new("UIListLayout")
-PlayersListLayout.Padding = UDim.new(0, 5)
-PlayersListLayout.Parent = PlayersList
-
-PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
-end)
-
-local function teleportPlayer(targetPlayer)
-    if LocalPlayer.Character and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
-    end
-end
-
-local function createPlayerButton(player)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 25)
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
-    button.TextColor3 = Color3.fromRGB(220, 220, 220)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 12
-    button.Text = player.Name
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = PlayersList
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 4)
-    buttonCorner.Parent = button
-    
-    local loopTpButton = Instance.new("TextButton")
-    loopTpButton.Size = UDim2.new(0.4, -5, 0.8, 0)
-    loopTpButton.Position = UDim2.new(0.6, 5, 0.1, 0)
-    loopTpButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
-    loopTpButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-    loopTpButton.Font = Enum.Font.Gotham
-    loopTpButton.TextSize = 10
-    loopTpButton.Text = "Loop TP"
-    loopTpButton.Parent = button
-    
-    local loopTpCorner = Instance.new("UICorner")
-    loopTpCorner.CornerRadius = UDim.new(0, 4)
-    loopTpCorner.Parent = loopTpButton
-    
-    local isLoopTpEnabled = false
-    local loopTpConnection
-    
-    loopTpButton.MouseButton1Click:Connect(function()
-        if not isLoopTpEnabled then
-            loopTpButton.Text = "Stop TP"
-            loopTpButton.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
-            loopTpConnection = RunService.RenderStepped:Connect(function()
-                if LocalPlayer.Character and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    teleportPlayer(player)
-                end
-            end)
-            isLoopTpEnabled = true
-        else
-            loopTpButton.Text = "Loop TP"
-            loopTpButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
-            loopTpConnection:Disconnect()
-            isLoopTpEnabled = false
-        end
-    end)
-    
-    button.MouseButton1Click:Connect(function()
-        if not isLoopTpEnabled then
-            teleportPlayer(player)
-        end
-    end)
-    
-    return button
-end
-
--- Обработчик кнопки телепортации
-local isPlayersListVisible = false
-TeleportButton.MouseButton1Click:Connect(function()
-    isPlayersListVisible = not isPlayersListVisible
-    
-    if isPlayersListVisible then
-        TeleportButton.Text = "Teleport to Player ▲"
-        PlayersFrame.Visible = true
-        
-        -- Рассчитываем высоту в зависимости от количества игроков
-        local playerCount = #Players:GetPlayers() - 1
-        if playerCount > 0 then
-            local height = math.min(playerCount * 30 + (playerCount - 1) * 5, 150)
-            PlayersFrame.Size = UDim2.new(1, 0, 0, height)
-            MainFrame.Size = UDim2.new(0, 180, 0, 105 + height) -- Увеличили базовую высоту из-за новой кнопки
-        end
-    else
-        TeleportButton.Text = "Teleport to Player ▼"
-        PlayersFrame.Visible = false
-        MainFrame.Size = UDim2.new(0, 180, 0, 105) -- Увеличили базовую высоту из-за новой кнопки
-    end
-end)
-
--- Добавляем существующих игроков
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        createPlayerButton(player)
-    end
-end
-
--- Обработчик новых игроков
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        createPlayerButton(player)
-        
-        -- Обновляем размеры, если меню открыто
-        if isPlayersListVisible then
-            local playerCount = #Players:GetPlayers() - 1
-            local height = math.min(playerCount * 30 + (playerCount - 1) * 5, 150)
-            PlayersFrame.Size = UDim2.new(1, 0, 0, height)
-            MainFrame.Size = UDim2.new(0, 180, 0, 105 + height)
-        end
-    end
-end)
-
--- Обработчик ушедших игроков
-Players.PlayerRemoving:Connect(function(player)
-    for _, child in ipairs(PlayersList:GetChildren()) do
-        if child:IsA("TextButton") and child.Text == player.Name then
-            child:Destroy()
-            
-            -- Обновляем размеры, если меню открыто
-            if isPlayersListVisible then
-                local playerCount = #Players:GetPlayers() - 2 -- -2 потому что LocalPlayer и уходящий игрок
-                local height = math.min(playerCount * 30 + (playerCount - 1) * 5, 150)
-                PlayersFrame.Size = UDim2.new(1, 0, 0, height)
-                MainFrame.Size = UDim2.new(0, 180, 0, 105 + height)
-            end
-            break
-        end
-    end
-end)
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 6)
+InputCorner.Parent = FlySpeedBox
 
 -- Функция минимизации
 local minimized = false
@@ -401,14 +115,11 @@ local function toggleMinimize()
     minimized = not minimized
     
     if minimized then
-        MainFrame.Size = UDim2.new(0, 180, 0, 25)
+        MainFrame.Size = UDim2.new(0, 200, 0, 25)
         ContentFrame.Visible = false
-        PlayersFrame.Visible = false
-        isPlayersListVisible = false
-        TeleportButton.Text = "Teleport to Player ▼"
         MinimizeButton.Text = "+"
     else
-        MainFrame.Size = UDim2.new(0, 180, 0, 105)
+        MainFrame.Size = UDim2.new(0, 200, 0, 150)
         ContentFrame.Visible = true
         MinimizeButton.Text = "-"
     end
@@ -484,5 +195,111 @@ MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
 -- Обработчик кнопки закрытия
 CloseButton.MouseButton1Click:Connect(createConfirmationDialog)
 
--- Добавляем UserInputService для управления полетом
-local UserInputService = game:GetService("UserInputService")
+-- ========== ФУНКЦИОНАЛ ПОЛЕТА ========== --
+local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
+local buttonIsOn = false
+local speed = 50
+local bv, bg
+local Signal1, Signal2, Signal3
+
+local function setupCharacter(character)
+    if character:FindFirstChild("HumanoidRootPart") then
+        if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+            character.HumanoidRootPart.VelocityHandler:Destroy()
+        end
+        if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+            character.HumanoidRootPart.GyroHandler:Destroy()
+        end
+        
+        bv = Instance.new("BodyVelocity")
+        bv.Name = "VelocityHandler"
+        bv.Parent = character.HumanoidRootPart
+        bv.MaxForce = Vector3.new(0,0,0)
+        bv.Velocity = Vector3.new(0,0,0)
+        
+        bg = Instance.new("BodyGyro")
+        bg.Name = "GyroHandler"
+        bg.Parent = character.HumanoidRootPart
+        bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+        bg.P = 1000
+        bg.D = 50
+    end
+end
+
+-- Инициализация при старте
+if LocalPlayer.Character then
+    setupCharacter(LocalPlayer.Character)
+end
+
+Signal1 = LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+Signal2 = RunService.RenderStepped:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+       LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+       LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
+       LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+        
+        if buttonIsOn then
+            FlyButton.Text = "Fly: On"
+            FlyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
+            LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            LocalPlayer.Character.Humanoid.PlatformStand = true
+        else
+            FlyButton.Text = "Fly: Off"
+            FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(0,0,0)
+            LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(0,0,0)
+            LocalPlayer.Character.Humanoid.PlatformStand = false
+            return
+        end
+        
+        local camera = workspace.CurrentCamera
+        LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
+        
+        local direction = controlModule:GetMoveVector()
+        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
+        
+        if direction.X > 0 then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
+        end
+        if direction.X < 0 then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*speed)
+        end
+        if direction.Z > 0 then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
+        end
+        if direction.Z < 0 then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*speed)
+        end
+    end
+end)
+
+FlyButton.MouseButton1Click:Connect(function()
+    buttonIsOn = not buttonIsOn
+end)
+
+Signal3 = FlySpeedBox:GetPropertyChangedSignal("Text"):Connect(function()
+    if tonumber(FlySpeedBox.Text) then
+        speed = tonumber(FlySpeedBox.Text)
+    end
+end)
+
+-- Обработчик команды !stop в чате
+LocalPlayer.Chatted:Connect(function(msg)
+    if msg:lower() == "!stop" then
+        if Signal1 then Signal1:Disconnect() end
+        if Signal2 then Signal2:Disconnect() end
+        if Signal3 then Signal3:Disconnect() end
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.PlatformStand = false
+            if LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+                LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
+            end
+            if LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
+            end
+        end
+        ScreenGui:Destroy()
+    end
+end)
