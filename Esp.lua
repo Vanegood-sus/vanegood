@@ -146,16 +146,40 @@ local function clearESP()
     espObjects = {}
 end
 
--- Проверка, является ли игрок киллером (врагом)
+-- Проверка, является ли игрок врагом
 local function isEnemy(player)
+    -- Проверка на команду убийц
+    if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
+        return true
+    end
+    
+    -- Проверка на противоположную команду
     if player.Team and LocalPlayer.Team then
         return player.Team ~= LocalPlayer.Team
     end
     
-    if player:FindFirstChild("Team") and player.Team.Name:lower() == "killer" then
-        return true
+    -- Проверка на возможность нанести вред
+    if player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        local tool = player.Character:FindFirstChildOfClass("Tool")
+        
+        -- Если у игрока есть оружие или он может атаковать
+        if tool or (humanoid and humanoid:GetAttribute("CanAttack") == true) then
+            return true
+        end
     end
     
+    return false
+end
+
+-- Проверка, является ли игрок союзником (вашей командой)
+local function isAlly(player)
+    -- Если есть система команд и игрок в вашей команде
+    if player.Team and LocalPlayer.Team then
+        return player.Team == LocalPlayer.Team
+    end
+    
+    -- Дополнительные проверки для союзников
     return false
 end
 
@@ -174,6 +198,7 @@ local function updateESP()
             
             if rootPart and humanoid and humanoid.Health > 0 then
                 local enemy = isEnemy(player)
+                local ally = isAlly(player)
                 
                 if not espObjects[player] then
                     espObjects[player] = {}
@@ -203,8 +228,21 @@ local function updateESP()
                 end
                 
                 local espData = espObjects[player]
-                espData.highlight.FillColor = enemy and Color3.fromRGB(255, 70, 70) or Color3.fromRGB(70, 255, 70)
-                espData.highlight.OutlineColor = enemy and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(0, 180, 0)
+                
+                -- Устанавливаем цвет в зависимости от типа игрока
+                if enemy then
+                    -- Враги - красный
+                    espData.highlight.FillColor = Color3.fromRGB(255, 70, 70)
+                    espData.highlight.OutlineColor = Color3.fromRGB(180, 0, 0)
+                elseif ally then
+                    -- Союзники - зеленый
+                    espData.highlight.FillColor = Color3.fromRGB(70, 255, 70)
+                    espData.highlight.OutlineColor = Color3.fromRGB(0, 180, 0)
+                else
+                    -- Нейтральные игроки - синий
+                    espData.highlight.FillColor = Color3.fromRGB(70, 70, 255)
+                    espData.highlight.OutlineColor = Color3.fromRGB(0, 0, 180)
+                end
                 
                 local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                 if onScreen then
