@@ -315,9 +315,9 @@ local workoutTypes = {
 
 -- Gym locations (only the three requested)
 local gymLocations = {
-    "Ад",
-    "Легенд",
-    "Король"
+    "Портал Ад",
+    "Портал Легенд",
+    "Портал Короля"
 }
 
 -- Spanish translations for workout types
