@@ -1,9 +1,6 @@
 -- Vanegood Hub by Vanegood-sus
--- GitHub: https://github.com/Vanegood-sus/vanegood
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
@@ -18,31 +15,29 @@ ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем маленькую кнопку с фоткой
+-- Создаем кнопку с фоткой
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
--- Размеры изображения (маленькая кнопка)
+-- Размеры изображения
 local imageSize = 75
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
 imageFrame.Size = UDim2.new(0, imageSize, 0, imageSize)
-imageFrame.Position = UDim2.new(0, 20, 0, 20) -- Позиция в левом верхнем углу
+imageFrame.Position = UDim2.new(0, 20, 0, 20)
 imageFrame.BackgroundTransparency = 1
 imageFrame.ClipsDescendants = true
 imageFrame.Parent = TinyImageGui
 
--- Скругление углов
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.25, 0)
 uiCorner.Parent = imageFrame
 
--- Само изображение
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
-image.Image = "rbxassetid://111084287166716" -- Ваше изображение
+image.Image = "rbxassetid://111084287166716"
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
@@ -89,32 +84,28 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
--- Скругление углов
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
--- Неоновая обводка (оранжевая тусклая)
-local NeonBorder = Instance.new("Frame")
-NeonBorder.Size = UDim2.new(1, 2, 1, 2)  -- Уменьшили выпирание
-NeonBorder.Position = UDim2.new(0, -1, 0, -1)  -- Подвинули ближе
-NeonBorder.BackgroundTransparency = 1
-NeonBorder.BorderSizePixel = 0
-NeonBorder.ZIndex = 0
-NeonBorder.Parent = MainFrame
+-- Оранжевая обводка
+local Border = Instance.new("Frame")
+Border.Size = UDim2.new(1, 2, 1, 2)
+Border.Position = UDim2.new(0, -1, 0, -1)
+Border.BackgroundTransparency = 1
+Border.Parent = MainFrame
 
-local NeonUIStroke = Instance.new("UIStroke")
-NeonUIStroke.Color = Color3.fromRGB(255, 165, 50)  -- Тёплый оранжевый
-NeonUIStroke.Thickness = 1.5  -- Тоньше
-NeonUIStroke.Transparency = 0.7  -- Более тусклый
-NeonUIStroke.Parent = NeonBorder
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 165, 50)
+UIStroke.Thickness = 1.5
+UIStroke.Transparency = 0.3
+UIStroke.Parent = Border
 
 -- Верхняя панель
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 TopBar.Position = UDim2.new(0, 0, 0, 0)
 TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 
 local TopBarCorner = Instance.new("UICorner")
@@ -133,24 +124,24 @@ Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
--- Кнопка закрытия
+-- Кнопка закрытия (оранжевая)
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Position = UDim2.new(1, -25, 0.5, -10)
-CloseButton.BackgroundTransparency = 1
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 18
 CloseButton.Parent = TopBar
 
--- Кнопка минимизации
+-- Кнопка минимизации (оранжевая)
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 20, 0, 20)
 MinimizeButton.Position = UDim2.new(1, -50, 0.5, -10)
-MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 MinimizeButton.Text = "—"
-MinimizeButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.TextSize = 18
 MinimizeButton.Parent = TopBar
@@ -160,10 +151,9 @@ local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, 0, 0, 30)
 TabBar.Position = UDim2.new(0, 0, 0, 30)
 TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-TabBar.BorderSizePixel = 0
 TabBar.Parent = MainFrame
 
--- Вкладка "Скрипты"
+-- Вкладки (3 штуки)
 local ScriptsTab = Instance.new("TextButton")
 ScriptsTab.Size = UDim2.new(0.33, 0, 1, 0)
 ScriptsTab.Position = UDim2.new(0, 0, 0, 0)
@@ -174,7 +164,6 @@ ScriptsTab.Font = Enum.Font.GothamBold
 ScriptsTab.TextSize = 12
 ScriptsTab.Parent = TabBar
 
--- Вкладка "Игры"
 local GamesTab = Instance.new("TextButton")
 GamesTab.Size = UDim2.new(0.33, 0, 1, 0)
 GamesTab.Position = UDim2.new(0.33, 0, 0, 0)
@@ -185,7 +174,6 @@ GamesTab.Font = Enum.Font.GothamBold
 GamesTab.TextSize = 12
 GamesTab.Parent = TabBar
 
--- Вкладка "Троллинг"
 local TrollTab = Instance.new("TextButton")
 TrollTab.Size = UDim2.new(0.34, 0, 1, 0)
 TrollTab.Position = UDim2.new(0.66, 0, 0, 0)
@@ -196,15 +184,14 @@ TrollTab.Font = Enum.Font.GothamBold
 TrollTab.TextSize = 12
 TrollTab.Parent = TabBar
 
--- Индикатор активной вкладки (оранжевый)
+-- Индикатор вкладки (оранжевый)
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.33, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
-ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый
-ActiveTabIndicator.BorderSizePixel = 0
+ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 ActiveTabIndicator.Parent = TabBar
 
--- Контентная область
+-- Контент
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Size = UDim2.new(1, -20, 1, -70)
 ContentFrame.Position = UDim2.new(0, 10, 0, 65)
@@ -212,7 +199,7 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.ClipsDescendants = true
 ContentFrame.Parent = MainFrame
 
--- Фрейм для скриптов
+-- Фреймы для контента
 local ScriptsFrame = Instance.new("ScrollingFrame")
 ScriptsFrame.Size = UDim2.new(1, 0, 1, 0)
 ScriptsFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -222,11 +209,6 @@ ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 ScriptsFrame.Visible = true
 ScriptsFrame.Parent = ContentFrame
 
-local UIListLayoutScripts = Instance.new("UIListLayout")
-UIListLayoutScripts.Padding = UDim.new(0, 5)
-UIListLayoutScripts.Parent = ScriptsFrame
-
--- Фрейм для игр
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -236,11 +218,6 @@ GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 GamesFrame.Visible = false
 GamesFrame.Parent = ContentFrame
 
-local UIListLayoutGames = Instance.new("UIListLayout")
-UIListLayoutGames.Padding = UDim.new(0, 5)
-UIListLayoutGames.Parent = GamesFrame
-
--- Фрейм для троллинга
 local TrollFrame = Instance.new("ScrollingFrame")
 TrollFrame.Size = UDim2.new(1, 0, 1, 0)
 TrollFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -250,126 +227,47 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
-local UIListLayoutTroll = Instance.new("UIListLayout")
-UIListLayoutTroll.Padding = UDim.new(0, 5)
-UIListLayoutTroll.Parent = TrollFrame
-
--- Функция создания кнопки (с оранжевым эффектом)
-local function createButton(name, description)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 50)
-    button.Position = UDim2.new(0, 5, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    button.Text = ""
-    button.AutoButtonColor = false
-    button.Parent = ScriptsFrame
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = button
-    
-    local buttonStroke = Instance.new("UIStroke")
-    buttonStroke.Color = Color3.fromRGB(80, 80, 80)
-    buttonStroke.Thickness = 1
-    buttonStroke.Parent = button
-    
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -10, 0, 20)
-    title.Position = UDim2.new(0, 10, 0, 5)
-    title.BackgroundTransparency = 1
-    title.Text = name
-    title.TextColor3 = Color3.fromRGB(220, 220, 220)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 14
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = button
-    
-    local desc = Instance.new("TextLabel")
-    desc.Size = UDim2.new(1, -10, 0, 20)
-    desc.Position = UDim2.new(0, 10, 0, 25)
-    desc.BackgroundTransparency = 1
-    desc.Text = description
-    desc.TextColor3 = Color3.fromRGB(180, 180, 180)
-    desc.Font = Enum.Font.Gotham
-    desc.TextSize = 12
-    desc.TextXAlignment = Enum.TextXAlignment.Left
-    desc.Parent = button
-    
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 165, 50)}):Play()  -- Оранжевый
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play()
-        TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(80, 80, 80)}):Play()
-    end)
-    
-    return button
-end
-
 -- Функция переключения вкладок
 local function switchTab(tab)
+    ScriptsTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    
+    ScriptsTab.TextColor3 = Color3.fromRGB(180, 180, 180)
+    GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
+    TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
+    
+    ScriptsFrame.Visible = false
+    GamesFrame.Visible = false
+    TrollFrame.Visible = false
+    
     if tab == "scripts" then
         ScriptsTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
         ScriptsTab.TextColor3 = Color3.fromRGB(220, 220, 220)
-        GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        
         TweenService:Create(ActiveTabIndicator, TweenInfo.new(0.2), {Position = UDim2.new(0, 0, 1, -2)}):Play()
-        
         ScriptsFrame.Visible = true
-        GamesFrame.Visible = false
-        TrollFrame.Visible = false
     elseif tab == "games" then
         GamesTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
         GamesTab.TextColor3 = Color3.fromRGB(220, 220, 220)
-        ScriptsTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        ScriptsTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        
         TweenService:Create(ActiveTabIndicator, TweenInfo.new(0.2), {Position = UDim2.new(0.33, 0, 1, -2)}):Play()
-        
         GamesFrame.Visible = true
-        ScriptsFrame.Visible = false
-        TrollFrame.Visible = false
     else
         TrollTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
         TrollTab.TextColor3 = Color3.fromRGB(220, 220, 220)
-        ScriptsTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        ScriptsTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-        
         TweenService:Create(ActiveTabIndicator, TweenInfo.new(0.2), {Position = UDim2.new(0.66, 0, 1, -2)}):Play()
-        
         TrollFrame.Visible = true
-        ScriptsFrame.Visible = false
-        GamesFrame.Visible = false
     end
 end
 
 -- Обработчики вкладок
-ScriptsTab.MouseButton1Click:Connect(function()
-    switchTab("scripts")
-end)
-
-GamesTab.MouseButton1Click:Connect(function()
-    switchTab("games")
-end)
-
-TrollTab.MouseButton1Click:Connect(function()
-    switchTab("troll")
-end)
+ScriptsTab.MouseButton1Click:Connect(function() switchTab("scripts") end)
+GamesTab.MouseButton1Click:Connect(function() switchTab("games") end)
+TrollTab.MouseButton1Click:Connect(function() switchTab("troll") end)
 
 -- Функция минимизации
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
-    
     if minimized then
         MainFrame.Size = UDim2.new(0, 500, 0, 30)
         ContentFrame.Visible = false
@@ -389,12 +287,7 @@ CloseButton.MouseButton1Click:Connect(function()
     MessageFrame.Size = UDim2.new(0, 250, 0, 120)
     MessageFrame.Position = UDim2.new(0.5, -125, 0.5, -60)
     MessageFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    MessageFrame.BackgroundTransparency = 0.1
     MessageFrame.Parent = ScreenGui
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 8)
-    UICorner.Parent = MessageFrame
     
     local MessageLabel = Instance.new("TextLabel")
     MessageLabel.Size = UDim2.new(1, -20, 0, 60)
@@ -410,7 +303,7 @@ CloseButton.MouseButton1Click:Connect(function()
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
     YesButton.Text = "Да"
     YesButton.TextColor3 = Color3.new(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
@@ -437,32 +330,21 @@ CloseButton.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Автоматическая подгонка размеров
-ScriptsFrame.ChildAdded:Connect(function()
-    ScriptsFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayoutScripts.AbsoluteContentSize.Y)
-end)
-
-GamesFrame.ChildAdded:Connect(function()
-    GamesFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayoutGames.AbsoluteContentSize.Y)
-end)
-
-TrollFrame.ChildAdded:Connect(function()
-    TrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayoutTroll.AbsoluteContentSize.Y)
-end)
-
--- Функция для кнопки с картинкой (скрытие/показа хаба)
+-- Функция для кнопки с картинкой
 local hubVisible = true
-imageFrame.MouseButton1Click:Connect(function()
-    hubVisible = not hubVisible
-    MainFrame.Visible = hubVisible
-    
-    -- Анимация для обратной связи
-    if hubVisible then
-        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
-    else
-        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
+imageFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        hubVisible = not hubVisible
+        ScreenGui.Enabled = hubVisible
+        
+        -- Анимация для обратной связи
+        if hubVisible then
+            TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
+        else
+            TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
+        end
     end
 end)
 
--- Инициализация (открываем скрипты по умолчанию)
+-- Инициализация
 switchTab("scripts")
