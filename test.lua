@@ -16,33 +16,37 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
 
 -- Создаем маленькую кнопку с фоткой
-local player = Players.LocalPlayer
-local TinyImageGui = Instance.new("ScreenGui", player.PlayerGui)
+local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
+TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
 -- Размеры изображения (маленькая кнопка)
 local imageSize = 75
-local imageFrame = Instance.new("Frame", TinyImageGui)
+local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
 imageFrame.Size = UDim2.new(0, imageSize, 0, imageSize)
 imageFrame.Position = UDim2.new(0, 20, 0, 20) -- Позиция в левом верхнем углу
 imageFrame.BackgroundTransparency = 1
 imageFrame.ClipsDescendants = true
+imageFrame.Parent = TinyImageGui
 
 -- Скругление углов
-local uiCorner = Instance.new("UICorner", imageFrame)
+local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.25, 0)
+uiCorner.Parent = imageFrame
 
 -- Само изображение
-local image = Instance.new("ImageLabel", imageFrame)
+local image = Instance.new("ImageLabel")
 image.Name = "Image"
-image.Image = "rbxassetid://111084287166716"
+image.Image = "rbxassetid://111084287166716" -- Ваше изображение
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
+image.Parent = imageFrame
 
 -- Перетаскивание
 local touchStartPos, frameStartPos
@@ -74,9 +78,9 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Основное окно (широкий вариант)
+-- Основное окно хаба
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 350)  -- Шире и немного короче
+MainFrame.Size = UDim2.new(0, 500, 0, 350)
 MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BackgroundTransparency = 0.15
@@ -446,41 +450,18 @@ TrollFrame.ChildAdded:Connect(function()
     TrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayoutTroll.AbsoluteContentSize.Y)
 end)
 
--- Добавляем кнопку в троллинг вкладку для скрытия/показа хаба
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(1, -10, 0, 50)
-toggleButton.Position = UDim2.new(0, 5, 0, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-toggleButton.Text = "Показать/Скрыть Хаб"
-toggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.TextSize = 14
-toggleButton.Parent = TrollFrame
-
-local buttonCorner = Instance.new("UICorner")
-buttonCorner.CornerRadius = UDim.new(0, 6)
-buttonCorner.Parent = toggleButton
-
-local buttonStroke = Instance.new("UIStroke")
-buttonStroke.Color = Color3.fromRGB(80, 80, 80)
-buttonStroke.Thickness = 1
-buttonStroke.Parent = toggleButton
-
-toggleButton.MouseEnter:Connect(function()
-    TweenService:Create(toggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
-    TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 165, 50)}):Play()
-end)
-
-toggleButton.MouseLeave:Connect(function()
-    TweenService:Create(toggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play()
-    TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(80, 80, 80)}):Play()
-end)
-
 -- Функция для кнопки с картинкой (скрытие/показа хаба)
 local hubVisible = true
 imageFrame.MouseButton1Click:Connect(function()
     hubVisible = not hubVisible
     ScreenGui.Enabled = hubVisible
+    
+    -- Анимация для обратной связи
+    if hubVisible then
+        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
+    else
+        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
+    end
 end)
 
 -- Инициализация (открываем скрипты по умолчанию)
