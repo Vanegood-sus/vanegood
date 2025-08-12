@@ -454,7 +454,15 @@ end)
 local hubVisible = true
 imageFrame.MouseButton1Click:Connect(function()
     hubVisible = not hubVisible
-    ScreenGui.Enabled = hubVisible
+    MainFrame.Visible = hubVisible  -- Изменено с ScreenGui.Enabled на MainFrame.Visible
+    
+    -- Анимация для обратной связи
+    if hubVisible then
+        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
+    else
+        TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
+    end
+end)
     
     -- Анимация для обратной связи
     if hubVisible then
