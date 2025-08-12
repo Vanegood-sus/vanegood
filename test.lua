@@ -299,85 +299,93 @@ end)
 
 updateAfkToggle()  -- Инициализация переключателя
 
--- ESP
-local EspContainer = Instance.new("Frame")
-EspContainer.Name = "ESP"
-EspContainer.Size = UDim2.new(1, -20, 0, 40)
-EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-EspContainer.BackgroundTransparency = 0.5
-EspContainer.Parent = ScriptsFrame
-
-local EspCorner = Instance.new("UICorner")
-EspCorner.CornerRadius = UDim.new(0, 6)
-EspCorner.Parent = EspContainer
-
--- Текст "ESP"
-local EspLabel = Instance.new("TextLabel")
-EspLabel.Name = "Label"
-EspLabel.Size = UDim2.new(0, 120, 1, 0)
-EspLabel.Position = UDim2.new(0, 10, 0, 0)
-EspLabel.BackgroundTransparency = 1
-EspLabel.Text = "ESP"
-EspLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-EspLabel.Font = Enum.Font.GothamBold
-EspLabel.TextSize = 14
-EspLabel.TextXAlignment = Enum.TextXAlignment.Left
-EspLabel.Parent = EspContainer
-
--- Переключатель ESP
-local EspToggleFrame = Instance.new("Frame")
-EspToggleFrame.Name = "ToggleFrame"
-EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-EspToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
-EspToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-EspToggleFrame.Parent = EspContainer
-
-local EspToggleCorner = Instance.new("UICorner")
-EspToggleCorner.CornerRadius = UDim.new(1, 0)
-EspToggleCorner.Parent = EspToggleFrame
-
-local EspToggleButton = Instance.new("TextButton")
-EspToggleButton.Name = "ToggleButton"
-EspToggleButton.Size = UDim2.new(0, 21, 0, 21)
-EspToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-EspToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-EspToggleButton.Text = ""
-EspToggleButton.Parent = EspToggleFrame
-
-local EspButtonCorner = Instance.new("UICorner")
-EspButtonCorner.CornerRadius = UDim.new(1, 0)
-EspButtonCorner.Parent = EspToggleButton
+-- ESP Module
+local ESPModule = {}
 
 -- Настройки ESP
-local espEnabled = false
-local espObjects = {}
-local lastUpdate = 0
-local updateInterval = 0.2
+ESPModule.enabled = false
+ESPModule.objects = {}
+ESPModule.lastUpdate = 0
+ESPModule.updateInterval = 0.2
+
+-- Создаем элементы GUI для ESP
+function ESPModule.createGUI()
+    local EspContainer = Instance.new("Frame")
+    EspContainer.Name = "ESP"
+    EspContainer.Size = UDim2.new(1, -20, 0, 40)
+    EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    EspContainer.BackgroundTransparency = 0.5
+    EspContainer.Parent = ScriptsFrame
+
+    local EspCorner = Instance.new("UICorner")
+    EspCorner.CornerRadius = UDim.new(0, 6)
+    EspCorner.Parent = EspContainer
+
+    -- Текст "ESP"
+    local EspLabel = Instance.new("TextLabel")
+    EspLabel.Name = "Label"
+    EspLabel.Size = UDim2.new(0, 120, 1, 0)
+    EspLabel.Position = UDim2.new(0, 10, 0, 0)
+    EspLabel.BackgroundTransparency = 1
+    EspLabel.Text = "ESP"
+    EspLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+    EspLabel.Font = Enum.Font.GothamBold
+    EspLabel.TextSize = 14
+    EspLabel.TextXAlignment = Enum.TextXAlignment.Left
+    EspLabel.Parent = EspContainer
+
+    -- Переключатель ESP
+    local EspToggleFrame = Instance.new("Frame")
+    EspToggleFrame.Name = "ToggleFrame"
+    EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+    EspToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+    EspToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    EspToggleFrame.Parent = EspContainer
+
+    local EspToggleCorner = Instance.new("UICorner")
+    EspToggleCorner.CornerRadius = UDim.new(1, 0)
+    EspToggleCorner.Parent = EspToggleFrame
+
+    ESPModule.toggleButton = Instance.new("TextButton")
+    ESPModule.toggleButton.Name = "ToggleButton"
+    ESPModule.toggleButton.Size = UDim2.new(0, 21, 0, 21)
+    ESPModule.toggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+    ESPModule.toggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+    ESPModule.toggleButton.Text = ""
+    ESPModule.toggleButton.Parent = EspToggleFrame
+
+    local EspButtonCorner = Instance.new("UICorner")
+    EspButtonCorner.CornerRadius = UDim.new(1, 0)
+    EspButtonCorner.Parent = ESPModule.toggleButton
+
+    -- Инициализация переключателя
+    ESPModule.updateToggle()
+end
 
 -- Функция обновления переключателя
-local function updateEspToggle()
+function ESPModule.updateToggle()
     local goal = {
-        Position = espEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = espEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+        Position = ESPModule.enabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = ESPModule.enabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
     
-    EspToggleFrame.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    ESPModule.toggleButton.Parent.BackgroundColor3 = ESPModule.enabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
     
-    local tween = TweenService:Create(EspToggleButton, TweenInfo.new(0.2), goal)
+    local tween = TweenService:Create(ESPModule.toggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
 
 -- Очистка ESP
-local function clearESP()
-    for _, obj in pairs(espObjects) do
+function ESPModule.clear()
+    for _, obj in pairs(ESPModule.objects) do
         if obj.highlight then obj.highlight:Destroy() end
         if obj.label then obj.label:Destroy() end
     end
-    espObjects = {}
+    ESPModule.objects = {}
 end
 
 -- Проверка на врага
-local function isEnemy(player)
+function ESPModule.isEnemy(player)
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
         return true
     end
@@ -398,7 +406,7 @@ local function isEnemy(player)
 end
 
 -- Проверка на союзника
-local function isAlly(player)
+function ESPModule.isAlly(player)
     if player.Team and LocalPlayer.Team then
         return player.Team == LocalPlayer.Team
     end
@@ -406,12 +414,12 @@ local function isAlly(player)
 end
 
 -- Обновление ESP
-local function updateESP()
-    if not espEnabled then return end
+function ESPModule.update()
+    if not ESPModule.enabled then return end
     
     local currentTime = os.clock()
-    if currentTime - lastUpdate < updateInterval then return end
-    lastUpdate = currentTime
+    if currentTime - ESPModule.lastUpdate < ESPModule.updateInterval then return end
+    ESPModule.lastUpdate = currentTime
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -419,11 +427,11 @@ local function updateESP()
             local humanoid = player.Character:FindFirstChild("Humanoid")
             
             if rootPart and humanoid and humanoid.Health > 0 then
-                local enemy = isEnemy(player)
-                local ally = isAlly(player)
+                local enemy = ESPModule.isEnemy(player)
+                local ally = ESPModule.isAlly(player)
                 
-                if not espObjects[player] then
-                    espObjects[player] = {}
+                if not ESPModule.objects[player] then
+                    ESPModule.objects[player] = {}
                     
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "ESPHighlight"
@@ -443,13 +451,13 @@ local function updateESP()
                     label.TextStrokeColor3 = Color3.new(0, 0, 0)
                     label.Parent = ScreenGui
                     
-                    espObjects[player] = {
+                    ESPModule.objects[player] = {
                         highlight = highlight,
                         label = label
                     }
                 end
                 
-                local espData = espObjects[player]
+                local espData = ESPModule.objects[player]
                 
                 -- Установка цветов
                 if enemy then
@@ -477,48 +485,53 @@ local function updateESP()
                     espData.label.Visible = false
                 end
             else
-                if espObjects[player] then
-                    if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
-                    if espObjects[player].label then espObjects[player].label:Destroy() end
-                    espObjects[player] = nil
+                if ESPModule.objects[player] then
+                    if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
+                    if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
+                    ESPModule.objects[player] = nil
                 end
             end
         else
-            if espObjects[player] then
-                if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
-                if espObjects[player].label then espObjects[player].label:Destroy() end
-                espObjects[player] = nil
+            if ESPModule.objects[player] then
+                if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
+                if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
+                ESPModule.objects[player] = nil
             end
         end
     end
 end
 
--- Обработчик переключателя
-EspToggleButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    updateEspToggle()
+-- Инициализация ESP
+function ESPModule.init()
+    ESPModule.createGUI()
     
-    if not espEnabled then
-        clearESP()
-    end
-end)
+    -- Обработчик переключателя
+    ESPModule.toggleButton.MouseButton1Click:Connect(function()
+        ESPModule.enabled = not ESPModule.enabled
+        ESPModule.updateToggle()
+        
+        if not ESPModule.enabled then
+            ESPModule.clear()
+        end
+    end)
 
--- Очистка при выходе игрока
-Players.PlayerRemoving:Connect(function(player)
-    if espObjects[player] then
-        if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
-        if espObjects[player].label then espObjects[player].label:Destroy() end
-        espObjects[player] = nil
-    end
-end)
+    -- Очистка при выходе игрока
+    Players.PlayerRemoving:Connect(function(player)
+        if ESPModule.objects[player] then
+            if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
+            if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
+            ESPModule.objects[player] = nil
+        end
+    end)
 
--- Основной цикл обновления
-RunService.Heartbeat:Connect(function()
-    updateESP()
-end)
+    -- Основной цикл обновления
+    RunService.Heartbeat:Connect(function()
+        ESPModule.update()
+    end)
+end
 
--- Инициализация
-updateEspToggle()
+-- Запуск ESP модуля
+ESPModule.init()
 
 
 local GamesFrame = Instance.new("ScrollingFrame")
