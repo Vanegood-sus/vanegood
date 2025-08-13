@@ -312,15 +312,14 @@ local espObjects = {}
 local lastUpdate = 0
 local updateInterval = 0.2
 
--- Создаем контейнер для ESP (вставляется в ScrollingFrame твоего хаба)
+-- Создаем контейнер для ESP 
 local EspContainer = Instance.new("Frame")
 EspContainer.Name = "ESPSettings"
 EspContainer.Size = UDim2.new(1, -20, 0, 40)
 EspContainer.Position = UDim2.new(0, 10, 0, 60) -- Под Anti-AFK
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
-EspContainer.Parent = script.Parent -- Предполагаем, что родитель - ScrollingFrame
-
+EspContainer.Parent = ScriptsFrame
 -- Скругление углов
 local EspCorner = Instance.new("UICorner")
 EspCorner.CornerRadius = UDim.new(0, 6)
@@ -339,7 +338,7 @@ EspLabel.TextSize = 14
 EspLabel.TextXAlignment = Enum.TextXAlignment.Left
 EspLabel.Parent = EspContainer
 
--- Переключатель (стиль как в Anti-AFK)
+-- Переключатель 
 local EspToggleFrame = Instance.new("Frame")
 EspToggleFrame.Name = "ToggleFrame"
 EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
