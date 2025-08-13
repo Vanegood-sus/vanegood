@@ -571,13 +571,32 @@ HitBoxLabel.TextSize = 14
 HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
 HitBoxLabel.Parent = HitBoxContainer
 
+-- Контейнер для элементов управления
+local ControlContainer = Instance.new("Frame")
+ControlContainer.Size = UDim2.new(0, 150, 0, 25)
+ControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+ControlContainer.BackgroundTransparency = 1
+ControlContainer.Parent = HitBoxContainer
+
+-- Поле ввода для размера
+local SizeInput = Instance.new("TextBox")
+SizeInput.Name = "SizeInput"
+SizeInput.Size = UDim2.new(0, 40, 1, 0)
+SizeInput.Position = UDim2.new(0, 0, 0, 0)
+SizeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SizeInput.TextColor3 = Color3.new(1, 1, 1)
+SizeInput.Font = Enum.Font.Gotham
+SizeInput.TextSize = 14
+SizeInput.Text = tostring(_G.Size)
+SizeInput.Parent = ControlContainer
+
 -- Переключатель 
 local HitBoxToggleFrame = Instance.new("Frame")
 HitBoxToggleFrame.Name = "ToggleFrame"
 HitBoxToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-HitBoxToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+HitBoxToggleFrame.Position = UDim2.new(0, 50, 0, 0)
 HitBoxToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-HitBoxToggleFrame.Parent = HitBoxContainer
+HitBoxToggleFrame.Parent = ControlContainer
 
 local HitBoxToggleCorner = Instance.new("UICorner")
 HitBoxToggleCorner.CornerRadius = UDim.new(1, 0)
@@ -624,6 +643,16 @@ local function resetHitboxes()
     end
 end
 
+-- Обработчик ввода размера
+SizeInput.FocusLost:Connect(function()
+    local num = tonumber(SizeInput.Text)
+    if num and num >= 1 and num <= 100 then
+        _G.Size = num
+    else
+        SizeInput.Text = tostring(_G.Size)
+    end
+end)
+
 -- Обработчик переключателя
 HitBoxToggleButton.MouseButton1Click:Connect(function()
     _G.Disabled = not _G.Disabled
@@ -642,7 +671,7 @@ RunService.RenderStepped:Connect(function()
                 pcall(function()
                     local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
                     if rootPart then
-                        -- Адаптивный размер хитбокса в зависимости от размера персонажа
+                        -- Адаптивный размер хитбокса
                         local humanoid = player.Character:FindFirstChild("Humanoid")
                         local height = humanoid and humanoid.HipHeight * 2 or _G.Size
                         rootPart.Size = Vector3.new(_G.Size, height, _G.Size)
