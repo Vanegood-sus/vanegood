@@ -706,6 +706,75 @@ _G.FlyEnabled = false
 _G.FlySpeed = 50
 local flyConnections = {}
 
+-- Создаем GUI элементы для Fly (добавь этот код в раздел создания GUI)
+local FlyContainer = Instance.new("Frame")
+FlyContainer.Name = "FlySettings"
+FlyContainer.Size = UDim2.new(1, -20, 0, 40)
+FlyContainer.Position = UDim2.new(0, 10, 0, 160) -- Позиция ниже HitBox
+FlyContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+FlyContainer.BackgroundTransparency = 0.5
+FlyContainer.Parent = ScriptsFrame
+
+local FlyCorner = Instance.new("UICorner")
+FlyCorner.CornerRadius = UDim.new(0, 6)
+FlyCorner.Parent = FlyContainer
+
+local FlyLabel = Instance.new("TextLabel")
+FlyLabel.Name = "Label"
+FlyLabel.Size = UDim2.new(0, 120, 1, 0)
+FlyLabel.Position = UDim2.new(0, 10, 0, 0)
+FlyLabel.BackgroundTransparency = 1
+FlyLabel.Text = "Fly"
+FlyLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+FlyLabel.Font = Enum.Font.GothamBold
+FlyLabel.TextSize = 14
+FlyLabel.TextXAlignment = Enum.TextXAlignment.Left
+FlyLabel.Parent = FlyContainer
+
+-- Контейнер для элементов управления
+local FlyControlContainer = Instance.new("Frame")
+FlyControlContainer.Size = UDim2.new(0, 150, 0, 25)
+FlyControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+FlyControlContainer.BackgroundTransparency = 1
+FlyControlContainer.Parent = FlyContainer
+
+-- Поле ввода скорости
+local SpeedInput = Instance.new("TextBox")
+SpeedInput.Name = "SpeedInput"
+SpeedInput.Size = UDim2.new(0, 40, 1, 0)
+SpeedInput.Position = UDim2.new(0, 0, 0, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SpeedInput.TextColor3 = Color3.new(1, 1, 1)
+SpeedInput.Font = Enum.Font.Gotham
+SpeedInput.TextSize = 14
+SpeedInput.Text = tostring(_G.FlySpeed)
+SpeedInput.Parent = FlyControlContainer
+
+-- Переключатель Fly
+local FlyToggleFrame = Instance.new("Frame")
+FlyToggleFrame.Name = "ToggleFrame"
+FlyToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+FlyToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+FlyToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+FlyToggleFrame.Parent = FlyControlContainer
+
+local FlyToggleCorner = Instance.new("UICorner")
+FlyToggleCorner.CornerRadius = UDim.new(1, 0)
+FlyToggleCorner.Parent = FlyToggleFrame
+
+local FlyToggleButton = Instance.new("TextButton")
+FlyToggleButton.Name = "ToggleButton"
+FlyToggleButton.Size = UDim2.new(0, 21, 0, 21)
+FlyToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+FlyToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+FlyToggleButton.Text = ""
+FlyToggleButton.Parent = FlyToggleFrame
+
+local FlyButtonCorner = Instance.new("UICorner")
+FlyButtonCorner.CornerRadius = UDim.new(1, 0)
+FlyButtonCorner.Parent = FlyToggleButton
+
+-- Функция обновления переключателя
 local function updateFlyToggle()
     local goal = {
         Position = _G.FlyEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
@@ -718,6 +787,7 @@ local function updateFlyToggle()
     tween:Play()
 end
 
+-- Отключение полета
 local function disableFly()
     _G.FlyEnabled = false
     updateFlyToggle()
@@ -745,6 +815,7 @@ local function disableFly()
     flyConnections = {}
 end
 
+-- Включение полета
 local function enableFly()
     if _G.FlyEnabled then return end
     
@@ -821,7 +892,14 @@ local function enableFly()
             moveVector = (camera.CFrame.RightVector * direction.X + camera.CFrame.LookVector * direction.Z).Unit * _G.FlySpeed
         end
         
-        bv.Velocity = moveVector + Vector3.new(0, humanoid.HipHeight, 0)
+        -- Добавляем управление вверх/вниз (Space/LeftControl)
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveVector = moveVector + Vector3.new(0, _G.FlySpeed/2, 0)
+        elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveVector = moveVector + Vector3.new(0, -_G.FlySpeed/2, 0)
+        end
+        
+        bv.Velocity = moveVector
     end))
     
     -- Обработчик смерти
@@ -840,6 +918,7 @@ local function enableFly()
     end))
 end
 
+-- Обработчики кнопок
 FlyToggleButton.MouseButton1Click:Connect(function()
     if _G.FlyEnabled then
         disableFly()
@@ -862,6 +941,7 @@ game:BindToClose(function()
     disableFly()
 end)
 
+-- Инициализация
 updateFlyToggle()
 
 local GamesFrame = Instance.new("ScrollingFrame")
