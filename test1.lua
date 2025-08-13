@@ -299,7 +299,7 @@ end)
 
 updateAfkToggle()  -- Инициализация переключателя
 
--- Vanegood Hub ESP Module
+-- ESP
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -320,6 +320,7 @@ EspContainer.Position = UDim2.new(0, 10, 0, 60) -- Под Anti-AFK
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
 EspContainer.Parent = ScriptsFrame
+
 -- Скругление углов
 local EspCorner = Instance.new("UICorner")
 EspCorner.CornerRadius = UDim.new(0, 6)
@@ -384,25 +385,44 @@ local function clearESP()
     espObjects = {}
 end
 
--- Логика определения врагов/союзников
+-- Логика определения врагов/союзников (взята из твоего второго скрипта)
 local function isEnemy(player)
+    -- Проверка на команду убийц
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
         return true
     end
+    
+    -- Проверка на противоположную команду
     if player.Team and LocalPlayer.Team then
         return player.Team ~= LocalPlayer.Team
     end
+    
+    -- Проверка на возможность нанести вред
+    if player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        local tool = player.Character:FindFirstChildOfClass("Tool")
+        
+        -- Если у игрока есть оружие или он может атаковать
+        if tool or (humanoid and humanoid:GetAttribute("CanAttack") == true) then
+            return true
+        end
+    end
+    
     return false
 end
 
+-- Проверка, является ли игрок союзником (вашей командой)
 local function isAlly(player)
+    -- Если есть система команд и игрок в вашей команде
     if player.Team and LocalPlayer.Team then
         return player.Team == LocalPlayer.Team
     end
+    
+    -- Дополнительные проверки для союзников
     return false
 end
 
--- Обновление ESP
+-- Обновление ESP (взято из твоего второго скрипта)
 local function updateESP()
     if not espEnabled then return end
     
@@ -416,7 +436,12 @@ local function updateESP()
             local humanoid = player.Character:FindFirstChild("Humanoid")
             
             if rootPart and humanoid and humanoid.Health > 0 then
+                local enemy = isEnemy(player)
+                local ally = isAlly(player)
+                
                 if not espObjects[player] then
+                    espObjects[player] = {}
+                    
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "ESPHighlight"
                     highlight.Adornee = player.Character
@@ -433,29 +458,34 @@ local function updateESP()
                     label.TextSize = 12
                     label.TextStrokeTransparency = 0.7
                     label.TextStrokeColor3 = Color3.new(0, 0, 0)
-                    label.Parent = script.Parent.Parent -- Родительский ScreenGui
+                    label.Parent = ScreenGui  -- Важно! Используем основной ScreenGui
                     
-                    espObjects[player] = { highlight = highlight, label = label }
+                    espObjects[player] = {
+                        highlight = highlight,
+                        label = label
+                    }
                 end
                 
                 local espData = espObjects[player]
                 
-                -- Цвета в зависимости от типа игрока
-                if isEnemy(player) then
+                -- Устанавливаем цвет в зависимости от типа игрока
+                if enemy then
+                    -- Враги - красный
                     espData.highlight.FillColor = Color3.fromRGB(255, 70, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(180, 0, 0)
-                elseif isAlly(player) then
+                elseif ally then
+                    -- Союзники - зеленый
                     espData.highlight.FillColor = Color3.fromRGB(70, 255, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 180, 0)
                 else
+                    -- Нейтральные игроки - синий
                     espData.highlight.FillColor = Color3.fromRGB(70, 70, 255)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 0, 180)
                 end
                 
-                -- Позиционирование текста
                 local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                 if onScreen then
-                    local distance = (LocalPlayer.Character and LocalPlayer.Character.HumanoidRootPart) 
+                    local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) 
                         and (rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude 
                         or 0
                     
@@ -465,6 +495,18 @@ local function updateESP()
                 else
                     espData.label.Visible = false
                 end
+            else
+                if espObjects[player] then
+                    if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
+                    if espObjects[player].label then espObjects[player].label:Destroy() end
+                    espObjects[player] = nil
+                end
+            end
+        else
+            if espObjects[player] then
+                if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
+                if espObjects[player].label then espObjects[player].label:Destroy() end
+                espObjects[player] = nil
             end
         end
     end
