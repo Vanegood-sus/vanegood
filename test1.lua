@@ -316,7 +316,7 @@ local updateInterval = 0.2
 local EspContainer = Instance.new("Frame")
 EspContainer.Name = "ESPSettings"
 EspContainer.Size = UDim2.new(1, -20, 0, 40)
-EspContainer.Position = UDim2.new(0, 10, 0, 60) -- Под Anti-AFK
+EspContainer.Position = UDim2.new(0, 10, 0, 60) 
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
 EspContainer.Parent = ScriptsFrame
@@ -385,7 +385,7 @@ local function clearESP()
     espObjects = {}
 end
 
--- Логика определения врагов/союзников (взята из твоего второго скрипта)
+-- Логика определения врагов/союзников
 local function isEnemy(player)
     -- Проверка на команду убийц
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
@@ -422,7 +422,7 @@ local function isAlly(player)
     return false
 end
 
--- Обновление ESP (взято из твоего второго скрипта)
+-- Обновление ESP 
 local function updateESP()
     if not espEnabled then return end
     
@@ -547,7 +547,7 @@ _G.Disabled = false
 local HitBoxContainer = Instance.new("Frame")
 HitBoxContainer.Name = "HitBoxSettings"
 HitBoxContainer.Size = UDim2.new(1, -20, 0, 40)
-HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) -- Под ESP
+HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) 
 HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 HitBoxContainer.BackgroundTransparency = 0.5
 HitBoxContainer.Parent = ScriptsFrame
@@ -568,10 +568,10 @@ HitBoxLabel.TextSize = 14
 HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
 HitBoxLabel.Parent = HitBoxContainer
 
--- Контейнер для элементов управления - СДВИНУТ ВПРАВО
+-- Контейнер для элементов управления 
 local ControlContainer = Instance.new("Frame")
 ControlContainer.Size = UDim2.new(0, 150, 0, 25)
-ControlContainer.Position = UDim2.new(1, -125, 0.5, -12)  -- Сдвинуто левее
+ControlContainer.Position = UDim2.new(1, -155, 0.5, -12)  -- Сдвинуто левее
 ControlContainer.BackgroundTransparency = 1
 ControlContainer.Parent = HitBoxContainer
 
