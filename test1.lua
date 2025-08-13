@@ -571,7 +571,7 @@ HitBoxLabel.Parent = HitBoxContainer
 -- Контейнер для элементов управления 
 local ControlContainer = Instance.new("Frame")
 ControlContainer.Size = UDim2.new(0, 150, 0, 25)
-ControlContainer.Position = UDim2.new(1, -122, 0.5, -12)  -- Сдвинуто левее
+ControlContainer.Position = UDim2.new(1, -110, 0.5, -12)  -- Сдвинуто левее
 ControlContainer.BackgroundTransparency = 1
 ControlContainer.Parent = HitBoxContainer
 
