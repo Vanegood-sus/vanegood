@@ -299,104 +299,110 @@ end)
 
 updateAfkToggle()  -- Инициализация переключателя
 
--- ESP Module
-local ESPModule = {}
+-- ESP
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
 -- Настройки ESP
-ESPModule.enabled = false
-ESPModule.objects = {}
-ESPModule.lastUpdate = 0
-ESPModule.updateInterval = 0.2
+local espEnabled = false
+local espObjects = {}
+local lastUpdate = 0
+local updateInterval = 0.2
 
--- Создаем элементы GUI для ESP
-function ESPModule.createGUI()
-    local EspContainer = Instance.new("Frame")
-    EspContainer.Name = "ESP"
-    EspContainer.Size = UDim2.new(1, -20, 0, 40)
-    EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    EspContainer.BackgroundTransparency = 0.5
-    EspContainer.Parent = ScriptsFrame
+-- Создаем контейнер для ESP 
+local EspContainer = Instance.new("Frame")
+EspContainer.Name = "ESPSettings"
+EspContainer.Size = UDim2.new(1, -20, 0, 40)
+EspContainer.Position = UDim2.new(0, 10, 0, 60) -- Под Anti-AFK
+EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+EspContainer.BackgroundTransparency = 0.5
+EspContainer.Parent = ScriptsFrame
 
-    local EspCorner = Instance.new("UICorner")
-    EspCorner.CornerRadius = UDim.new(0, 6)
-    EspCorner.Parent = EspContainer
+-- Скругление углов
+local EspCorner = Instance.new("UICorner")
+EspCorner.CornerRadius = UDim.new(0, 6)
+EspCorner.Parent = EspContainer
 
-    -- Текст "ESP"
-    local EspLabel = Instance.new("TextLabel")
-    EspLabel.Name = "Label"
-    EspLabel.Size = UDim2.new(0, 120, 1, 0)
-    EspLabel.Position = UDim2.new(0, 10, 0, 0)
-    EspLabel.BackgroundTransparency = 1
-    EspLabel.Text = "ESP"
-    EspLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-    EspLabel.Font = Enum.Font.GothamBold
-    EspLabel.TextSize = 14
-    EspLabel.TextXAlignment = Enum.TextXAlignment.Left
-    EspLabel.Parent = EspContainer
+-- Текст "ESP"
+local EspLabel = Instance.new("TextLabel")
+EspLabel.Name = "Label"
+EspLabel.Size = UDim2.new(0, 120, 1, 0)
+EspLabel.Position = UDim2.new(0, 10, 0, 0)
+EspLabel.BackgroundTransparency = 1
+EspLabel.Text = "ESP"
+EspLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+EspLabel.Font = Enum.Font.GothamBold
+EspLabel.TextSize = 14
+EspLabel.TextXAlignment = Enum.TextXAlignment.Left
+EspLabel.Parent = EspContainer
 
-    -- Переключатель ESP
-    local EspToggleFrame = Instance.new("Frame")
-    EspToggleFrame.Name = "ToggleFrame"
-    EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-    EspToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
-    EspToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    EspToggleFrame.Parent = EspContainer
+-- Переключатель 
+local EspToggleFrame = Instance.new("Frame")
+EspToggleFrame.Name = "ToggleFrame"
+EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+EspToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+EspToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+EspToggleFrame.Parent = EspContainer
 
-    local EspToggleCorner = Instance.new("UICorner")
-    EspToggleCorner.CornerRadius = UDim.new(1, 0)
-    EspToggleCorner.Parent = EspToggleFrame
+local EspToggleCorner = Instance.new("UICorner")
+EspToggleCorner.CornerRadius = UDim.new(1, 0)
+EspToggleCorner.Parent = EspToggleFrame
 
-    ESPModule.toggleButton = Instance.new("TextButton")
-    ESPModule.toggleButton.Name = "ToggleButton"
-    ESPModule.toggleButton.Size = UDim2.new(0, 21, 0, 21)
-    ESPModule.toggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-    ESPModule.toggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-    ESPModule.toggleButton.Text = ""
-    ESPModule.toggleButton.Parent = EspToggleFrame
+local EspToggleButton = Instance.new("TextButton")
+EspToggleButton.Name = "ToggleButton"
+EspToggleButton.Size = UDim2.new(0, 21, 0, 21)
+EspToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+EspToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+EspToggleButton.Text = ""
+EspToggleButton.Parent = EspToggleFrame
 
-    local EspButtonCorner = Instance.new("UICorner")
-    EspButtonCorner.CornerRadius = UDim.new(1, 0)
-    EspButtonCorner.Parent = ESPModule.toggleButton
+local EspButtonCorner = Instance.new("UICorner")
+EspButtonCorner.CornerRadius = UDim.new(1, 0)
+EspButtonCorner.Parent = EspToggleButton
 
-    -- Инициализация переключателя
-    ESPModule.updateToggle()
-end
-
--- Функция обновления переключателя
-function ESPModule.updateToggle()
+-- Анимация переключателя
+local function updateEspToggle()
     local goal = {
-        Position = ESPModule.enabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = ESPModule.enabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+        Position = espEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = espEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
     
-    ESPModule.toggleButton.Parent.BackgroundColor3 = ESPModule.enabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    EspToggleFrame.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
     
-    local tween = TweenService:Create(ESPModule.toggleButton, TweenInfo.new(0.2), goal)
+    local tween = TweenService:Create(EspToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
 
 -- Очистка ESP
-function ESPModule.clear()
-    for _, obj in pairs(ESPModule.objects) do
+local function clearESP()
+    for _, obj in pairs(espObjects) do
         if obj.highlight then obj.highlight:Destroy() end
         if obj.label then obj.label:Destroy() end
     end
-    ESPModule.objects = {}
+    espObjects = {}
 end
 
--- Проверка на врага
-function ESPModule.isEnemy(player)
+-- Логика определения врагов/союзников (взята из твоего второго скрипта)
+local function isEnemy(player)
+    -- Проверка на команду убийц
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
         return true
     end
     
+    -- Проверка на противоположную команду
     if player.Team and LocalPlayer.Team then
         return player.Team ~= LocalPlayer.Team
     end
     
+    -- Проверка на возможность нанести вред
     if player.Character then
         local humanoid = player.Character:FindFirstChild("Humanoid")
         local tool = player.Character:FindFirstChildOfClass("Tool")
+        
+        -- Если у игрока есть оружие или он может атаковать
         if tool or (humanoid and humanoid:GetAttribute("CanAttack") == true) then
             return true
         end
@@ -405,21 +411,24 @@ function ESPModule.isEnemy(player)
     return false
 end
 
--- Проверка на союзника
-function ESPModule.isAlly(player)
+-- Проверка, является ли игрок союзником (вашей командой)
+local function isAlly(player)
+    -- Если есть система команд и игрок в вашей команде
     if player.Team and LocalPlayer.Team then
         return player.Team == LocalPlayer.Team
     end
+    
+    -- Дополнительные проверки для союзников
     return false
 end
 
--- Обновление ESP
-function ESPModule.update()
-    if not ESPModule.enabled then return end
+-- Обновление ESP (взято из твоего второго скрипта)
+local function updateESP()
+    if not espEnabled then return end
     
     local currentTime = os.clock()
-    if currentTime - ESPModule.lastUpdate < ESPModule.updateInterval then return end
-    ESPModule.lastUpdate = currentTime
+    if currentTime - lastUpdate < updateInterval then return end
+    lastUpdate = currentTime
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -427,11 +436,11 @@ function ESPModule.update()
             local humanoid = player.Character:FindFirstChild("Humanoid")
             
             if rootPart and humanoid and humanoid.Health > 0 then
-                local enemy = ESPModule.isEnemy(player)
-                local ally = ESPModule.isAlly(player)
+                local enemy = isEnemy(player)
+                local ally = isAlly(player)
                 
-                if not ESPModule.objects[player] then
-                    ESPModule.objects[player] = {}
+                if not espObjects[player] then
+                    espObjects[player] = {}
                     
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "ESPHighlight"
@@ -449,29 +458,31 @@ function ESPModule.update()
                     label.TextSize = 12
                     label.TextStrokeTransparency = 0.7
                     label.TextStrokeColor3 = Color3.new(0, 0, 0)
-                    label.Parent = ScreenGui
+                    label.Parent = ScreenGui  -- Важно! Используем основной ScreenGui
                     
-                    ESPModule.objects[player] = {
+                    espObjects[player] = {
                         highlight = highlight,
                         label = label
                     }
                 end
                 
-                local espData = ESPModule.objects[player]
+                local espData = espObjects[player]
                 
-                -- Установка цветов
+                -- Устанавливаем цвет в зависимости от типа игрока
                 if enemy then
+                    -- Враги - красный
                     espData.highlight.FillColor = Color3.fromRGB(255, 70, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(180, 0, 0)
                 elseif ally then
+                    -- Союзники - зеленый
                     espData.highlight.FillColor = Color3.fromRGB(70, 255, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 180, 0)
                 else
+                    -- Нейтральные игроки - синий
                     espData.highlight.FillColor = Color3.fromRGB(70, 70, 255)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 0, 180)
                 end
                 
-                -- Обновление позиции текста
                 local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                 if onScreen then
                     local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) 
@@ -485,54 +496,183 @@ function ESPModule.update()
                     espData.label.Visible = false
                 end
             else
-                if ESPModule.objects[player] then
-                    if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
-                    if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
-                    ESPModule.objects[player] = nil
+                if espObjects[player] then
+                    if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
+                    if espObjects[player].label then espObjects[player].label:Destroy() end
+                    espObjects[player] = nil
                 end
             end
         else
-            if ESPModule.objects[player] then
-                if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
-                if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
-                ESPModule.objects[player] = nil
+            if espObjects[player] then
+                if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
+                if espObjects[player].label then espObjects[player].label:Destroy() end
+                espObjects[player] = nil
             end
         end
     end
 end
 
--- Инициализация ESP
-function ESPModule.init()
-    ESPModule.createGUI()
+-- Обработчик переключателя
+EspToggleButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    updateEspToggle()
+    if not espEnabled then clearESP() end
+end)
+
+-- Очистка при выходе игрока
+Players.PlayerRemoving:Connect(function(player)
+    if espObjects[player] then
+        if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
+        if espObjects[player].label then espObjects[player].label:Destroy() end
+        espObjects[player] = nil
+    end
+end)
+
+-- Основной цикл
+RunService.Heartbeat:Connect(updateESP)
+
+-- Инициализация
+updateEspToggle()
+
+-- HitBox
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Настройки хитбоксов
+_G.Size = 20
+_G.Disabled = false
+
+-- Создаем контейнер для HitBox 
+local HitBoxContainer = Instance.new("Frame")
+HitBoxContainer.Name = "HitBoxSettings"
+HitBoxContainer.Size = UDim2.new(1, -20, 0, 40)
+HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) -- Под ESP
+HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HitBoxContainer.BackgroundTransparency = 0.5
+HitBoxContainer.Parent = ScriptsFrame
+
+-- Скругление углов
+local HitBoxCorner = Instance.new("UICorner")
+HitBoxCorner.CornerRadius = UDim.new(0, 6)
+HitBoxCorner.Parent = HitBoxContainer
+
+-- Текст "HitBox"
+local HitBoxLabel = Instance.new("TextLabel")
+HitBoxLabel.Name = "Label"
+HitBoxLabel.Size = UDim2.new(0, 120, 1, 0)
+HitBoxLabel.Position = UDim2.new(0, 10, 0, 0)
+HitBoxLabel.BackgroundTransparency = 1
+HitBoxLabel.Text = "HitBox"
+HitBoxLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HitBoxLabel.Font = Enum.Font.GothamBold
+HitBoxLabel.TextSize = 14
+HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+HitBoxLabel.Parent = HitBoxContainer
+
+-- Переключатель 
+local HitBoxToggleFrame = Instance.new("Frame")
+HitBoxToggleFrame.Name = "ToggleFrame"
+HitBoxToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HitBoxToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+HitBoxToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HitBoxToggleFrame.Parent = HitBoxContainer
+
+local HitBoxToggleCorner = Instance.new("UICorner")
+HitBoxToggleCorner.CornerRadius = UDim.new(1, 0)
+HitBoxToggleCorner.Parent = HitBoxToggleFrame
+
+local HitBoxToggleButton = Instance.new("TextButton")
+HitBoxToggleButton.Name = "ToggleButton"
+HitBoxToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HitBoxToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HitBoxToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HitBoxToggleButton.Text = ""
+HitBoxToggleButton.Parent = HitBoxToggleFrame
+
+local HitBoxButtonCorner = Instance.new("UICorner")
+HitBoxButtonCorner.CornerRadius = UDim.new(1, 0)
+HitBoxButtonCorner.Parent = HitBoxToggleButton
+
+-- Анимация переключателя
+local function updateHitBoxToggle()
+    local goal = {
+        Position = _G.Disabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
     
-    -- Обработчик переключателя
-    ESPModule.toggleButton.MouseButton1Click:Connect(function()
-        ESPModule.enabled = not ESPModule.enabled
-        ESPModule.updateToggle()
-        
-        if not ESPModule.enabled then
-            ESPModule.clear()
-        end
-    end)
-
-    -- Очистка при выходе игрока
-    Players.PlayerRemoving:Connect(function(player)
-        if ESPModule.objects[player] then
-            if ESPModule.objects[player].highlight then ESPModule.objects[player].highlight:Destroy() end
-            if ESPModule.objects[player].label then ESPModule.objects[player].label:Destroy() end
-            ESPModule.objects[player] = nil
-        end
-    end)
-
-    -- Основной цикл обновления
-    RunService.Heartbeat:Connect(function()
-        ESPModule.update()
-    end)
+    HitBoxToggleFrame.BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(HitBoxToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
 end
 
--- Запуск ESP модуля
-ESPModule.init()
+-- Функция сброса хитбоксов
+local function resetHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                rootPart.Size = Vector3.new(2, 2, 1)
+                rootPart.Transparency = 0
+                rootPart.BrickColor = BrickColor.new("Medium stone grey")
+                rootPart.Material = "Plastic"
+                rootPart.CanCollide = true
+            end
+        end
+    end
+end
 
+-- Обработчик переключателя
+HitBoxToggleButton.MouseButton1Click:Connect(function()
+    _G.Disabled = not _G.Disabled
+    updateHitBoxToggle()
+    
+    if not _G.Disabled then
+        resetHitboxes()
+    end
+end)
+
+-- Основной цикл хитбоксов
+RunService.RenderStepped:Connect(function()
+    if _G.Disabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                pcall(function()
+                    local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    if rootPart then
+                        -- Адаптивный размер хитбокса в зависимости от размера персонажа
+                        local humanoid = player.Character:FindFirstChild("Humanoid")
+                        local height = humanoid and humanoid.HipHeight * 2 or _G.Size
+                        rootPart.Size = Vector3.new(_G.Size, height, _G.Size)
+                        rootPart.Transparency = 0.7
+                        rootPart.BrickColor = BrickColor.new("Really red")
+                        rootPart.Material = "Neon"
+                        rootPart.CanCollide = false
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- Сброс хитбоксов при выходе игрока
+Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.Size = Vector3.new(2, 2, 1)
+            rootPart.Transparency = 0
+            rootPart.BrickColor = BrickColor.new("Medium stone grey")
+            rootPart.Material = "Plastic"
+            rootPart.CanCollide = true
+        end
+    end
+end)
+
+-- Инициализация
+updateHitBoxToggle()
 
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
