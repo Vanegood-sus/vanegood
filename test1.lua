@@ -540,7 +540,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- Настройки хитбоксов
 _G.Size = 20
 _G.Disabled = false
 
@@ -553,12 +552,10 @@ HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 HitBoxContainer.BackgroundTransparency = 0.5
 HitBoxContainer.Parent = ScriptsFrame
 
--- Скругление углов
 local HitBoxCorner = Instance.new("UICorner")
 HitBoxCorner.CornerRadius = UDim.new(0, 6)
 HitBoxCorner.Parent = HitBoxContainer
 
--- Текст "HitBox"
 local HitBoxLabel = Instance.new("TextLabel")
 HitBoxLabel.Name = "Label"
 HitBoxLabel.Size = UDim2.new(0, 120, 1, 0)
@@ -571,14 +568,14 @@ HitBoxLabel.TextSize = 14
 HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
 HitBoxLabel.Parent = HitBoxContainer
 
--- Контейнер для элементов управления
+-- Контейнер для элементов управления - СДВИНУТ ВПРАВО
 local ControlContainer = Instance.new("Frame")
 ControlContainer.Size = UDim2.new(0, 150, 0, 25)
-ControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+ControlContainer.Position = UDim2.new(1, -60, 0.5, -12)  -- Сдвинуто правее
 ControlContainer.BackgroundTransparency = 1
 ControlContainer.Parent = HitBoxContainer
 
--- Поле ввода для размера
+-- Поле ввода для размера - СДВИНУТО ВПРАВО
 local SizeInput = Instance.new("TextBox")
 SizeInput.Name = "SizeInput"
 SizeInput.Size = UDim2.new(0, 40, 1, 0)
@@ -590,7 +587,7 @@ SizeInput.TextSize = 14
 SizeInput.Text = tostring(_G.Size)
 SizeInput.Parent = ControlContainer
 
--- Переключатель 
+-- Переключатель - СДВИНУТ ВПРАВО
 local HitBoxToggleFrame = Instance.new("Frame")
 HitBoxToggleFrame.Name = "ToggleFrame"
 HitBoxToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -614,7 +611,6 @@ local HitBoxButtonCorner = Instance.new("UICorner")
 HitBoxButtonCorner.CornerRadius = UDim.new(1, 0)
 HitBoxButtonCorner.Parent = HitBoxToggleButton
 
--- Анимация переключателя
 local function updateHitBoxToggle()
     local goal = {
         Position = _G.Disabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
@@ -627,7 +623,6 @@ local function updateHitBoxToggle()
     tween:Play()
 end
 
--- Функция сброса хитбоксов
 local function resetHitboxes()
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -643,7 +638,6 @@ local function resetHitboxes()
     end
 end
 
--- Обработчик ввода размера
 SizeInput.FocusLost:Connect(function()
     local num = tonumber(SizeInput.Text)
     if num and num >= 1 and num <= 100 then
@@ -653,7 +647,6 @@ SizeInput.FocusLost:Connect(function()
     end
 end)
 
--- Обработчик переключателя
 HitBoxToggleButton.MouseButton1Click:Connect(function()
     _G.Disabled = not _G.Disabled
     updateHitBoxToggle()
@@ -663,7 +656,6 @@ HitBoxToggleButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Основной цикл хитбоксов
 RunService.RenderStepped:Connect(function()
     if _G.Disabled then
         for _, player in ipairs(Players:GetPlayers()) do
@@ -671,9 +663,9 @@ RunService.RenderStepped:Connect(function()
                 pcall(function()
                     local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
                     if rootPart then
-                        -- Адаптивный размер хитбокса
+                        -- УВЕЛИЧЕНА ВЫСОТА ХИТБОКСА (hipHeight * 3 вместо * 2)
                         local humanoid = player.Character:FindFirstChild("Humanoid")
-                        local height = humanoid and humanoid.HipHeight * 2 or _G.Size
+                        local height = humanoid and humanoid.HipHeight * 3 or _G.Size
                         rootPart.Size = Vector3.new(_G.Size, height, _G.Size)
                         rootPart.Transparency = 0.7
                         rootPart.BrickColor = BrickColor.new("Really red")
@@ -686,7 +678,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Сброс хитбоксов при выходе игрока
 Players.PlayerRemoving:Connect(function(player)
     if player.Character then
         local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
@@ -700,7 +691,6 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Инициализация
 updateHitBoxToggle()
 
 local GamesFrame = Instance.new("ScrollingFrame")
