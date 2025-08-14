@@ -1599,7 +1599,7 @@ local function enableShiftLock()
                 local camera = workspace.CurrentCamera
                 if camera then
                     -- Применяем текущее значение смещения из поля ввода
-                    local offset = CFrame.new(tonumber(SensitivityInput.Text) or shiftLockOffset
+                    local offset = CFrame.new(tonumber(SensitivityInput.Text) or shiftLockOffset)
                     
                     rootPart.CFrame = CFrame.new(
                         rootPart.Position,
