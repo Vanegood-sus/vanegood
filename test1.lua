@@ -693,6 +693,241 @@ end)
 
 updateHitBoxToggle()
 
+-- Fly 
+local FlyContainer = Instance.new("Frame")
+FlyContainer.Name = "FlySettings"
+FlyContainer.Size = UDim2.new(1, -20, 0, 40)
+FlyContainer.Position = UDim2.new(0, 10, 0, 160) -- Позиция ниже HitBox
+FlyContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+FlyContainer.BackgroundTransparency = 0.5
+FlyContainer.Parent = ScriptsFrame
+
+local FlyCorner = Instance.new("UICorner")
+FlyCorner.CornerRadius = UDim.new(0, 6)
+FlyCorner.Parent = FlyContainer
+
+local FlyLabel = Instance.new("TextLabel")
+FlyLabel.Name = "Label"
+FlyLabel.Size = UDim2.new(0, 120, 1, 0)
+FlyLabel.Position = UDim2.new(0, 10, 0, 0)
+FlyLabel.BackgroundTransparency = 1
+FlyLabel.Text = "Fly"
+FlyLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+FlyLabel.Font = Enum.Font.GothamBold
+FlyLabel.TextSize = 14
+FlyLabel.TextXAlignment = Enum.TextXAlignment.Left
+FlyLabel.Parent = FlyContainer
+
+-- Контейнер для элементов управления
+local FlyControlContainer = Instance.new("Frame")
+FlyControlContainer.Size = UDim2.new(0, 150, 0, 25)
+FlyControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+FlyControlContainer.BackgroundTransparency = 1
+FlyControlContainer.Parent = FlyContainer
+
+-- Поле ввода для скорости полета
+local FlySpeedInput = Instance.new("TextBox")
+FlySpeedInput.Name = "SpeedInput"
+FlySpeedInput.Size = UDim2.new(0, 40, 1, 0)
+FlySpeedInput.Position = UDim2.new(0, 0, 0, 0)
+FlySpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+FlySpeedInput.TextColor3 = Color3.new(1, 1, 1)
+FlySpeedInput.Font = Enum.Font.Gotham
+FlySpeedInput.TextSize = 14
+FlySpeedInput.Text = "50"
+FlySpeedInput.Parent = FlyControlContainer
+
+-- Переключатель
+local FlyToggleFrame = Instance.new("Frame")
+FlyToggleFrame.Name = "ToggleFrame"
+FlyToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+FlyToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+FlyToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+FlyToggleFrame.Parent = FlyControlContainer
+
+local FlyToggleCorner = Instance.new("UICorner")
+FlyToggleCorner.CornerRadius = UDim.new(1, 0)
+FlyToggleCorner.Parent = FlyToggleFrame
+
+local FlyToggleButton = Instance.new("TextButton")
+FlyToggleButton.Name = "ToggleButton"
+FlyToggleButton.Size = UDim2.new(0, 21, 0, 21)
+FlyToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+FlyToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+FlyToggleButton.Text = ""
+FlyToggleButton.Parent = FlyToggleFrame
+
+local FlyButtonCorner = Instance.new("UICorner")
+FlyButtonCorner.CornerRadius = UDim.new(1, 0)
+FlyButtonCorner.Parent = FlyToggleButton
+
+-- Логика полета
+local flyEnabled = false
+local flySpeed = 50
+local bv, bg
+local flyConnections = {}
+
+local function updateFlyToggle()
+    local goal = {
+        Position = flyEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    FlyToggleFrame.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(FlyToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function setupCharacter(character)
+    if flyEnabled then
+        if character:FindFirstChild("HumanoidRootPart") then
+            -- Удаляем старые обработчики, если они есть
+            if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+                character.HumanoidRootPart.VelocityHandler:Destroy()
+            end
+            if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                character.HumanoidRootPart.GyroHandler:Destroy()
+            end
+            
+            -- Создаем новые обработчики
+            bv = Instance.new("BodyVelocity")
+            bv.Name = "VelocityHandler"
+            bv.Parent = character.HumanoidRootPart
+            bv.MaxForce = Vector3.new(9e9,9e9,9e9)
+            bv.Velocity = Vector3.new(0,0,0)
+            
+            bg = Instance.new("BodyGyro")
+            bg.Name = "GyroHandler"
+            bg.Parent = character.HumanoidRootPart
+            bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            bg.P = 1000
+            bg.D = 50
+            
+            character.Humanoid.PlatformStand = true
+        end
+    end
+end
+
+local function disableFly()
+    flyEnabled = false
+    updateFlyToggle()
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.PlatformStand = false
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
+        end
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+            LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
+        end
+    end
+    
+    -- Отключаем все соединения полета
+    for _, connection in pairs(flyConnections) do
+        connection:Disconnect()
+    end
+    flyConnections = {}
+end
+
+local function enableFly()
+    flyEnabled = true
+    updateFlyToggle()
+    
+    -- Устанавливаем соединения только если их еще нет
+    if #flyConnections == 0 then
+        -- Обработчик добавления персонажа
+        table.insert(flyConnections, LocalPlayer.CharacterAdded:Connect(function(character)
+            setupCharacter(character)
+            
+            -- Обработчик смерти персонажа
+            character:WaitForChild("Humanoid").Died:Connect(function()
+                if flyEnabled then
+                    -- После смерти автоматически восстанавливаем полет
+                    task.wait() -- Даем время для респавна
+                    if LocalPlayer.Character then
+                        setupCharacter(LocalPlayer.Character)
+                    end
+                end
+            end)
+        end))
+        
+        -- Обработчик рендера
+        table.insert(flyConnections, RunService.RenderStepped:Connect(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                
+                if flyEnabled then
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.Humanoid.PlatformStand = true
+                    
+                    local camera = workspace.CurrentCamera
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
+                    
+                    local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
+                    local direction = controlModule:GetMoveVector()
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
+                    
+                    if direction.X > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
+                    end
+                    if direction.X < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
+                    end
+                    if direction.Z > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
+                    end
+                    if direction.Z < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
+                    end
+                end
+            end
+        end))
+        
+        -- Обработчик изменения скорости
+        table.insert(flyConnections, FlySpeedInput:GetPropertyChangedSignal("Text"):Connect(function()
+            if tonumber(FlySpeedInput.Text) then
+                flySpeed = tonumber(FlySpeedInput.Text)
+            end
+        end))
+    end
+    
+    -- Устанавливаем полет для текущего персонажа
+    if LocalPlayer.Character then
+        setupCharacter(LocalPlayer.Character)
+    end
+end
+
+FlyToggleButton.MouseButton1Click:Connect(function()
+    if flyEnabled then
+        disableFly()
+    else
+        enableFly()
+    end
+end)
+
+FlySpeedInput.FocusLost:Connect(function()
+    local num = tonumber(FlySpeedInput.Text)
+    if num and num >= 1 and num <= 500 then
+        flySpeed = num
+    else
+        FlySpeedInput.Text = tostring(flySpeed)
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableFly()
+    end
+end)
+
+-- Инициализация
+updateFlyToggle()
+
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
