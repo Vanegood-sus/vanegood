@@ -1453,11 +1453,11 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport (с выпадающим меню за пределами хаба)
+-- Teleport (исправленная версия)
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
-TeleportContainer.Position = UDim2.new(0, 10, 0, 610) -- Позиция ниже Rejoin
+TeleportContainer.Position = UDim2.new(0, 10, 0, 610)
 TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TeleportContainer.BackgroundTransparency = 0.5
 TeleportContainer.Parent = ScriptsFrame
@@ -1478,7 +1478,6 @@ TeleportLabel.TextSize = 14
 TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
 TeleportLabel.Parent = TeleportContainer
 
--- Кнопка с боковым меню
 local TeleportToggleButton = Instance.new("TextButton")
 TeleportToggleButton.Name = "TeleportToggle"
 TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
@@ -1494,7 +1493,6 @@ local TeleportButtonCorner = Instance.new("UICorner")
 TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
 TeleportButtonCorner.Parent = TeleportToggleButton
 
--- Боковое меню игроков (за пределами основного меню)
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
@@ -1503,7 +1501,7 @@ PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
 PlayersSideMenu.ClipsDescendants = true
-PlayersSideMenu.Parent = ScreenGui -- Добавляем прямо в ScreenGui, чтобы было поверх всего
+PlayersSideMenu.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 6)
@@ -1531,7 +1529,6 @@ PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(functi
     PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
 end)
 
--- Функция обновления позиции меню
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
@@ -1539,11 +1536,9 @@ local function updateMenuPosition()
     )
 end
 
--- Обновляем позицию при изменении основного меню
 TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
 TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
 
--- Функция телепортации
 local function teleportToPlayer(player)
     if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local char = LocalPlayer.Character
@@ -1553,7 +1548,6 @@ local function teleportToPlayer(player)
     end
 end
 
--- Создание кнопки игрока
 local function createPlayerButton(player)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 30)
@@ -1576,7 +1570,6 @@ local function createPlayerButton(player)
         TeleportToggleButton.Text = "Select ▷"
     end)
     
-    -- Анимация при наведении
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
     end)
@@ -1588,7 +1581,6 @@ local function createPlayerButton(player)
     return button
 end
 
--- Обработчик кнопки телепорта
 local isMenuOpen = false
 TeleportToggleButton.MouseButton1Click:Connect(function()
     isMenuOpen = not isMenuOpen
@@ -1603,21 +1595,18 @@ TeleportToggleButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Добавляем существующих игроков
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         createPlayerButton(player)
     end
 end
 
--- Обработчик новых игроков
 Players.PlayerAdded:Connect(function(player)
     if player ~= LocalPlayer then
         createPlayerButton(player)
     end
 end)
 
--- Обработчик ушедших игроков
 Players.PlayerRemoving:Connect(function(player)
     for _, child in ipairs(PlayersList:GetChildren()) do
         if child:IsA("TextButton") and child.Text == player.Name then
@@ -1627,7 +1616,6 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Закрытие меню при клике вне его
 UserInputService.InputBegan:Connect(function(input, processed)
     if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = UserInputService:GetMouseLocation()
