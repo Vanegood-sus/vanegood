@@ -1693,6 +1693,139 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
+-- ShiftLock 
+local ShiftLockContainer = Instance.new("Frame")
+ShiftLockContainer.Name = "ShiftLock"
+ShiftLockContainer.Size = UDim2.new(1, -20, 0, 40)
+ShiftLockContainer.Position = UDim2.new(0, 10, 0, 60)
+ShiftLockContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ShiftLockContainer.BackgroundTransparency = 0.5
+ShiftLockContainer.Parent = ScriptsFrame
+
+local ShiftLockCorner = Instance.new("UICorner")
+ShiftLockCorner.CornerRadius = UDim.new(0, 6)
+ShiftLockCorner.Parent = ShiftLockContainer
+
+local ShiftLockLabel = Instance.new("TextLabel")
+ShiftLockLabel.Name = "Label"
+ShiftLockLabel.Size = UDim2.new(0, 120, 1, 0)
+ShiftLockLabel.Position = UDim2.new(0, 10, 0, 0)
+ShiftLockLabel.BackgroundTransparency = 1
+ShiftLockLabel.Text = "Shift Lock"
+ShiftLockLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ShiftLockLabel.Font = Enum.Font.GothamBold
+ShiftLockLabel.TextSize = 14
+ShiftLockLabel.TextXAlignment = Enum.TextXAlignment.Left
+ShiftLockLabel.Parent = ShiftLockContainer
+
+-- Кнопка с иконкой (ID: 132055134833572 как в Rejoin)
+local ShiftLockButton = Instance.new("ImageButton")
+ShiftLockButton.Name = "ShiftLockButton"
+ShiftLockButton.Size = UDim2.new(0, 30, 0, 30)
+ShiftLockButton.Position = UDim2.new(1, -35, 0.5, -15)
+ShiftLockButton.BackgroundTransparency = 1
+ShiftLockButton.Image = "rbxassetid://132055134833572" -- ТОЧНО ТАКОЙ ЖЕ ID КАК В REJOIN
+ShiftLockButton.Parent = ShiftLockContainer
+
+-- Оригинальный код шифтлока без изменений
+local runservice = game:GetService("RunService")
+local players = game:GetService("Players")
+local player = players.LocalPlayer
+local camera = workspace.CurrentCamera
+local ENABLED_OFFSET = CFrame.new(1.7, 0, 0)
+local DISABLED_OFFSET = CFrame.new(-1.7, 0, 0)
+local MAX_LENGTH = 900000
+local activeConnection = nil
+local rootPos = Vector3.new(0, 0, 0)
+local shiftlockActive = false
+
+-- Оригинальные функции шифтлока
+local function UpdatePos()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        rootPos = player.Character.HumanoidRootPart.Position
+    end
+end
+
+local function UpdateAutoRotate(bool)
+    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid").AutoRotate = bool
+    end
+end
+
+local function GetUpdatedCameraCFrame()
+    if camera then
+        return CFrame.new(rootPos, Vector3.new(
+            camera.CFrame.LookVector.X * MAX_LENGTH,
+            rootPos.Y,
+            camera.CFrame.LookVector.Z * MAX_LENGTH
+        ))
+    end
+end
+
+local function EnableShiftlock()
+    UpdatePos()
+    UpdateAutoRotate(false)
+    
+    if activeConnection then
+        activeConnection:Disconnect()
+    end
+    
+    activeConnection = runservice.RenderStepped:Connect(function()
+        UpdatePos()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = GetUpdatedCameraCFrame()
+        end
+        if camera then
+            camera.CFrame = camera.CFrame * ENABLED_OFFSET
+        end
+    end)
+end
+
+local function DisableShiftlock()
+    if activeConnection then
+        activeConnection:Disconnect()
+        activeConnection = nil
+    end
+    
+    UpdatePos()
+    UpdateAutoRotate(true)
+    
+    if camera then
+        camera.CFrame = camera.CFrame * DISABLED_OFFSET
+    end
+end
+
+-- Анимации кнопки (как в Rejoin)
+ShiftLockButton.MouseEnter:Connect(function()
+    TweenService:Create(ShiftLockButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+ShiftLockButton.MouseLeave:Connect(function()
+    TweenService:Create(ShiftLockButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия (без изменений логики)
+ShiftLockButton.MouseButton1Click:Connect(function()
+    shiftlockActive = not shiftlockActive
+    if shiftlockActive then
+        EnableShiftlock()
+        TweenService:Create(ShiftLockButton, TweenInfo.new(0.3), {Rotation = 360}):Play()
+        task.delay(0.3, function() ShiftLockButton.Rotation = 0 end)
+    else
+        DisableShiftlock()
+        TweenService:Create(ShiftLockButton, TweenInfo.new(0.3), {Rotation = -360}):Play()
+        task.delay(0.3, function() ShiftLockButton.Rotation = 0 end)
+    end
+end)
+
+-- Обработка смены персонажа
+player.CharacterAdded:Connect(function(character)
+    if shiftlockActive then
+        DisableShiftlock()
+        EnableShiftlock()
+    end
+end)
+
 -- Teleport 
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
