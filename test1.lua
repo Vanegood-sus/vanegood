@@ -928,6 +928,346 @@ end)
 -- Инициализация
 updateFlyToggle()
 
+--Speed
+local SpeedContainer = Instance.new("Frame")
+SpeedContainer.Name = "SpeedSettings"
+SpeedContainer.Size = UDim2.new(1, -20, 0, 40)
+SpeedContainer.Position = UDim2.new(0, 10, 0, 260) -- Позиция ниже InfJump
+SpeedContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+SpeedContainer.BackgroundTransparency = 0.5
+SpeedContainer.Parent = ScriptsFrame
+
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 6)
+SpeedCorner.Parent = SpeedContainer
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Name = "Label"
+SpeedLabel.Size = UDim2.new(0, 120, 1, 0)
+SpeedLabel.Position = UDim2.new(0, 10, 0, 0)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed"
+SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.TextSize = 14
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = SpeedContainer
+
+-- Контейнер для элементов управления
+local SpeedControlContainer = Instance.new("Frame")
+SpeedControlContainer.Size = UDim2.new(0, 150, 0, 25)
+SpeedControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+SpeedControlContainer.BackgroundTransparency = 1
+SpeedControlContainer.Parent = SpeedContainer
+
+-- Поле ввода для скорости
+local SpeedValueInput = Instance.new("TextBox")
+SpeedValueInput.Name = "SpeedInput"
+SpeedValueInput.Size = UDim2.new(0, 40, 1, 0)
+SpeedValueInput.Position = UDim2.new(0, 0, 0, 0)
+SpeedValueInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SpeedValueInput.TextColor3 = Color3.new(1, 1, 1)
+SpeedValueInput.Font = Enum.Font.Gotham
+SpeedValueInput.TextSize = 14
+SpeedValueInput.Text = "16" -- Стандартная скорость
+SpeedValueInput.Parent = SpeedControlContainer
+
+-- Переключатель
+local SpeedToggleFrame = Instance.new("Frame")
+SpeedToggleFrame.Name = "ToggleFrame"
+SpeedToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+SpeedToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+SpeedToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedToggleFrame.Parent = SpeedControlContainer
+
+local SpeedToggleCorner = Instance.new("UICorner")
+SpeedToggleCorner.CornerRadius = UDim.new(1, 0)
+SpeedToggleCorner.Parent = SpeedToggleFrame
+
+local SpeedToggleButton = Instance.new("TextButton")
+SpeedToggleButton.Name = "ToggleButton"
+SpeedToggleButton.Size = UDim2.new(0, 21, 0, 21)
+SpeedToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+SpeedToggleButton.Text = ""
+SpeedToggleButton.Parent = SpeedToggleFrame
+
+local SpeedButtonCorner = Instance.new("UICorner")
+SpeedButtonCorner.CornerRadius = UDim.new(1, 0)
+SpeedButtonCorner.Parent = SpeedToggleButton
+
+-- Логика Speed
+local speedEnabled = false
+local currentSpeed = 16
+local speedConnection = nil
+
+local function updateSpeedToggle()
+    local goal = {
+        Position = speedEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    SpeedToggleFrame.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(SpeedToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function setCharacterSpeed(character, speed)
+    if character and character:FindFirstChild("Humanoid") then
+        character.Humanoid.WalkSpeed = speed
+    end
+end
+
+local function enableSpeed()
+    speedEnabled = true
+    updateSpeedToggle()
+    
+    -- Устанавливаем соединения
+    if not speedConnection then
+        speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if speedEnabled and LocalPlayer.Character then
+                setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+            end
+        end)
+    end
+    
+    -- Применяем сразу к текущему персонажу
+    if LocalPlayer.Character then
+        setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+    end
+end
+
+local function disableSpeed()
+    speedEnabled = false
+    updateSpeedToggle()
+    
+    if speedConnection then
+        speedConnection:Disconnect()
+        speedConnection = nil
+    end
+    
+    -- Возвращаем стандартную скорость
+    if LocalPlayer.Character then
+        setCharacterSpeed(LocalPlayer.Character, 16) -- 16 - стандартная скорость в Roblox
+    end
+end
+
+SpeedToggleButton.MouseButton1Click:Connect(function()
+    if speedEnabled then
+        disableSpeed()
+    else
+        enableSpeed()
+    end
+end)
+
+SpeedValueInput.FocusLost:Connect(function()
+    local num = tonumber(SpeedValueInput.Text)
+    if num and num >= 16 and num <= 500 then
+        currentSpeed = num
+        if speedEnabled and LocalPlayer.Character then
+            setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+        end
+    else
+        SpeedValueInput.Text = tostring(currentSpeed)
+    end
+end)
+
+-- Обработчик добавления нового персонажа
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if speedEnabled then
+        setCharacterSpeed(character, currentSpeed)
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableSpeed()
+    end
+end)
+
+-- Инициализация
+updateSpeedToggle()
+
+--WalkFling
+local WalkFlingContainer = Instance.new("Frame")
+WalkFlingContainer.Name = "WalkFlingSettings"
+WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
+WalkFlingContainer.Position = UDim2.new(0, 10, 0, 310) -- Позиция ниже Speed
+WalkFlingContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+WalkFlingContainer.BackgroundTransparency = 0.5
+WalkFlingContainer.Parent = ScriptsFrame
+
+local WalkFlingCorner = Instance.new("UICorner")
+WalkFlingCorner.CornerRadius = UDim.new(0, 6)
+WalkFlingCorner.Parent = WalkFlingContainer
+
+local WalkFlingLabel = Instance.new("TextLabel")
+WalkFlingLabel.Name = "Label"
+WalkFlingLabel.Size = UDim2.new(0, 120, 1, 0)
+WalkFlingLabel.Position = UDim2.new(0, 10, 0, 0)
+WalkFlingLabel.BackgroundTransparency = 1
+WalkFlingLabel.Text = "Walk Fling"
+WalkFlingLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+WalkFlingLabel.Font = Enum.Font.GothamBold
+WalkFlingLabel.TextSize = 14
+WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
+WalkFlingLabel.Parent = WalkFlingContainer
+
+local WalkFlingToggleFrame = Instance.new("Frame")
+WalkFlingToggleFrame.Name = "ToggleFrame"
+WalkFlingToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+WalkFlingToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+WalkFlingToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+WalkFlingToggleFrame.Parent = WalkFlingContainer
+
+local WalkFlingToggleCorner = Instance.new("UICorner")
+WalkFlingToggleCorner.CornerRadius = UDim.new(1, 0)
+WalkFlingToggleCorner.Parent = WalkFlingToggleFrame
+
+local WalkFlingToggleButton = Instance.new("TextButton")
+WalkFlingToggleButton.Name = "ToggleButton"
+WalkFlingToggleButton.Size = UDim2.new(0, 21, 0, 21)
+WalkFlingToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+WalkFlingToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+WalkFlingToggleButton.Text = ""
+WalkFlingToggleButton.Parent = WalkFlingToggleFrame
+
+local WalkFlingButtonCorner = Instance.new("UICorner")
+WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
+WalkFlingButtonCorner.Parent = WalkFlingToggleButton
+
+-- Логика WalkFling
+local walkFlingEnabled = false
+local walkFlingConnection = nil
+local noclipEnabled = false
+local noclipConnection = nil
+
+local function updateWalkFlingToggle()
+    local goal = {
+        Position = walkFlingEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    WalkFlingToggleFrame.BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(WalkFlingToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableNoclip()
+    if noclipConnection then return end
+    
+    noclipEnabled = true
+    noclipConnection = RunService.Stepped:Connect(function()
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+end
+
+local function disableNoclip()
+    if not noclipConnection then return end
+    
+    noclipEnabled = false
+    noclipConnection:Disconnect()
+    noclipConnection = nil
+    
+    if LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end
+
+local function enableWalkFling()
+    walkFlingEnabled = true
+    updateWalkFlingToggle()
+    enableNoclip()
+    
+    if not walkFlingConnection then
+        walkFlingConnection = RunService.Heartbeat:Connect(function()
+            if walkFlingEnabled and LocalPlayer.Character then
+                local character = LocalPlayer.Character
+                local root = character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                
+                if root and humanoid and humanoid.Health > 0 then
+                    local vel = root.Velocity
+                    root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+                    
+                    task.wait()
+                    
+                    if character and character.Parent and root and root.Parent then
+                        root.Velocity = vel
+                    end
+                    
+                    task.wait()
+                    
+                    if character and character.Parent and root and root.Parent then
+                        root.Velocity = vel + Vector3.new(0, 0.1, 0)
+                    end
+                end
+            end
+        end)
+    end
+end
+
+local function disableWalkFling()
+    walkFlingEnabled = false
+    updateWalkFlingToggle()
+    disableNoclip()
+    
+    if walkFlingConnection then
+        walkFlingConnection:Disconnect()
+        walkFlingConnection = nil
+    end
+    
+    -- Восстанавливаем нормальную физику
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+    end
+end
+
+WalkFlingToggleButton.MouseButton1Click:Connect(function()
+    if walkFlingEnabled then
+        disableWalkFling()
+    else
+        enableWalkFling()
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if walkFlingEnabled then
+            disableWalkFling()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableWalkFling()
+    end
+end)
+
+-- Инициализация
+updateWalkFlingToggle()
+
 --InfJump
 local InfJumpContainer = Instance.new("Frame")
 InfJumpContainer.Name = "InfJump"
