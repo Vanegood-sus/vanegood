@@ -1197,6 +1197,263 @@ end)
 -- Инициализация
 updateInfJumpToggle()
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Создаем GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VanegoodHub"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Основное окно (перемещаемое)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 180, 0, 40)
+MainFrame.Position = UDim2.new(0.5, -90, 0, 20)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MainFrame.BackgroundTransparency = 0.5
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = MainFrame
+
+-- Верхняя панель
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 1, 0)
+TopBar.Position = UDim2.new(0, 0, 0, 0)
+TopBar.BackgroundTransparency = 1
+TopBar.Parent = MainFrame
+
+-- Заголовок "Spectate"
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 120, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Spectate"
+Title.TextColor3 = Color3.fromRGB(220, 220, 220)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+-- Кнопка выбора игрока
+local SpectateToggleButton = Instance.new("TextButton")
+SpectateToggleButton.Name = "SpectateToggle"
+SpectateToggleButton.Size = UDim2.new(0, 120, 0, 25)
+SpectateToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
+SpectateToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpectateToggleButton.Text = "Select ▷"
+SpectateToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+SpectateToggleButton.Font = Enum.Font.Gotham
+SpectateToggleButton.TextSize = 12
+SpectateToggleButton.Parent = TopBar
+
+local SpectateButtonCorner = Instance.new("UICorner")
+SpectateButtonCorner.CornerRadius = UDim.new(0, 4)
+SpectateButtonCorner.Parent = SpectateToggleButton
+
+-- Выпадающее меню игроков
+local PlayersSideMenu = Instance.new("Frame")
+PlayersSideMenu.Name = "PlayersSideMenu"
+PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
+PlayersSideMenu.Position = UDim2.new(0, MainFrame.AbsolutePosition.X + MainFrame.AbsoluteSize.X + 5, 0, MainFrame.AbsolutePosition.Y)
+PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+PlayersSideMenu.BorderSizePixel = 0
+PlayersSideMenu.Visible = false
+PlayersSideMenu.ClipsDescendants = true
+PlayersSideMenu.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = PlayersSideMenu
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1
+UIStroke.Parent = PlayersSideMenu
+
+local PlayersList = Instance.new("ScrollingFrame")
+PlayersList.Size = UDim2.new(1, -5, 1, -5)
+PlayersList.Position = UDim2.new(0, 5, 0, 5)
+PlayersList.BackgroundTransparency = 1
+PlayersList.ScrollBarThickness = 3
+PlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+PlayersList.Parent = PlayersSideMenu
+
+local PlayersListLayout = Instance.new("UIListLayout")
+PlayersListLayout.Padding = UDim.new(0, 5)
+PlayersListLayout.Parent = PlayersList
+
+PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
+    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
+end)
+
+local function updateMenuPosition()
+    PlayersSideMenu.Position = UDim2.new(
+        0, MainFrame.AbsolutePosition.X + MainFrame.AbsoluteSize.X + 5,
+        0, MainFrame.AbsolutePosition.Y
+    )
+end
+
+MainFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
+MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
+
+-- Функция для наблюдения за игроком
+local currentSubject = nil
+local function spectatePlayer(player)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        currentSubject = player
+        game.Workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+        return true
+    end
+    return false
+end
+
+-- Функция для прекращения наблюдения
+local function stopSpectating()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        currentSubject = nil
+        game.Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+    end
+end
+
+local function createPlayerButton(player)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Position = UDim2.new(0, 5, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+    button.TextColor3 = Color3.fromRGB(220, 220, 220)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 12
+    button.Text = player.Name
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = PlayersList
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
+    
+    local spectateButton = Instance.new("TextButton")
+    spectateButton.Size = UDim2.new(0.4, -5, 0.8, 0)
+    spectateButton.Position = UDim2.new(0.6, 5, 0.1, 0)
+    spectateButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
+    spectateButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+    spectateButton.Font = Enum.Font.Gotham
+    spectateButton.TextSize = 10
+    spectateButton.Text = "Spectate"
+    spectateButton.Parent = button
+    
+    local spectateCorner = Instance.new("UICorner")
+    spectateCorner.CornerRadius = UDim.new(0, 4)
+    spectateCorner.Parent = spectateButton
+    
+    local function updateButtonState()
+        if currentSubject == player then
+            spectateButton.Text = "Stop"
+            spectateButton.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
+        else
+            spectateButton.Text = "Spectate"
+            spectateButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
+        end
+    end
+    
+    spectateButton.MouseButton1Click:Connect(function()
+        if currentSubject == player then
+            stopSpectating()
+        else
+            spectatePlayer(player)
+        end
+        updateButtonState()
+    end)
+    
+    button.MouseButton1Click:Connect(function()
+        if currentSubject ~= player then
+            spectatePlayer(player)
+            updateButtonState()
+        end
+    end)
+    
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+    end)
+    
+    return button
+end
+
+local isMenuOpen = false
+SpectateToggleButton.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    
+    if isMenuOpen then
+        SpectateToggleButton.Text = "Select ◁"
+        updateMenuPosition()
+        PlayersSideMenu.Visible = true
+    else
+        SpectateToggleButton.Text = "Select ▷"
+        PlayersSideMenu.Visible = false
+    end
+end)
+
+-- Добавляем существующих игроков
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        createPlayerButton(player)
+    end
+end
+
+-- Обработчик новых игроков
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        createPlayerButton(player)
+    end
+end)
+
+-- Обработчик ушедших игроков
+Players.PlayerRemoving:Connect(function(player)
+    if currentSubject == player then
+        stopSpectating()
+    end
+    
+    for _, child in ipairs(PlayersList:GetChildren()) do
+        if child:IsA("TextButton") and child.Text == player.Name then
+            child:Destroy()
+            break
+        end
+    end
+end)
+
+-- Закрытие меню при клике вне его
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = UserInputService:GetMouseLocation()
+        local menuPos = PlayersSideMenu.AbsolutePosition
+        local menuSize = PlayersSideMenu.AbsoluteSize
+        local buttonPos = SpectateToggleButton.AbsolutePosition
+        local buttonSize = SpectateToggleButton.AbsoluteSize
+        
+        if isMenuOpen and 
+           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
+           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
+            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
+            isMenuOpen = false
+            PlayersSideMenu.Visible = false
+            SpectateToggleButton.Text = "Select ▷"
+        end
+    end
+end)
+
 -- Server Hop
 local ServerHopContainer = Instance.new("Frame")
 ServerHopContainer.Name = "ServerHop"
