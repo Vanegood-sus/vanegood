@@ -1197,6 +1197,81 @@ end)
 -- Инициализация
 updateInfJumpToggle()
 
+-- Server Hop
+local ServerHopContainer = Instance.new("Frame")
+ServerHopContainer.Name = "ServerHop"
+ServerHopContainer.Size = UDim2.new(1, -20, 0, 40)
+ServerHopContainer.Position = UDim2.new(0, 10, 0, 460) -- Позиция ниже последнего элемента
+ServerHopContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ServerHopContainer.BackgroundTransparency = 0.5
+ServerHopContainer.Parent = ScriptsFrame
+
+local ServerHopCorner = Instance.new("UICorner")
+ServerHopCorner.CornerRadius = UDim.new(0, 6)
+ServerHopCorner.Parent = ServerHopContainer
+
+local ServerHopLabel = Instance.new("TextLabel")
+ServerHopLabel.Name = "Label"
+ServerHopLabel.Size = UDim2.new(0, 120, 1, 0)
+ServerHopLabel.Position = UDim2.new(0, 10, 0, 0)
+ServerHopLabel.BackgroundTransparency = 1
+ServerHopLabel.Text = "Server Hop"
+ServerHopLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ServerHopLabel.Font = Enum.Font.GothamBold
+ServerHopLabel.TextSize = 14
+ServerHopLabel.TextXAlignment = Enum.TextXAlignment.Left
+ServerHopLabel.Parent = ServerHopContainer
+
+-- Кнопка с иконкой отпечатка
+local FingerprintButton = Instance.new("ImageButton")
+FingerprintButton.Name = "FingerprintButton"
+FingerprintButton.Size = UDim2.new(0, 30, 0, 30)
+FingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
+FingerprintButton.BackgroundTransparency = 1
+FingerprintButton.Image = "rbxassetid://9407954650" -- ID изображения отпечатка пальца
+FingerprintButton.Parent = ServerHopContainer
+
+-- Функция Server Hop
+local function serverHop()
+    local PlaceId = game.PlaceId
+    local JobId = game.JobId
+    local servers = {}
+    local HttpService = game:GetService("HttpService")
+    local TeleportService = game:GetService("TeleportService")
+    
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true"))
+    end)
+    
+    if success and result and result.data then
+        for i, v in next, result.data do
+            if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= JobId then
+                table.insert(servers, 1, v.id)
+            end
+        end
+    end
+
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], Players.LocalPlayer)
+    else
+        -- Уведомление (если у вас есть функция notify)
+        -- notify("Server Hop", "Couldn't find a server.")
+        warn("Server Hop: Couldn't find a server.")
+    end
+end
+
+-- Анимация при наведении
+FingerprintButton.MouseEnter:Connect(function()
+    TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+FingerprintButton.MouseLeave:Connect(function()
+    TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+FingerprintButton.MouseButton1Click:Connect(serverHop)
+
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
