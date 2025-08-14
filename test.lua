@@ -1,4 +1,58 @@
 -- Vanegood Hub 
+
+local ActiveFunctions = {
+    AntiAFK = false,
+    ESP = false,
+    HitBox = false,
+    Fly = false,
+    Speed = false,
+    InfJump = false,
+    WalkFling = false
+}
+
+-- Функция для отключения всех активных функций
+local function DisableAllFunctions()
+    -- Anti-AFK
+    if afkEnabled then
+        afkEnabled = false
+        updateAfkToggle()
+    end
+    
+    -- ESP
+    if espEnabled then
+        espEnabled = false
+        updateEspToggle()
+        clearESP()
+    end
+    
+    -- HitBox
+    if _G.Disabled then
+        _G.Disabled = false
+        updateHitBoxToggle()
+        resetHitboxes()
+    end
+    
+    -- Fly
+    if flyEnabled then
+        disableFly()
+    end
+    
+    -- Speed
+    if speedEnabled then
+        disableSpeed()
+    end
+    
+    -- InfJump
+    if infJumpEnabled then
+        disableInfJump()
+    end
+    
+    -- WalkFling
+    if walkFlingEnabled then
+        disableWalkFling()
+    end
+end
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
@@ -270,7 +324,7 @@ AntiAfkButtonCorner.CornerRadius = UDim.new(1, 0)
 AntiAfkButtonCorner.Parent = AntiAfkToggleButton
 
 -- Логика Anti-AFK
-local afkEnabled = true
+local afkEnabled = false
 local virtualUser = game:service'VirtualUser'
 
 local function updateAfkToggle()
@@ -693,6 +747,766 @@ end)
 
 updateHitBoxToggle()
 
+-- Fly 
+local FlyContainer = Instance.new("Frame")
+FlyContainer.Name = "FlySettings"
+FlyContainer.Size = UDim2.new(1, -20, 0, 40)
+FlyContainer.Position = UDim2.new(0, 10, 0, 160) -- Позиция ниже HitBox
+FlyContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+FlyContainer.BackgroundTransparency = 0.5
+FlyContainer.Parent = ScriptsFrame
+
+local FlyCorner = Instance.new("UICorner")
+FlyCorner.CornerRadius = UDim.new(0, 6)
+FlyCorner.Parent = FlyContainer
+
+local FlyLabel = Instance.new("TextLabel")
+FlyLabel.Name = "Label"
+FlyLabel.Size = UDim2.new(0, 120, 1, 0)
+FlyLabel.Position = UDim2.new(0, 10, 0, 0)
+FlyLabel.BackgroundTransparency = 1
+FlyLabel.Text = "Fly"
+FlyLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+FlyLabel.Font = Enum.Font.GothamBold
+FlyLabel.TextSize = 14
+FlyLabel.TextXAlignment = Enum.TextXAlignment.Left
+FlyLabel.Parent = FlyContainer
+
+-- Контейнер для элементов управления
+local FlyControlContainer = Instance.new("Frame")
+FlyControlContainer.Size = UDim2.new(0, 150, 0, 25)
+FlyControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+FlyControlContainer.BackgroundTransparency = 1
+FlyControlContainer.Parent = FlyContainer
+
+-- Поле ввода для скорости полета
+local FlySpeedInput = Instance.new("TextBox")
+FlySpeedInput.Name = "SpeedInput"
+FlySpeedInput.Size = UDim2.new(0, 40, 1, 0)
+FlySpeedInput.Position = UDim2.new(0, 0, 0, 0)
+FlySpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+FlySpeedInput.TextColor3 = Color3.new(1, 1, 1)
+FlySpeedInput.Font = Enum.Font.Gotham
+FlySpeedInput.TextSize = 14
+FlySpeedInput.Text = "50"
+FlySpeedInput.Parent = FlyControlContainer
+
+-- Переключатель
+local FlyToggleFrame = Instance.new("Frame")
+FlyToggleFrame.Name = "ToggleFrame"
+FlyToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+FlyToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+FlyToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+FlyToggleFrame.Parent = FlyControlContainer
+
+local FlyToggleCorner = Instance.new("UICorner")
+FlyToggleCorner.CornerRadius = UDim.new(1, 0)
+FlyToggleCorner.Parent = FlyToggleFrame
+
+local FlyToggleButton = Instance.new("TextButton")
+FlyToggleButton.Name = "ToggleButton"
+FlyToggleButton.Size = UDim2.new(0, 21, 0, 21)
+FlyToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+FlyToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+FlyToggleButton.Text = ""
+FlyToggleButton.Parent = FlyToggleFrame
+
+local FlyButtonCorner = Instance.new("UICorner")
+FlyButtonCorner.CornerRadius = UDim.new(1, 0)
+FlyButtonCorner.Parent = FlyToggleButton
+
+-- Логика полета
+local flyEnabled = false
+local flySpeed = 50
+local bv, bg
+local flyConnections = {}
+
+local function updateFlyToggle()
+    local goal = {
+        Position = flyEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    FlyToggleFrame.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(FlyToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function setupCharacter(character)
+    if flyEnabled then
+        if character:FindFirstChild("HumanoidRootPart") then
+            -- Удаляем старые обработчики, если они есть
+            if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+                character.HumanoidRootPart.VelocityHandler:Destroy()
+            end
+            if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                character.HumanoidRootPart.GyroHandler:Destroy()
+            end
+            
+            -- Создаем новые обработчики
+            bv = Instance.new("BodyVelocity")
+            bv.Name = "VelocityHandler"
+            bv.Parent = character.HumanoidRootPart
+            bv.MaxForce = Vector3.new(9e9,9e9,9e9)
+            bv.Velocity = Vector3.new(0,0,0)
+            
+            bg = Instance.new("BodyGyro")
+            bg.Name = "GyroHandler"
+            bg.Parent = character.HumanoidRootPart
+            bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            bg.P = 1000
+            bg.D = 50
+            
+            character.Humanoid.PlatformStand = true
+        end
+    end
+end
+
+local function disableFly()
+    flyEnabled = false
+    updateFlyToggle()
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.PlatformStand = false
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
+            LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
+        end
+        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+            LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
+        end
+    end
+    
+    -- Отключаем все соединения полета
+    for _, connection in pairs(flyConnections) do
+        connection:Disconnect()
+    end
+    flyConnections = {}
+end
+
+local function enableFly()
+    flyEnabled = true
+    updateFlyToggle()
+    
+    -- Устанавливаем соединения только если их еще нет
+    if #flyConnections == 0 then
+        -- Обработчик добавления персонажа
+        table.insert(flyConnections, LocalPlayer.CharacterAdded:Connect(function(character)
+            setupCharacter(character)
+            
+            -- Обработчик смерти персонажа
+            character:WaitForChild("Humanoid").Died:Connect(function()
+                if flyEnabled then
+                    -- После смерти автоматически восстанавливаем полет
+                    task.wait() -- Даем время для респавна
+                    if LocalPlayer.Character then
+                        setupCharacter(LocalPlayer.Character)
+                    end
+                end
+            end)
+        end))
+        
+        -- Обработчик рендера
+        table.insert(flyConnections, RunService.RenderStepped:Connect(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
+                
+                if flyEnabled then
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.Humanoid.PlatformStand = true
+                    
+                    local camera = workspace.CurrentCamera
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
+                    
+                    local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
+                    local direction = controlModule:GetMoveVector()
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
+                    
+                    if direction.X > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
+                    end
+                    if direction.X < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
+                    end
+                    if direction.Z > 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
+                    end
+                    if direction.Z < 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
+                    end
+                end
+            end
+        end))
+        
+        -- Обработчик изменения скорости
+        table.insert(flyConnections, FlySpeedInput:GetPropertyChangedSignal("Text"):Connect(function()
+            if tonumber(FlySpeedInput.Text) then
+                flySpeed = tonumber(FlySpeedInput.Text)
+            end
+        end))
+    end
+    
+    -- Устанавливаем полет для текущего персонажа
+    if LocalPlayer.Character then
+        setupCharacter(LocalPlayer.Character)
+    end
+end
+
+FlyToggleButton.MouseButton1Click:Connect(function()
+    if flyEnabled then
+        disableFly()
+    else
+        enableFly()
+    end
+end)
+
+FlySpeedInput.FocusLost:Connect(function()
+    local num = tonumber(FlySpeedInput.Text)
+    if num and num >= 1 and num <= 500 then
+        flySpeed = num
+    else
+        FlySpeedInput.Text = tostring(flySpeed)
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableFly()
+    end
+end)
+
+-- Инициализация
+updateFlyToggle()
+
+--Speed
+local SpeedContainer = Instance.new("Frame")
+SpeedContainer.Name = "SpeedSettings"
+SpeedContainer.Size = UDim2.new(1, -20, 0, 40)
+SpeedContainer.Position = UDim2.new(0, 10, 0, 260) -- Позиция ниже InfJump
+SpeedContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+SpeedContainer.BackgroundTransparency = 0.5
+SpeedContainer.Parent = ScriptsFrame
+
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 6)
+SpeedCorner.Parent = SpeedContainer
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Name = "Label"
+SpeedLabel.Size = UDim2.new(0, 120, 1, 0)
+SpeedLabel.Position = UDim2.new(0, 10, 0, 0)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed"
+SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.TextSize = 14
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = SpeedContainer
+
+-- Контейнер для элементов управления
+local SpeedControlContainer = Instance.new("Frame")
+SpeedControlContainer.Size = UDim2.new(0, 150, 0, 25)
+SpeedControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+SpeedControlContainer.BackgroundTransparency = 1
+SpeedControlContainer.Parent = SpeedContainer
+
+-- Поле ввода для скорости
+local SpeedValueInput = Instance.new("TextBox")
+SpeedValueInput.Name = "SpeedInput"
+SpeedValueInput.Size = UDim2.new(0, 40, 1, 0)
+SpeedValueInput.Position = UDim2.new(0, 0, 0, 0)
+SpeedValueInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SpeedValueInput.TextColor3 = Color3.new(1, 1, 1)
+SpeedValueInput.Font = Enum.Font.Gotham
+SpeedValueInput.TextSize = 14
+SpeedValueInput.Text = "16" -- Стандартная скорость
+SpeedValueInput.Parent = SpeedControlContainer
+
+-- Переключатель
+local SpeedToggleFrame = Instance.new("Frame")
+SpeedToggleFrame.Name = "ToggleFrame"
+SpeedToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+SpeedToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+SpeedToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedToggleFrame.Parent = SpeedControlContainer
+
+local SpeedToggleCorner = Instance.new("UICorner")
+SpeedToggleCorner.CornerRadius = UDim.new(1, 0)
+SpeedToggleCorner.Parent = SpeedToggleFrame
+
+local SpeedToggleButton = Instance.new("TextButton")
+SpeedToggleButton.Name = "ToggleButton"
+SpeedToggleButton.Size = UDim2.new(0, 21, 0, 21)
+SpeedToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+SpeedToggleButton.Text = ""
+SpeedToggleButton.Parent = SpeedToggleFrame
+
+local SpeedButtonCorner = Instance.new("UICorner")
+SpeedButtonCorner.CornerRadius = UDim.new(1, 0)
+SpeedButtonCorner.Parent = SpeedToggleButton
+
+-- Логика Speed
+local speedEnabled = false
+local currentSpeed = 16
+local speedConnection = nil
+
+local function updateSpeedToggle()
+    local goal = {
+        Position = speedEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    SpeedToggleFrame.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(SpeedToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function setCharacterSpeed(character, speed)
+    if character and character:FindFirstChild("Humanoid") then
+        character.Humanoid.WalkSpeed = speed
+    end
+end
+
+local function enableSpeed()
+    speedEnabled = true
+    updateSpeedToggle()
+    
+    -- Устанавливаем соединения
+    if not speedConnection then
+        speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if speedEnabled and LocalPlayer.Character then
+                setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+            end
+        end)
+    end
+    
+    -- Применяем сразу к текущему персонажу
+    if LocalPlayer.Character then
+        setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+    end
+end
+
+local function disableSpeed()
+    speedEnabled = false
+    updateSpeedToggle()
+    
+    if speedConnection then
+        speedConnection:Disconnect()
+        speedConnection = nil
+    end
+    
+    -- Возвращаем стандартную скорость
+    if LocalPlayer.Character then
+        setCharacterSpeed(LocalPlayer.Character, 16) -- 16 - стандартная скорость в Roblox
+    end
+end
+
+SpeedToggleButton.MouseButton1Click:Connect(function()
+    if speedEnabled then
+        disableSpeed()
+    else
+        enableSpeed()
+    end
+end)
+
+SpeedValueInput.FocusLost:Connect(function()
+    local num = tonumber(SpeedValueInput.Text)
+    if num and num >= 16 and num <= 500 then
+        currentSpeed = num
+        if speedEnabled and LocalPlayer.Character then
+            setCharacterSpeed(LocalPlayer.Character, currentSpeed)
+        end
+    else
+        SpeedValueInput.Text = tostring(currentSpeed)
+    end
+end)
+
+-- Обработчик добавления нового персонажа
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if speedEnabled then
+        setCharacterSpeed(character, currentSpeed)
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableSpeed()
+    end
+end)
+
+-- Инициализация
+updateSpeedToggle()
+
+
+--InfJump
+local InfJumpContainer = Instance.new("Frame")
+InfJumpContainer.Name = "InfJump"
+InfJumpContainer.Size = UDim2.new(1, -20, 0, 40)
+InfJumpContainer.Position = UDim2.new(0, 10, 0, 210) -- Позиция ниже Fly
+InfJumpContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+InfJumpContainer.BackgroundTransparency = 0.5
+InfJumpContainer.Parent = ScriptsFrame
+
+local InfJumpCorner = Instance.new("UICorner")
+InfJumpCorner.CornerRadius = UDim.new(0, 6)
+InfJumpCorner.Parent = InfJumpContainer
+
+local InfJumpLabel = Instance.new("TextLabel")
+InfJumpLabel.Name = "Label"
+InfJumpLabel.Size = UDim2.new(0, 120, 1, 0)
+InfJumpLabel.Position = UDim2.new(0, 10, 0, 0)
+InfJumpLabel.BackgroundTransparency = 1
+InfJumpLabel.Text = "Inf Jump"
+InfJumpLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+InfJumpLabel.Font = Enum.Font.GothamBold
+InfJumpLabel.TextSize = 14
+InfJumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfJumpLabel.Parent = InfJumpContainer
+
+local InfJumpToggleFrame = Instance.new("Frame")
+InfJumpToggleFrame.Name = "ToggleFrame"
+InfJumpToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+InfJumpToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+InfJumpToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+InfJumpToggleFrame.Parent = InfJumpContainer
+
+local InfJumpToggleCorner = Instance.new("UICorner")
+InfJumpToggleCorner.CornerRadius = UDim.new(1, 0)
+InfJumpToggleCorner.Parent = InfJumpToggleFrame
+
+local InfJumpToggleButton = Instance.new("TextButton")
+InfJumpToggleButton.Name = "ToggleButton"
+InfJumpToggleButton.Size = UDim2.new(0, 21, 0, 21)
+InfJumpToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+InfJumpToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+InfJumpToggleButton.Text = ""
+InfJumpToggleButton.Parent = InfJumpToggleFrame
+
+local InfJumpButtonCorner = Instance.new("UICorner")
+InfJumpButtonCorner.CornerRadius = UDim.new(1, 0)
+InfJumpButtonCorner.Parent = InfJumpToggleButton
+
+-- Логика InfJump
+local infJumpEnabled = false
+local infJumpConnection = nil
+
+local function updateInfJumpToggle()
+    local goal = {
+        Position = infJumpEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    InfJumpToggleFrame.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(InfJumpToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableInfJump()
+    infJumpEnabled = true
+    updateInfJumpToggle()
+    
+    infJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+        if infJumpEnabled and game:GetService("Players").LocalPlayer.Character then
+            local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState("Jumping")
+            end
+        end
+    end)
+end
+
+local function disableInfJump()
+    infJumpEnabled = false
+    updateInfJumpToggle()
+    
+    if infJumpConnection then
+        infJumpConnection:Disconnect()
+        infJumpConnection = nil
+    end
+end
+
+InfJumpToggleButton.MouseButton1Click:Connect(function()
+    if infJumpEnabled then
+        disableInfJump()
+    else
+        enableInfJump()
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == game:GetService("Players").LocalPlayer then
+        disableInfJump()
+    end
+end)
+
+-- Инициализация
+updateInfJumpToggle()
+
+-- Server Hop
+local ServerHopContainer = Instance.new("Frame")
+ServerHopContainer.Name = "ServerHop"
+ServerHopContainer.Size = UDim2.new(1, -20, 0, 40)
+ServerHopContainer.Position = UDim2.new(0, 10, 0, 460) -- Позиция ниже последнего элемента
+ServerHopContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ServerHopContainer.BackgroundTransparency = 0.5
+ServerHopContainer.Parent = ScriptsFrame
+
+local ServerHopCorner = Instance.new("UICorner")
+ServerHopCorner.CornerRadius = UDim.new(0, 6)
+ServerHopCorner.Parent = ServerHopContainer
+
+local ServerHopLabel = Instance.new("TextLabel")
+ServerHopLabel.Name = "Label"
+ServerHopLabel.Size = UDim2.new(0, 120, 1, 0)
+ServerHopLabel.Position = UDim2.new(0, 10, 0, 0)
+ServerHopLabel.BackgroundTransparency = 1
+ServerHopLabel.Text = "Server Hop"
+ServerHopLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ServerHopLabel.Font = Enum.Font.GothamBold
+ServerHopLabel.TextSize = 14
+ServerHopLabel.TextXAlignment = Enum.TextXAlignment.Left
+ServerHopLabel.Parent = ServerHopContainer
+
+-- Кнопка с иконкой отпечатка
+local FingerprintButton = Instance.new("ImageButton")
+FingerprintButton.Name = "FingerprintButton"
+FingerprintButton.Size = UDim2.new(0, 30, 0, 30)
+FingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
+FingerprintButton.BackgroundTransparency = 1
+FingerprintButton.Image = "rbxassetid://132055134833572" -- 
+FingerprintButton.Parent = ServerHopContainer
+
+-- Функция Server Hop
+local function serverHop()
+    local PlaceId = game.PlaceId
+    local JobId = game.JobId
+    local servers = {}
+    local HttpService = game:GetService("HttpService")
+    local TeleportService = game:GetService("TeleportService")
+    
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true"))
+    end)
+    
+    if success and result and result.data then
+        for i, v in next, result.data do
+            if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= JobId then
+                table.insert(servers, 1, v.id)
+            end
+        end
+    end
+
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], Players.LocalPlayer)
+    else
+        -- Уведомление (если у вас есть функция notify)
+        -- notify("Server Hop", "Couldn't find a server.")
+        warn("Server Hop: Couldn't find a server.")
+    end
+end
+
+-- Анимация при наведении
+FingerprintButton.MouseEnter:Connect(function()
+    TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+FingerprintButton.MouseLeave:Connect(function()
+    TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+FingerprintButton.MouseButton1Click:Connect(serverHop)
+
+-- Server Low
+local ServerLowContainer = Instance.new("Frame")
+ServerLowContainer.Name = "ServerLow"
+ServerLowContainer.Size = UDim2.new(1, -20, 0, 40)
+ServerLowContainer.Position = UDim2.new(0, 10, 0, 510) -- Позиция ниже Server Hop
+ServerLowContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ServerLowContainer.BackgroundTransparency = 0.5
+ServerLowContainer.Parent = ScriptsFrame
+
+local ServerLowCorner = Instance.new("UICorner")
+ServerLowCorner.CornerRadius = UDim.new(0, 6)
+ServerLowCorner.Parent = ServerLowContainer
+
+local ServerLowLabel = Instance.new("TextLabel")
+ServerLowLabel.Name = "Label"
+ServerLowLabel.Size = UDim2.new(0, 120, 1, 0)
+ServerLowLabel.Position = UDim2.new(0, 10, 0, 0)
+ServerLowLabel.BackgroundTransparency = 1
+ServerLowLabel.Text = "Server Low"
+ServerLowLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ServerLowLabel.Font = Enum.Font.GothamBold
+ServerLowLabel.TextSize = 14
+ServerLowLabel.TextXAlignment = Enum.TextXAlignment.Left
+ServerLowLabel.Parent = ServerLowContainer
+
+-- Кнопка с иконкой (используем тот же отпечаток)
+local LowFingerprintButton = Instance.new("ImageButton")
+LowFingerprintButton.Name = "LowFingerprintButton"
+LowFingerprintButton.Size = UDim2.new(0, 30, 0, 30)
+LowFingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
+LowFingerprintButton.BackgroundTransparency = 1
+LowFingerprintButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+LowFingerprintButton.Parent = ServerLowContainer
+
+-- Функция Server Low
+local function serverLow()
+    local PlaceID = game.PlaceId
+    local AllIDs = {}
+    local foundAnything = ""
+    local actualHour = os.date("!*t").hour
+    local TeleportService = game:GetService("TeleportService")
+    
+    local function TPReturner()
+        local Site
+        if foundAnything == "" then
+            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100'))
+        else
+            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100&cursor='..foundAnything))
+        end
+        
+        local ID = ""
+        if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+            foundAnything = Site.nextPageCursor
+        end
+        
+        local num = 0
+        for i,v in pairs(Site.data) do
+            local Possible = true
+            ID = tostring(v.id)
+            
+            if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                for _,Existing in pairs(AllIDs) do
+                    if num ~= 0 then
+                        if ID == tostring(Existing) then
+                            Possible = false
+                        end
+                    else
+                        if tonumber(actualHour) ~= tonumber(Existing) then
+                            AllIDs = {}
+                            table.insert(AllIDs, actualHour)
+                        end
+                    end
+                    num = num + 1
+                end
+                
+                if Possible then
+                    table.insert(AllIDs, ID)
+                    task.wait()
+                    
+                    pcall(function()
+                        task.wait()
+                        TeleportService:TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+                    end)
+                    
+                    task.wait(4)
+                end
+            end
+        end
+    end
+    
+    -- Запускаем процесс поиска
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        pcall(function()
+            TPReturner()
+            if foundAnything ~= "" then
+                TPReturner()
+            end
+        end)
+    end)
+    
+    -- Отключаем через 30 секунд если не нашли
+    delay(30, function()
+        if connection then
+            connection:Disconnect()
+        end
+    end)
+end
+
+-- Анимация при наведении
+LowFingerprintButton.MouseEnter:Connect(function()
+    TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+LowFingerprintButton.MouseLeave:Connect(function()
+    TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+LowFingerprintButton.MouseButton1Click:Connect(serverLow)
+
+-- Rejoin
+local RejoinContainer = Instance.new("Frame")
+RejoinContainer.Name = "RejoinSettings"
+RejoinContainer.Size = UDim2.new(1, -20, 0, 40)
+RejoinContainer.Position = UDim2.new(0, 10, 0, 560) -- Позиция ниже Server Low
+RejoinContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+RejoinContainer.BackgroundTransparency = 0.5
+RejoinContainer.Parent = ScriptsFrame
+
+local RejoinCorner = Instance.new("UICorner")
+RejoinCorner.CornerRadius = UDim.new(0, 6)
+RejoinCorner.Parent = RejoinContainer
+
+local RejoinLabel = Instance.new("TextLabel")
+RejoinLabel.Name = "Label"
+RejoinLabel.Size = UDim2.new(0, 120, 1, 0)
+RejoinLabel.Position = UDim2.new(0, 10, 0, 0)
+RejoinLabel.BackgroundTransparency = 1
+RejoinLabel.Text = "Rejoin"
+RejoinLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+RejoinLabel.Font = Enum.Font.GothamBold
+RejoinLabel.TextSize = 14
+RejoinLabel.TextXAlignment = Enum.TextXAlignment.Left
+RejoinLabel.Parent = RejoinContainer
+
+-- Кнопка с иконкой (используем тот же отпечаток)
+local RejoinButton = Instance.new("ImageButton")
+RejoinButton.Name = "RejoinButton"
+RejoinButton.Size = UDim2.new(0, 30, 0, 30)
+RejoinButton.Position = UDim2.new(1, -35, 0.5, -15)
+RejoinButton.BackgroundTransparency = 1
+RejoinButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+RejoinButton.Parent = RejoinContainer
+
+-- Функция Rejoin
+local function rejoin()
+    local ts = game:GetService("TeleportService")
+    local p = game:GetService("Players").LocalPlayer
+    
+    -- Анимация перед реджоином
+    TweenService:Create(RejoinButton, TweenInfo.new(0.3), {Rotation = 360}):Play()
+    
+    -- Задержка для анимации
+    task.delay(0.3, function()
+        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
+    end)
+end
+
+-- Анимация при наведении
+RejoinButton.MouseEnter:Connect(function()
+    TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+RejoinButton.MouseLeave:Connect(function()
+    TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+RejoinButton.MouseButton1Click:Connect(rejoin)
+
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -710,6 +1524,219 @@ TrollFrame.ScrollBarThickness = 3
 TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
+
+-- WalkFling (в разделе Троллинг)
+local WalkFlingContainer = Instance.new("Frame")
+WalkFlingContainer.Name = "WalkFlingSettings"
+WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
+WalkFlingContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
+WalkFlingContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+WalkFlingContainer.BackgroundTransparency = 0.5
+WalkFlingContainer.Parent = TrollFrame
+
+local WalkFlingCorner = Instance.new("UICorner")
+WalkFlingCorner.CornerRadius = UDim.new(0, 6)
+WalkFlingCorner.Parent = WalkFlingContainer
+
+local WalkFlingLabel = Instance.new("TextLabel")
+WalkFlingLabel.Name = "Label"
+WalkFlingLabel.Size = UDim2.new(0, 120, 1, 0)
+WalkFlingLabel.Position = UDim2.new(0, 10, 0, 0)
+WalkFlingLabel.BackgroundTransparency = 1
+WalkFlingLabel.Text = "Walk Fling"
+WalkFlingLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+WalkFlingLabel.Font = Enum.Font.GothamBold
+WalkFlingLabel.TextSize = 14
+WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
+WalkFlingLabel.Parent = WalkFlingContainer
+
+-- Контейнер для элементов управления
+local WalkFlingControlContainer = Instance.new("Frame")
+WalkFlingControlContainer.Size = UDim2.new(0, 150, 0, 25)
+WalkFlingControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
+WalkFlingControlContainer.BackgroundTransparency = 1
+WalkFlingControlContainer.Parent = WalkFlingContainer
+
+-- Поле ввода для мощности
+local WalkFlingPowerInput = Instance.new("TextBox")
+WalkFlingPowerInput.Name = "PowerInput"
+WalkFlingPowerInput.Size = UDim2.new(0, 40, 1, 0)
+WalkFlingPowerInput.Position = UDim2.new(0, 0, 0, 0)
+WalkFlingPowerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+WalkFlingPowerInput.TextColor3 = Color3.new(1, 1, 1)
+WalkFlingPowerInput.Font = Enum.Font.Gotham
+WalkFlingPowerInput.TextSize = 14
+WalkFlingPowerInput.Text = "10000"
+WalkFlingPowerInput.Parent = WalkFlingControlContainer
+
+-- Переключатель
+local WalkFlingToggleFrame = Instance.new("Frame")
+WalkFlingToggleFrame.Name = "ToggleFrame"
+WalkFlingToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+WalkFlingToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+WalkFlingToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+WalkFlingToggleFrame.Parent = WalkFlingControlContainer
+
+local WalkFlingToggleCorner = Instance.new("UICorner")
+WalkFlingToggleCorner.CornerRadius = UDim.new(1, 0)
+WalkFlingToggleCorner.Parent = WalkFlingToggleFrame
+
+local WalkFlingToggleButton = Instance.new("TextButton")
+WalkFlingToggleButton.Name = "ToggleButton"
+WalkFlingToggleButton.Size = UDim2.new(0, 21, 0, 21)
+WalkFlingToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+WalkFlingToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+WalkFlingToggleButton.Text = ""
+WalkFlingToggleButton.Parent = WalkFlingToggleFrame
+
+local WalkFlingButtonCorner = Instance.new("UICorner")
+WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
+WalkFlingButtonCorner.Parent = WalkFlingToggleButton
+
+-- Логика WalkFling (сохранена оригинальная функциональность)
+local walkFlingEnabled = false
+local walkFlingPower = 10000
+local walkFlingConnections = {}
+local noclipEnabled = false
+
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+end
+
+local function updateWalkFlingToggle()
+    local goal = {
+        Position = walkFlingEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    WalkFlingToggleFrame.BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(WalkFlingToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableNoclip()
+    noclipEnabled = true
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") and part.CanCollide then
+            part.CanCollide = false
+        end
+    end
+    
+    table.insert(walkFlingConnections, character.DescendantAdded:Connect(function(part)
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end))
+end
+
+local function disableNoclip()
+    noclipEnabled = false
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+end
+
+local function enableWalkFling()
+    walkFlingEnabled = true
+    updateWalkFlingToggle()
+    enableNoclip()
+    
+    -- Подключение для обработки смерти персонажа
+    table.insert(walkFlingConnections, LocalPlayer.CharacterAdded:Connect(function(character)
+        character:WaitForChild("Humanoid").Died:Connect(function()
+            disableWalkFling()
+        end)
+    end))
+    
+    -- Основной цикл WalkFling (сохранен оригинальный алгоритм)
+    table.insert(walkFlingConnections, RunService.Heartbeat:Connect(function()
+        if not walkFlingEnabled then return end
+        
+        local character = LocalPlayer.Character
+        local root = getRoot(character)
+        if not (character and root) then return end
+        
+        local vel = root.Velocity
+        root.Velocity = vel * walkFlingPower + Vector3.new(0, walkFlingPower, 0)
+        
+        -- Добавляем небольшой "толчок" вверх-вниз для эффекта
+        RunService.RenderStepped:Wait()
+        if character and root then
+            root.Velocity = vel
+        end
+        
+        RunService.Stepped:Wait()
+        if character and root then
+            root.Velocity = vel + Vector3.new(0, 0.1, 0)
+        end
+    end))
+end
+
+local function disableWalkFling()
+    walkFlingEnabled = false
+    updateWalkFlingToggle()
+    disableNoclip()
+    
+    for _, connection in ipairs(walkFlingConnections) do
+        connection:Disconnect()
+    end
+    walkFlingConnections = {}
+    
+    -- Возвращаем нормальную физику
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+    end
+end
+
+WalkFlingToggleButton.MouseButton1Click:Connect(function()
+    if walkFlingEnabled then
+        disableWalkFling()
+    else
+        enableWalkFling()
+    end
+end)
+
+WalkFlingPowerInput.FocusLost:Connect(function()
+    local num = tonumber(WalkFlingPowerInput.Text)
+    if num and num >= 1000 and num <= 50000 then
+        walkFlingPower = num
+    else
+        WalkFlingPowerInput.Text = tostring(walkFlingPower)
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if walkFlingEnabled then
+            disableWalkFling()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableWalkFling()
+    end
+end)
+
+-- Инициализация
+updateWalkFlingToggle()
 
 -- Функция переключения вкладок
 local function switchTab(tab)
@@ -777,7 +1804,7 @@ CloseButton.MouseButton1Click:Connect(function()
     MessageLabel.Size = UDim2.new(1, -20, 0, 60)
     MessageLabel.Position = UDim2.new(0, 10, 0, 10)
     MessageLabel.BackgroundTransparency = 1
-    MessageLabel.Text = "Закрыть Vanegood Hub?"
+    MessageLabel.Text = "Вы уверены, что хотите закрыть Vanegood Hub?\n\nПри закрытии все активные функции будут отключены"
     MessageLabel.TextColor3 = Color3.new(1, 1, 1)
     MessageLabel.Font = Enum.Font.GothamBold
     MessageLabel.TextSize = 14
