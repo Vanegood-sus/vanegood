@@ -928,6 +928,112 @@ end)
 -- Инициализация
 updateFlyToggle()
 
+--InfJump
+local InfJumpContainer = Instance.new("Frame")
+InfJumpContainer.Name = "InfJump"
+InfJumpContainer.Size = UDim2.new(1, -20, 0, 40)
+InfJumpContainer.Position = UDim2.new(0, 10, 0, 210) -- Позиция ниже Fly
+InfJumpContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+InfJumpContainer.BackgroundTransparency = 0.5
+InfJumpContainer.Parent = ScriptsFrame
+
+local InfJumpCorner = Instance.new("UICorner")
+InfJumpCorner.CornerRadius = UDim.new(0, 6)
+InfJumpCorner.Parent = InfJumpContainer
+
+local InfJumpLabel = Instance.new("TextLabel")
+InfJumpLabel.Name = "Label"
+InfJumpLabel.Size = UDim2.new(0, 120, 1, 0)
+InfJumpLabel.Position = UDim2.new(0, 10, 0, 0)
+InfJumpLabel.BackgroundTransparency = 1
+InfJumpLabel.Text = "Inf Jump"
+InfJumpLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+InfJumpLabel.Font = Enum.Font.GothamBold
+InfJumpLabel.TextSize = 14
+InfJumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfJumpLabel.Parent = InfJumpContainer
+
+local InfJumpToggleFrame = Instance.new("Frame")
+InfJumpToggleFrame.Name = "ToggleFrame"
+InfJumpToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+InfJumpToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+InfJumpToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+InfJumpToggleFrame.Parent = InfJumpContainer
+
+local InfJumpToggleCorner = Instance.new("UICorner")
+InfJumpToggleCorner.CornerRadius = UDim.new(1, 0)
+InfJumpToggleCorner.Parent = InfJumpToggleFrame
+
+local InfJumpToggleButton = Instance.new("TextButton")
+InfJumpToggleButton.Name = "ToggleButton"
+InfJumpToggleButton.Size = UDim2.new(0, 21, 0, 21)
+InfJumpToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+InfJumpToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+InfJumpToggleButton.Text = ""
+InfJumpToggleButton.Parent = InfJumpToggleFrame
+
+local InfJumpButtonCorner = Instance.new("UICorner")
+InfJumpButtonCorner.CornerRadius = UDim.new(1, 0)
+InfJumpButtonCorner.Parent = InfJumpToggleButton
+
+-- Логика InfJump
+local infJumpEnabled = false
+local infJumpConnection = nil
+
+local function updateInfJumpToggle()
+    local goal = {
+        Position = infJumpEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    InfJumpToggleFrame.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(InfJumpToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableInfJump()
+    infJumpEnabled = true
+    updateInfJumpToggle()
+    
+    infJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+        if infJumpEnabled and game:GetService("Players").LocalPlayer.Character then
+            local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState("Jumping")
+            end
+        end
+    end)
+end
+
+local function disableInfJump()
+    infJumpEnabled = false
+    updateInfJumpToggle()
+    
+    if infJumpConnection then
+        infJumpConnection:Disconnect()
+        infJumpConnection = nil
+    end
+end
+
+InfJumpToggleButton.MouseButton1Click:Connect(function()
+    if infJumpEnabled then
+        disableInfJump()
+    else
+        enableInfJump()
+    end
+end)
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == game:GetService("Players").LocalPlayer then
+        disableInfJump()
+    end
+end)
+
+-- Инициализация
+updateInfJumpToggle()
+
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
