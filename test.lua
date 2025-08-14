@@ -1,4 +1,4 @@
--- Vanegood Hub by Vanegood-sus
+-- Vanegood Hub 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
@@ -316,7 +316,7 @@ local updateInterval = 0.2
 local EspContainer = Instance.new("Frame")
 EspContainer.Name = "ESPSettings"
 EspContainer.Size = UDim2.new(1, -20, 0, 40)
-EspContainer.Position = UDim2.new(0, 10, 0, 60) -- Под Anti-AFK
+EspContainer.Position = UDim2.new(0, 10, 0, 60) 
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
 EspContainer.Parent = ScriptsFrame
@@ -385,7 +385,7 @@ local function clearESP()
     espObjects = {}
 end
 
--- Логика определения врагов/союзников (взята из твоего второго скрипта)
+-- Логика определения врагов/союзников
 local function isEnemy(player)
     -- Проверка на команду убийц
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
@@ -422,7 +422,7 @@ local function isAlly(player)
     return false
 end
 
--- Обновление ESP (взято из твоего второго скрипта)
+-- Обновление ESP 
 local function updateESP()
     if not espEnabled then return end
     
@@ -533,6 +533,165 @@ RunService.Heartbeat:Connect(updateESP)
 
 -- Инициализация
 updateEspToggle()
+
+-- HitBox
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+_G.Size = 20
+_G.Disabled = false
+
+-- Создаем контейнер для HitBox 
+local HitBoxContainer = Instance.new("Frame")
+HitBoxContainer.Name = "HitBoxSettings"
+HitBoxContainer.Size = UDim2.new(1, -20, 0, 40)
+HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) 
+HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HitBoxContainer.BackgroundTransparency = 0.5
+HitBoxContainer.Parent = ScriptsFrame
+
+local HitBoxCorner = Instance.new("UICorner")
+HitBoxCorner.CornerRadius = UDim.new(0, 6)
+HitBoxCorner.Parent = HitBoxContainer
+
+local HitBoxLabel = Instance.new("TextLabel")
+HitBoxLabel.Name = "Label"
+HitBoxLabel.Size = UDim2.new(0, 120, 1, 0)
+HitBoxLabel.Position = UDim2.new(0, 10, 0, 0)
+HitBoxLabel.BackgroundTransparency = 1
+HitBoxLabel.Text = "HitBox"
+HitBoxLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HitBoxLabel.Font = Enum.Font.GothamBold
+HitBoxLabel.TextSize = 14
+HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+HitBoxLabel.Parent = HitBoxContainer
+
+-- Контейнер для элементов управления 
+local ControlContainer = Instance.new("Frame")
+ControlContainer.Size = UDim2.new(0, 150, 0, 25)
+ControlContainer.Position = UDim2.new(1, -110, 0.5, -12)  -- Сдвинуто левее
+ControlContainer.BackgroundTransparency = 1
+ControlContainer.Parent = HitBoxContainer
+
+-- Поле ввода для размера 
+local SizeInput = Instance.new("TextBox")
+SizeInput.Name = "SizeInput"
+SizeInput.Size = UDim2.new(0, 40, 1, 0)
+SizeInput.Position = UDim2.new(0, 0, 0, 0)
+SizeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SizeInput.TextColor3 = Color3.new(1, 1, 1)
+SizeInput.Font = Enum.Font.Gotham
+SizeInput.TextSize = 14
+SizeInput.Text = tostring(_G.Size)
+SizeInput.Parent = ControlContainer
+
+-- Переключатель
+local HitBoxToggleFrame = Instance.new("Frame")
+HitBoxToggleFrame.Name = "ToggleFrame"
+HitBoxToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HitBoxToggleFrame.Position = UDim2.new(0, 50, 0, 0)
+HitBoxToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HitBoxToggleFrame.Parent = ControlContainer
+
+local HitBoxToggleCorner = Instance.new("UICorner")
+HitBoxToggleCorner.CornerRadius = UDim.new(1, 0)
+HitBoxToggleCorner.Parent = HitBoxToggleFrame
+
+local HitBoxToggleButton = Instance.new("TextButton")
+HitBoxToggleButton.Name = "ToggleButton"
+HitBoxToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HitBoxToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HitBoxToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HitBoxToggleButton.Text = ""
+HitBoxToggleButton.Parent = HitBoxToggleFrame
+
+local HitBoxButtonCorner = Instance.new("UICorner")
+HitBoxButtonCorner.CornerRadius = UDim.new(1, 0)
+HitBoxButtonCorner.Parent = HitBoxToggleButton
+
+local function updateHitBoxToggle()
+    local goal = {
+        Position = _G.Disabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    HitBoxToggleFrame.BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(HitBoxToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function resetHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                rootPart.Size = Vector3.new(2, 2, 1)
+                rootPart.Transparency = 0
+                rootPart.BrickColor = BrickColor.new("Medium stone grey")
+                rootPart.Material = "Plastic"
+                rootPart.CanCollide = true
+            end
+        end
+    end
+end
+
+SizeInput.FocusLost:Connect(function()
+    local num = tonumber(SizeInput.Text)
+    if num and num >= 1 and num <= 100 then
+        _G.Size = num
+    else
+        SizeInput.Text = tostring(_G.Size)
+    end
+end)
+
+HitBoxToggleButton.MouseButton1Click:Connect(function()
+    _G.Disabled = not _G.Disabled
+    updateHitBoxToggle()
+    
+    if not _G.Disabled then
+        resetHitboxes()
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if _G.Disabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                pcall(function()
+                    local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    if rootPart then
+                        -- УВЕЛИЧЕНА ВЫСОТА ХИТБОКСА (hipHeight * 3 вместо * 2)
+                        local humanoid = player.Character:FindFirstChild("Humanoid")
+                        local height = humanoid and humanoid.HipHeight * 3 or _G.Size
+                        rootPart.Size = Vector3.new(_G.Size, height, _G.Size)
+                        rootPart.Transparency = 0.7
+                        rootPart.BrickColor = BrickColor.new("Really red")
+                        rootPart.Material = "Neon"
+                        rootPart.CanCollide = false
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.Size = Vector3.new(2, 2, 1)
+            rootPart.Transparency = 0
+            rootPart.BrickColor = BrickColor.new("Medium stone grey")
+            rootPart.Material = "Plastic"
+            rootPart.CanCollide = true
+        end
+    end
+end)
+
+updateHitBoxToggle()
 
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
