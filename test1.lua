@@ -1532,17 +1532,6 @@ end)
 Players.PlayerRemoving:Connect(function(player)
     for _, child in ipairs(PlayersList:GetChildren()) do
         if child:IsA("TextButton") and child.Text == player.Name then
-            child:Destroy()
-            break
-        end
-    end
-end)
-
--- Закрытие меню при клике вне его
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = UserInputService:GetMouseLocation()
-        local dropdownPos = PlayersDropdown.AbsolutePosition
 -- Teleport
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
