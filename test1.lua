@@ -1090,183 +1090,6 @@ end)
 -- Инициализация
 updateSpeedToggle()
 
---WalkFling
-local WalkFlingContainer = Instance.new("Frame")
-WalkFlingContainer.Name = "WalkFlingSettings"
-WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
-WalkFlingContainer.Position = UDim2.new(0, 10, 0, 310) -- Позиция ниже Speed
-WalkFlingContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-WalkFlingContainer.BackgroundTransparency = 0.5
-WalkFlingContainer.Parent = ScriptsFrame
-
-local WalkFlingCorner = Instance.new("UICorner")
-WalkFlingCorner.CornerRadius = UDim.new(0, 6)
-WalkFlingCorner.Parent = WalkFlingContainer
-
-local WalkFlingLabel = Instance.new("TextLabel")
-WalkFlingLabel.Name = "Label"
-WalkFlingLabel.Size = UDim2.new(0, 120, 1, 0)
-WalkFlingLabel.Position = UDim2.new(0, 10, 0, 0)
-WalkFlingLabel.BackgroundTransparency = 1
-WalkFlingLabel.Text = "Walk Fling"
-WalkFlingLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingLabel.Font = Enum.Font.GothamBold
-WalkFlingLabel.TextSize = 14
-WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
-WalkFlingLabel.Parent = WalkFlingContainer
-
-local WalkFlingToggleFrame = Instance.new("Frame")
-WalkFlingToggleFrame.Name = "ToggleFrame"
-WalkFlingToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-WalkFlingToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
-WalkFlingToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-WalkFlingToggleFrame.Parent = WalkFlingContainer
-
-local WalkFlingToggleCorner = Instance.new("UICorner")
-WalkFlingToggleCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingToggleCorner.Parent = WalkFlingToggleFrame
-
-local WalkFlingToggleButton = Instance.new("TextButton")
-WalkFlingToggleButton.Name = "ToggleButton"
-WalkFlingToggleButton.Size = UDim2.new(0, 21, 0, 21)
-WalkFlingToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-WalkFlingToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingToggleButton.Text = ""
-WalkFlingToggleButton.Parent = WalkFlingToggleFrame
-
-local WalkFlingButtonCorner = Instance.new("UICorner")
-WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingButtonCorner.Parent = WalkFlingToggleButton
-
--- Логика WalkFling
-local walkFlingEnabled = false
-local walkFlingConnection = nil
-local noclipEnabled = false
-local noclipConnection = nil
-
-local function updateWalkFlingToggle()
-    local goal = {
-        Position = walkFlingEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
-    }
-    
-    WalkFlingToggleFrame.BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
-    local tween = TweenService:Create(WalkFlingToggleButton, TweenInfo.new(0.2), goal)
-    tween:Play()
-end
-
-local function enableNoclip()
-    if noclipConnection then return end
-    
-    noclipEnabled = true
-    noclipConnection = RunService.Stepped:Connect(function()
-        if LocalPlayer.Character then
-            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end)
-end
-
-local function disableNoclip()
-    if not noclipConnection then return end
-    
-    noclipEnabled = false
-    noclipConnection:Disconnect()
-    noclipConnection = nil
-    
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
-end
-
-local function enableWalkFling()
-    walkFlingEnabled = true
-    updateWalkFlingToggle()
-    enableNoclip()
-    
-    if not walkFlingConnection then
-        walkFlingConnection = RunService.Heartbeat:Connect(function()
-            if walkFlingEnabled and LocalPlayer.Character then
-                local character = LocalPlayer.Character
-                local root = character:FindFirstChild("HumanoidRootPart")
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                
-                if root and humanoid and humanoid.Health > 0 then
-                    local vel = root.Velocity
-                    root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
-                    
-                    task.wait()
-                    
-                    if character and character.Parent and root and root.Parent then
-                        root.Velocity = vel
-                    end
-                    
-                    task.wait()
-                    
-                    if character and character.Parent and root and root.Parent then
-                        root.Velocity = vel + Vector3.new(0, 0.1, 0)
-                    end
-                end
-            end
-        end)
-    end
-end
-
-local function disableWalkFling()
-    walkFlingEnabled = false
-    updateWalkFlingToggle()
-    disableNoclip()
-    
-    if walkFlingConnection then
-        walkFlingConnection:Disconnect()
-        walkFlingConnection = nil
-    end
-    
-    -- Восстанавливаем нормальную физику
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-    end
-end
-
-WalkFlingToggleButton.MouseButton1Click:Connect(function()
-    if walkFlingEnabled then
-        disableWalkFling()
-    else
-        enableWalkFling()
-    end
-end)
-
--- Обработчик смерти персонажа
-local function onCharacterAdded(character)
-    character:WaitForChild("Humanoid").Died:Connect(function()
-        if walkFlingEnabled then
-            disableWalkFling()
-        end
-    end)
-end
-
-LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-if LocalPlayer.Character then
-    onCharacterAdded(LocalPlayer.Character)
-end
-
--- Очистка при выходе
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == LocalPlayer then
-        disableWalkFling()
-    end
-end)
-
--- Инициализация
-updateWalkFlingToggle()
 
 --InfJump
 local InfJumpContainer = Instance.new("Frame")
@@ -1460,12 +1283,11 @@ local WalkFlingButtonCorner = Instance.new("UICorner")
 WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
 WalkFlingButtonCorner.Parent = WalkFlingToggleButton
 
--- Логика WalkFling
+-- Логика WalkFling (сохранена оригинальная функциональность)
 local walkFlingEnabled = false
 local walkFlingPower = 10000
 local walkFlingConnections = {}
 local noclipEnabled = false
-local noclipConnection = nil
 
 local function getRoot(character)
     return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
@@ -1484,32 +1306,31 @@ local function updateWalkFlingToggle()
 end
 
 local function enableNoclip()
-    if noclipConnection then return end
-    
     noclipEnabled = true
-    noclipConnection = RunService.Stepped:Connect(function()
-        if LocalPlayer.Character then
-            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") and part.CanCollide then
+            part.CanCollide = false
         end
-    end)
+    end
+    
+    table.insert(walkFlingConnections, character.DescendantAdded:Connect(function(part)
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end))
 end
 
 local function disableNoclip()
-    if not noclipConnection then return end
-    
     noclipEnabled = false
-    noclipConnection:Disconnect()
-    noclipConnection = nil
+    local character = LocalPlayer.Character
+    if not character then return end
     
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
         end
     end
 end
@@ -1519,32 +1340,35 @@ local function enableWalkFling()
     updateWalkFlingToggle()
     enableNoclip()
     
-    if not walkFlingConnections[1] then
-        table.insert(walkFlingConnections, RunService.Heartbeat:Connect(function()
-            if walkFlingEnabled and LocalPlayer.Character then
-                local character = LocalPlayer.Character
-                local root = getRoot(character)
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                
-                if root and humanoid and humanoid.Health > 0 then
-                    local vel = root.Velocity
-                    root.Velocity = vel * walkFlingPower + Vector3.new(0, walkFlingPower, 0)
-                    
-                    task.wait()
-                    
-                    if character and character.Parent and root and root.Parent then
-                        root.Velocity = vel
-                    end
-                    
-                    task.wait()
-                    
-                    if character and character.Parent and root and root.Parent then
-                        root.Velocity = vel + Vector3.new(0, 0.1, 0)
-                    end
-                end
-            end
-        end))
-    end
+    -- Подключение для обработки смерти персонажа
+    table.insert(walkFlingConnections, LocalPlayer.CharacterAdded:Connect(function(character)
+        character:WaitForChild("Humanoid").Died:Connect(function()
+            disableWalkFling()
+        end)
+    end))
+    
+    -- Основной цикл WalkFling (сохранен оригинальный алгоритм)
+    table.insert(walkFlingConnections, RunService.Heartbeat:Connect(function()
+        if not walkFlingEnabled then return end
+        
+        local character = LocalPlayer.Character
+        local root = getRoot(character)
+        if not (character and root) then return end
+        
+        local vel = root.Velocity
+        root.Velocity = vel * walkFlingPower + Vector3.new(0, walkFlingPower, 0)
+        
+        -- Добавляем небольшой "толчок" вверх-вниз для эффекта
+        RunService.RenderStepped:Wait()
+        if character and root then
+            root.Velocity = vel
+        end
+        
+        RunService.Stepped:Wait()
+        if character and root then
+            root.Velocity = vel + Vector3.new(0, 0.1, 0)
+        end
+    end))
 end
 
 local function disableWalkFling()
@@ -1552,12 +1376,12 @@ local function disableWalkFling()
     updateWalkFlingToggle()
     disableNoclip()
     
-    for _, connection in pairs(walkFlingConnections) do
+    for _, connection in ipairs(walkFlingConnections) do
         connection:Disconnect()
     end
     walkFlingConnections = {}
     
-    -- Восстанавливаем нормальную физику
+    -- Возвращаем нормальную физику
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
     end
