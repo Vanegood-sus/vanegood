@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Удаляем старый хаб если есть
 if CoreGui:FindFirstChild("VanegoodHub") then
@@ -209,11 +210,6 @@ ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 ScriptsFrame.Visible = true
 ScriptsFrame.Parent = ContentFrame
 
--- Добавляем UIListLayout для автоматического расположения элементов
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0, 10)
-ListLayout.Parent = ScriptsFrame
-
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -308,7 +304,7 @@ CloseButton.MouseButton1Click:Connect(function()
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
     YesButton.Text = "Да"
     YesButton.TextColor3 = Color3.new(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
@@ -351,71 +347,299 @@ imageFrame.InputBegan:Connect(function(input)
     end
 end)
 
--- Инициализация
-switchTab("scripts")
-
--- Добавляем элементы в меню (первая вкладка)
-local function createButton(text, parent)
+-- Функция для создания кнопок
+local function createButton(parent, text, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 40)
-    button.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Position = UDim2.new(0, 5, 0, #parent:GetChildren() * 35 + 5)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     button.Text = text
     button.TextColor3 = Color3.fromRGB(220, 220, 220)
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 12
     button.Parent = parent
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 4)
     corner.Parent = button
     
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(80, 80, 80)
-    stroke.Thickness = 1
-    stroke.Parent = button
+    button.MouseButton1Click:Connect(callback)
     
     return button
 end
 
--- Создаем кнопки для меню
-createButton("Настройки", ScriptsFrame)
-createButton("Информация", ScriptsFrame)
-createButton("Профиль", ScriptsFrame)
+-- Функция для создания переключателей
+local function createToggle(parent, text, default, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, -10, 0, 30)
+    toggleFrame.Position = UDim2.new(0, 5, 0, #parent:GetChildren() * 35 + 5)
+    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Parent = parent
+    
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 50, 1, 0)
+    toggleButton.Position = UDim2.new(1, -50, 0, 0)
+    toggleButton.BackgroundColor3 = default and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+    toggleButton.Text = default and "ON" or "OFF"
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Font = Enum.Font.GothamBold
+    toggleButton.TextSize = 12
+    toggleButton.Parent = toggleFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = toggleButton
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -60, 1, 0)
+    label.Position = UDim2.new(0, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(220, 220, 220)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 12
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = toggleFrame
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        local newState = not (toggleButton.Text == "ON")
+        toggleButton.Text = newState and "ON" or "OFF"
+        toggleButton.BackgroundColor3 = newState and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+        callback(newState)
+    end)
+    
+    return toggleButton
+end
 
--- Создаем кнопки для телепорта
-local teleportButtons = {
-    "Спавн",
-    "База",
-    "Арена",
-    "Магазин"
+-- Добавляем элементы в меню (вкладка ScriptsFrame)
+-- Авто бой
+createToggle(ScriptsFrame, "Авто выйгрыш", false, function(value)
+    getgenv().autoWinBrawl = value
+    
+    local function equipPunch()
+        if not getgenv().autoWinBrawl then return end
+        local character = game.Players.LocalPlayer.Character
+        if not character then return false end
+        
+        if character:FindFirstChild("Punch") then return true end
+        
+        local backpack = game.Players.LocalPlayer.Backpack
+        if not backpack then return false end
+        
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool.ClassName == "Tool" and tool.Name == "Punch" then
+                tool.Parent = character
+                return true
+            end
+        end
+        return false
+    end
+    
+    task.spawn(function()
+        while getgenv().autoWinBrawl and task.wait(0.5) do
+            if game.Players.LocalPlayer.PlayerGui.gameGui.brawlJoinLabel.Visible then
+                game.ReplicatedStorage.rEvents.brawlEvent:FireServer("joinBrawl")
+                game.Players.LocalPlayer.PlayerGui.gameGui.brawlJoinLabel.Visible = false
+            end
+        end
+    end)
+    
+    task.spawn(function()
+        while getgenv().autoWinBrawl and task.wait(0.5) do
+            equipPunch()
+        end
+    end)
+    
+    task.spawn(function()
+        while getgenv().autoWinBrawl and task.wait(0.1) do
+            if game.ReplicatedStorage.brawlInProgress.Value then
+                pcall(function() player.muscleEvent:FireServer("punch", "rightHand") end)
+                pcall(function() player.muscleEvent:FireServer("punch", "leftHand") end)
+            end
+        end
+    end)
+end)
+
+createToggle(ScriptsFrame, "Автоматом вступать в бой", false, function(value)
+    getgenv().autoJoinBrawl = value
+    
+    task.spawn(function()
+        while getgenv().autoJoinBrawl and task.wait(0.5) do
+            if game.Players.LocalPlayer.PlayerGui.gameGui.brawlJoinLabel.Visible then
+                game.ReplicatedStorage.rEvents.brawlEvent:FireServer("joinBrawl")
+                game.Players.LocalPlayer.PlayerGui.gameGui.brawlJoinLabel.Visible = false
+            end
+        end
+    end)
+end)
+
+-- Прокачка в залах
+local workoutPositions = {
+    ["Жим лежа"] = {
+        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
+        ["Портал Легенды"] = CFrame.new(4111.91748, 1020.46674, -3799.97217),
+        ["Портал Короля"] = CFrame.new(-8590.06152, 46.0167427, -6043.34717)
+    },
+    ["Жим с присяда"] = {
+        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
+        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
+        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
+    },
+    ["Становая тяга"] = {
+        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
+        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
+        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
+    },
+    ["Поднимать камень"] = {
+        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
+        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
+        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
+    }
 }
 
-for _, text in pairs(teleportButtons) do
-    local btn = createButton(text, GamesFrame)
-    btn.MouseButton1Click:Connect(function()
-        -- Здесь будет логика телепортации
-        print("Телепорт на: " .. text)
+local workoutTypes = {"Жим лежа", "Жим с присяда", "Становая тяга", "Поднимать камень"}
+local gymLocations = {"Портал Ад", "Портал Легенд", "Портал Короля"}
+
+for _, workoutType in ipairs(workoutTypes) do
+    createToggle(ScriptsFrame, workoutType, false, function(value)
+        getgenv().workingGym = value
+        getgenv().currentWorkoutType = workoutType
+        
+        if value then
+            local selectedGym = "Портал Ад" -- Можно добавить выбор зала
+            
+            if workoutPositions[workoutType] and workoutPositions[workoutType][selectedGym] then
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                humanoidRootPart.CFrame = workoutPositions[workoutType][selectedGym]
+                
+                task.spawn(function()
+                    while getgenv().workingGym do
+                        if workoutType == "Жим лежа" then
+                            game.ReplicatedStorage.rEvents.workoutEvent:FireServer("benchPress")
+                        elseif workoutType == "Жим с присяда" then
+                            game.ReplicatedStorage.rEvents.workoutEvent:FireServer("squat")
+                        elseif workoutType == "Становая тяга" then
+                            game.ReplicatedStorage.rEvents.workoutEvent:FireServer("deadlift")
+                        elseif workoutType == "Поднимать камень" then
+                            game.ReplicatedStorage.rEvents.workoutEvent:FireServer("pullUp")
+                        end
+                        task.wait(0.1)
+                    end
+                end)
+            end
+        end
     end)
 end
 
--- Создаем кнопки для перерождения
-local respawnButton = createButton("Переродиться", TrollFrame)
-respawnButton.MouseButton1Click:Connect(function()
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        player.Character:BreakJoints()
+-- Анти отбрасывание
+createToggle(ScriptsFrame, "Анти отбрасывание", false, function(value)
+    local playerName = game.Players.LocalPlayer.Name
+    local rootPart = game.Workspace:FindFirstChild(playerName):FindFirstChild("HumanoidRootPart")
+    
+    if value then
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
+        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.P = 1250
+        bodyVelocity.Parent = rootPart
+    else
+        local existingVelocity = rootPart:FindFirstChild("BodyVelocity")
+        if existingVelocity then
+            existingVelocity:Destroy()
+        end
     end
 end)
 
--- Добавляем автоматическое обновление размеров скролл фреймов
-ScriptsFrame.ChildAdded:Connect(function()
-    ScriptsFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 20)
+-- Добавляем телепорты (вкладка GamesFrame)
+local teleports = {
+    ["Спавн"] = CFrame.new(2, 8, 115),
+    ["Секретная арена"] = CFrame.new(1947, 2, 6191),
+    ["Маленький остров 0-1к"] = CFrame.new(-34, 7, 1903),
+    ["Ледяной зал"] = CFrame.new(-2600.00244, 3.67686558, -403.884369, 0.0873617008, 1.0482899e-09, 0.99617666, 3.07204253e-08, 1, -3.7464023e-09, -0.99617666, 3.09302628e-08, 0.0873617008),
+    ["Мифический портал"] = CFrame.new(2255, 7, 1071),
+    ["Адский портал"] = CFrame.new(-6768, 7, -1287),
+    ["Легендарный остров"] = CFrame.new(4604, 991, -3887),
+    ["Портал мускульного короля"] = CFrame.new(-8646, 17, -5738),
+    ["Джунгли"] = CFrame.new(-8659, 6, 2384),
+    ["Бой в лаве"] = CFrame.new(4471, 119, -8836),
+    ["Бой в пустыне"] = CFrame.new(960, 17, -7398),
+    ["Бой на ринге"] = CFrame.new(-1849, 20, -6335)
+}
+
+for name, position in pairs(teleports) do
+    createButton(GamesFrame, name, function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        humanoidRootPart.CFrame = position
+    end)
+end
+
+-- Добавляем перерождения (вкладка TrollFrame)
+local targetRebirthValue = 0
+createButton(TrollFrame, "Установить цель перерождений", function()
+    -- Здесь можно добавить текстовое поле для ввода количества
+    targetRebirthValue = 100 -- Пример значения
 end)
 
-GamesFrame.ChildAdded:Connect(function()
-    GamesFrame.CanvasSize = UDim2.new(0, 0, 0, #GamesFrame:GetChildren() * 50 + 20)
+createToggle(TrollFrame, "Авто перерождение до цели", false, function(value)
+    _G.targetRebirthActive = value
+    
+    if value then
+        spawn(function()
+            while _G.targetRebirthActive and wait(0.1) do
+                local currentRebirths = game.Players.LocalPlayer.leaderstats.Rebirths.Value
+                
+                if currentRebirths >= targetRebirthValue then
+                    _G.targetRebirthActive = false
+                    break
+                end
+                
+                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            end
+        end)
+    end
 end)
 
-TrollFrame.ChildAdded:Connect(function()
-    TrollFrame.CanvasSize = UDim2.new(0, 0, 0, #TrollFrame:GetChildren() * 50 + 20)
+createToggle(TrollFrame, "Бесконечное перерождение", false, function(value)
+    _G.infiniteRebirthActive = value
+    
+    if value then
+        spawn(function()
+            while _G.infiniteRebirthActive and wait(0.1) do
+                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            end
+        end)
+    end
 end)
+
+createToggle(TrollFrame, "Всегда рост 1", false, function(value)
+    _G.autoSizeActive = value
+    
+    if value then
+        spawn(function()
+            while _G.autoSizeActive and wait() do
+                game:GetService("ReplicatedStorage").rEvents.changeSpeedSizeRemote:InvokeServer("changeSize", 1)
+            end
+        end)
+    end
+end)
+
+createToggle(TrollFrame, "Телепорт к королю", false, function(value)
+    _G.teleportActive = value
+    
+    if value then
+        spawn(function()
+            while _G.teleportActive and wait() do
+                if game.Players.LocalPlayer.Character then
+                    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-8646, 17, -5738))
+                end
+            end
+        end)
+    end
+end)
+
+-- Инициализация
+switchTab("scripts")
