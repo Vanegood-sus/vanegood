@@ -1618,6 +1618,159 @@ end)
 -- Добавляем существующих игроков
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
+-- Teleport (с выпадающим меню за пределами хаба)
+local TeleportContainer = Instance.new("Frame")
+TeleportContainer.Name = "TeleportSettings"
+TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
+TeleportContainer.Position = UDim2.new(0, 10, 0, 610) -- Позиция ниже Rejoin
+TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+TeleportContainer.BackgroundTransparency = 0.5
+TeleportContainer.Parent = ScriptsFrame
+
+local TeleportCorner = Instance.new("UICorner")
+TeleportCorner.CornerRadius = UDim.new(0, 6)
+TeleportCorner.Parent = TeleportContainer
+
+local TeleportLabel = Instance.new("TextLabel")
+TeleportLabel.Name = "Label"
+TeleportLabel.Size = UDim2.new(0, 120, 1, 0)
+TeleportLabel.Position = UDim2.new(0, 10, 0, 0)
+TeleportLabel.BackgroundTransparency = 1
+TeleportLabel.Text = "Teleport"
+TeleportLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportLabel.Font = Enum.Font.GothamBold
+TeleportLabel.TextSize = 14
+TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
+TeleportLabel.Parent = TeleportContainer
+
+-- Кнопка с боковым меню
+local TeleportToggleButton = Instance.new("TextButton")
+TeleportToggleButton.Name = "TeleportToggle"
+TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
+TeleportToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
+TeleportToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+TeleportToggleButton.Text = "Select ▷"
+TeleportToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportToggleButton.Font = Enum.Font.Gotham
+TeleportToggleButton.TextSize = 12
+TeleportToggleButton.Parent = TeleportContainer
+
+local TeleportButtonCorner = Instance.new("UICorner")
+TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
+TeleportButtonCorner.Parent = TeleportToggleButton
+
+-- Боковое меню игроков (за пределами основного меню)
+local PlayersSideMenu = Instance.new("Frame")
+PlayersSideMenu.Name = "PlayersSideMenu"
+PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
+PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y)
+PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+PlayersSideMenu.BorderSizePixel = 0
+PlayersSideMenu.Visible = false
+PlayersSideMenu.ClipsDescendants = true
+PlayersSideMenu.Parent = ScreenGui -- Добавляем прямо в ScreenGui, чтобы было поверх всего
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = PlayersSideMenu
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1
+UIStroke.Parent = PlayersSideMenu
+
+local PlayersList = Instance.new("ScrollingFrame")
+PlayersList.Size = UDim2.new(1, -5, 1, -5)
+PlayersList.Position = UDim2.new(0, 5, 0, 5)
+PlayersList.BackgroundTransparency = 1
+PlayersList.ScrollBarThickness = 3
+PlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+PlayersList.Parent = PlayersSideMenu
+
+local PlayersListLayout = Instance.new("UIListLayout")
+PlayersListLayout.Padding = UDim.new(0, 5)
+PlayersListLayout.Parent = PlayersList
+
+PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
+    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
+end)
+
+-- Функция обновления позиции меню
+local function updateMenuPosition()
+    PlayersSideMenu.Position = UDim2.new(
+        0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
+        0, TeleportContainer.AbsolutePosition.Y
+    )
+end
+
+-- Обновляем позицию при изменении основного меню
+TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
+TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
+
+-- Функция телепортации
+local function teleportToPlayer(player)
+    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+        end
+    end
+end
+
+-- Создание кнопки игрока
+local function createPlayerButton(player)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Position = UDim2.new(0, 5, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+    button.TextColor3 = Color3.fromRGB(220, 220, 220)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 12
+    button.Text = player.Name
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = PlayersList
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
+    
+    button.MouseButton1Click:Connect(function()
+        teleportToPlayer(player)
+        PlayersSideMenu.Visible = false
+        TeleportToggleButton.Text = "Select ▷"
+    end)
+    
+    -- Анимация при наведении
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+    end)
+    
+    return button
+end
+
+-- Обработчик кнопки телепорта
+local isMenuOpen = false
+TeleportToggleButton.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    
+    if isMenuOpen then
+        TeleportToggleButton.Text = "Select ◁"
+        updateMenuPosition()
+        PlayersSideMenu.Visible = true
+    else
+        TeleportToggleButton.Text = "Select ▷"
+        PlayersSideMenu.Visible = false
+    end
+end)
+
+-- Добавляем существующих игроков
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
         createPlayerButton(player)
     end
 end
@@ -1645,12 +1798,17 @@ UserInputService.InputBegan:Connect(function(input, processed)
         local mousePos = UserInputService:GetMouseLocation()
         local menuPos = PlayersSideMenu.AbsolutePosition
         local menuSize = PlayersSideMenu.AbsoluteSize
+        local buttonPos = TeleportToggleButton.AbsolutePosition
+        local buttonSize = TeleportToggleButton.AbsoluteSize
         
-        if PlayersSideMenu.Visible and 
+        if isMenuOpen and 
            (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) then
+            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
+           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
+            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
+            isMenuOpen = false
             PlayersSideMenu.Visible = false
-            TeleportButton.Text = "Open"
+            TeleportToggleButton.Text = "Select ▷"
         end
     end
 end)
