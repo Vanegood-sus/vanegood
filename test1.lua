@@ -1453,7 +1453,7 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport
+-- Teleport (внешний)
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
@@ -1478,37 +1478,71 @@ TeleportLabel.TextSize = 14
 TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
 TeleportLabel.Parent = TeleportContainer
 
--- Кнопка с боковым меню
-local TeleportToggleButton = Instance.new("TextButton")
-TeleportToggleButton.Name = "TeleportToggle"
-TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
-TeleportToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
-TeleportToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-TeleportToggleButton.Text = "Select ▷"
-TeleportToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-TeleportToggleButton.Font = Enum.Font.Gotham
-TeleportToggleButton.TextSize = 12
-TeleportToggleButton.Parent = TeleportContainer
+-- Кнопка активации телепорта
+local TeleportButton = Instance.new("TextButton")
+TeleportButton.Name = "TeleportButton"
+TeleportButton.Size = UDim2.new(0, 100, 0, 25)
+TeleportButton.Position = UDim2.new(1, -110, 0.5, -12)
+TeleportButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+TeleportButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportButton.Text = "Open"
+TeleportButton.Font = Enum.Font.Gotham
+TeleportButton.TextSize = 12
+TeleportButton.Parent = TeleportContainer
 
 local TeleportButtonCorner = Instance.new("UICorner")
 TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
-TeleportButtonCorner.Parent = TeleportToggleButton
+TeleportButtonCorner.Parent = TeleportButton
 
--- Боковое меню игроков (справа)
+-- Боковое меню игроков (вне основного GUI)
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
-PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(1, 5, 0, 0)
-PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+PlayersSideMenu.Size = UDim2.new(0, 200, 0, 300)
+PlayersSideMenu.Position = UDim2.new(1, 10, 0.5, -150)
+PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 PlayersSideMenu.Visible = false
-PlayersSideMenu.ClipsDescendants = true
-PlayersSideMenu.Parent = TeleportContainer
+PlayersSideMenu.Parent = ScreenGui -- Добавляем прямо в ScreenGui, а не в контейнер
+
+local SideMenuCorner = Instance.new("UICorner")
+SideMenuCorner.CornerRadius = UDim.new(0, 8)
+SideMenuCorner.Parent = PlayersSideMenu
+
+local SideMenuStroke = Instance.new("UIStroke")
+SideMenuStroke.Color = Color3.fromRGB(255, 165, 50)
+SideMenuStroke.Thickness = 1.5
+SideMenuStroke.Transparency = 0.3
+SideMenuStroke.Parent = PlayersSideMenu
+
+local SideMenuTitle = Instance.new("TextLabel")
+SideMenuTitle.Size = UDim2.new(1, 0, 0, 30)
+SideMenuTitle.Position = UDim2.new(0, 0, 0, 0)
+SideMenuTitle.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+SideMenuTitle.Text = "PLAYERS LIST"
+SideMenuTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
+SideMenuTitle.Font = Enum.Font.GothamBold
+SideMenuTitle.TextSize = 14
+SideMenuTitle.Parent = PlayersSideMenu
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = SideMenuTitle
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -25, 0.5, -10)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 14
+CloseButton.Parent = SideMenuTitle
 
 local PlayersList = Instance.new("ScrollingFrame")
-PlayersList.Size = UDim2.new(1, 0, 1, 0)
-PlayersList.Position = UDim2.new(0, 0, 0, 0)
+PlayersList.Size = UDim2.new(1, -10, 1, -40)
+PlayersList.Position = UDim2.new(0, 5, 0, 35)
 PlayersList.BackgroundTransparency = 1
 PlayersList.ScrollBarThickness = 3
+PlayersList.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)
 PlayersList.Parent = PlayersSideMenu
 
 local PlayersListLayout = Instance.new("UIListLayout")
@@ -1517,7 +1551,6 @@ PlayersListLayout.Parent = PlayersList
 
 PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
-    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y, 200))
 end)
 
 -- Функция телепортации
@@ -1526,6 +1559,7 @@ local function teleportToPlayer(player)
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+            PlayersSideMenu.Visible = false
         end
     end
 end
@@ -1533,9 +1567,9 @@ end
 -- Создание кнопки игрока
 local function createPlayerButton(player)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 25)
+    button.Size = UDim2.new(1, -10, 0, 30)
     button.Position = UDim2.new(0, 5, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     button.TextColor3 = Color3.fromRGB(220, 220, 220)
     button.Font = Enum.Font.Gotham
     button.TextSize = 12
@@ -1547,27 +1581,38 @@ local function createPlayerButton(player)
     buttonCorner.CornerRadius = UDim.new(0, 4)
     buttonCorner.Parent = button
     
+    -- Добавляем иконку телепорта справа
+    local teleportIcon = Instance.new("ImageLabel")
+    teleportIcon.Size = UDim2.new(0, 20, 0, 20)
+    teleportIcon.Position = UDim2.new(1, -25, 0.5, -10)
+    teleportIcon.BackgroundTransparency = 1
+    teleportIcon.Image = "rbxassetid://7072716619" -- Иконка телепорта
+    teleportIcon.Parent = button
+    
     button.MouseButton1Click:Connect(function()
         teleportToPlayer(player)
-        PlayersSideMenu.Visible = false
-        TeleportToggleButton.Text = "Select ▷"
     end)
     
-    return button
+    -- Анимация при наведении
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 70)}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+    end)
 end
 
 -- Обработчик кнопки телепорта
-local isMenuOpen = false
-TeleportToggleButton.MouseButton1Click:Connect(function()
-    isMenuOpen = not isMenuOpen
-    
-    if isMenuOpen then
-        TeleportToggleButton.Text = "Select ◁"
-        PlayersSideMenu.Visible = true
-    else
-        TeleportToggleButton.Text = "Select ▷"
-        PlayersSideMenu.Visible = false
-    end
+TeleportButton.MouseButton1Click:Connect(function()
+    PlayersSideMenu.Visible = not PlayersSideMenu.Visible
+    TeleportButton.Text = PlayersSideMenu.Visible and "Close" or "Open"
+end)
+
+-- Кнопка закрытия бокового меню
+CloseButton.MouseButton1Click:Connect(function()
+    PlayersSideMenu.Visible = false
+    TeleportButton.Text = "Open"
 end)
 
 -- Добавляем существующих игроков
@@ -1600,17 +1645,12 @@ UserInputService.InputBegan:Connect(function(input, processed)
         local mousePos = UserInputService:GetMouseLocation()
         local menuPos = PlayersSideMenu.AbsolutePosition
         local menuSize = PlayersSideMenu.AbsoluteSize
-        local buttonPos = TeleportToggleButton.AbsolutePosition
-        local buttonSize = TeleportToggleButton.AbsoluteSize
         
-        if isMenuOpen and 
+        if PlayersSideMenu.Visible and 
            (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
-           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
-            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
-            isMenuOpen = false
+            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) then
             PlayersSideMenu.Visible = false
-            TeleportToggleButton.Text = "Select ▷"
+            TeleportButton.Text = "Open"
         end
     end
 end)
