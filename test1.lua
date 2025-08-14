@@ -1228,7 +1228,7 @@ FingerprintButton.Name = "FingerprintButton"
 FingerprintButton.Size = UDim2.new(0, 30, 0, 30)
 FingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
 FingerprintButton.BackgroundTransparency = 1
-FingerprintButton.Image = "rbxassetid://85134528791717" -- 
+FingerprintButton.Image = "rbxassetid://132055134833572" -- 
 FingerprintButton.Parent = ServerHopContainer
 
 -- Функция Server Hop
