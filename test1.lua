@@ -299,6 +299,13 @@ end)
 
 updateAfkToggle()  -- Инициализация переключателя
 
+-- ESP
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
 -- Настройки ESP
 local espEnabled = false
 local espObjects = {}
