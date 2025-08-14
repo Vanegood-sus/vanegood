@@ -270,7 +270,7 @@ AntiAfkButtonCorner.CornerRadius = UDim.new(1, 0)
 AntiAfkButtonCorner.Parent = AntiAfkToggleButton
 
 -- Логика Anti-AFK
-local afkEnabled = true
+local afkEnabled = false
 local virtualUser = game:service'VirtualUser'
 
 local function updateAfkToggle()
