@@ -1198,51 +1198,35 @@ end)
 updateInfJumpToggle()
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Создаем GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VanegoodHub"
-ScreenGui.Parent = game:GetService("CoreGui")
+-- Добавляем наблюдателя в ваш хаб
+local SpectateContainer = Instance.new("Frame")
+SpectateContainer.Name = "SpectateSettings"
+SpectateContainer.Size = UDim2.new(1, -20, 0, 40)
+SpectateContainer.Position = UDim2.new(0, 10, 0, 610) -- Измените позицию по необходимости
+SpectateContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+SpectateContainer.BackgroundTransparency = 0.5
+SpectateContainer.Parent = ScriptsFrame -- Предполагается, что ScriptsFrame уже существует в вашем хабе
 
--- Основное окно (перемещаемое)
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 180, 0, 40)
-MainFrame.Position = UDim2.new(0.5, -90, 0, 20)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-MainFrame.BackgroundTransparency = 0.5
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local SpectateCorner = Instance.new("UICorner")
+SpectateCorner.CornerRadius = UDim.new(0, 6)
+SpectateCorner.Parent = SpectateContainer
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = MainFrame
+local SpectateLabel = Instance.new("TextLabel")
+SpectateLabel.Name = "Label"
+SpectateLabel.Size = UDim2.new(0, 120, 1, 0)
+SpectateLabel.Position = UDim2.new(0, 10, 0, 0)
+SpectateLabel.BackgroundTransparency = 1
+SpectateLabel.Text = "Spectate"
+SpectateLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+SpectateLabel.Font = Enum.Font.GothamBold
+SpectateLabel.TextSize = 14
+SpectateLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpectateLabel.Parent = SpectateContainer
 
--- Верхняя панель
-local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 1, 0)
-TopBar.Position = UDim2.new(0, 0, 0, 0)
-TopBar.BackgroundTransparency = 1
-TopBar.Parent = MainFrame
-
--- Заголовок "Spectate"
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 120, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Spectate"
-Title.TextColor3 = Color3.fromRGB(220, 220, 220)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
-
--- Кнопка выбора игрока
 local SpectateToggleButton = Instance.new("TextButton")
 SpectateToggleButton.Name = "SpectateToggle"
 SpectateToggleButton.Size = UDim2.new(0, 120, 0, 25)
@@ -1252,17 +1236,16 @@ SpectateToggleButton.Text = "Select ▷"
 SpectateToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 SpectateToggleButton.Font = Enum.Font.Gotham
 SpectateToggleButton.TextSize = 12
-SpectateToggleButton.Parent = TopBar
+SpectateToggleButton.Parent = SpectateContainer
 
 local SpectateButtonCorner = Instance.new("UICorner")
 SpectateButtonCorner.CornerRadius = UDim.new(0, 4)
 SpectateButtonCorner.Parent = SpectateToggleButton
 
--- Выпадающее меню игроков
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, MainFrame.AbsolutePosition.X + MainFrame.AbsoluteSize.X + 5, 0, MainFrame.AbsolutePosition.Y)
+PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1297,16 +1280,17 @@ end)
 
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
-        0, MainFrame.AbsolutePosition.X + MainFrame.AbsoluteSize.X + 5,
-        0, MainFrame.AbsolutePosition.Y
+        0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5,
+        0, SpectateContainer.AbsolutePosition.Y
     )
 end
 
-MainFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
-MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
+SpectateContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
+SpectateContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
 
--- Функция для наблюдения за игроком
+-- Функции наблюдателя
 local currentSubject = nil
+
 local function spectatePlayer(player)
     if player.Character and player.Character:FindFirstChild("Humanoid") then
         currentSubject = player
@@ -1316,7 +1300,6 @@ local function spectatePlayer(player)
     return false
 end
 
--- Функция для прекращения наблюдения
 local function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         currentSubject = nil
@@ -1710,7 +1693,7 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport (исправленная версия)
+-- Teleport 
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
