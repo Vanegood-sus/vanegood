@@ -1272,6 +1272,187 @@ end)
 -- Обработчик нажатия
 FingerprintButton.MouseButton1Click:Connect(serverHop)
 
+-- Server Low
+local ServerLowContainer = Instance.new("Frame")
+ServerLowContainer.Name = "ServerLow"
+ServerLowContainer.Size = UDim2.new(1, -20, 0, 40)
+ServerLowContainer.Position = UDim2.new(0, 10, 0, 510) -- Позиция ниже Server Hop
+ServerLowContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ServerLowContainer.BackgroundTransparency = 0.5
+ServerLowContainer.Parent = ScriptsFrame
+
+local ServerLowCorner = Instance.new("UICorner")
+ServerLowCorner.CornerRadius = UDim.new(0, 6)
+ServerLowCorner.Parent = ServerLowContainer
+
+local ServerLowLabel = Instance.new("TextLabel")
+ServerLowLabel.Name = "Label"
+ServerLowLabel.Size = UDim2.new(0, 120, 1, 0)
+ServerLowLabel.Position = UDim2.new(0, 10, 0, 0)
+ServerLowLabel.BackgroundTransparency = 1
+ServerLowLabel.Text = "Server Low"
+ServerLowLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ServerLowLabel.Font = Enum.Font.GothamBold
+ServerLowLabel.TextSize = 14
+ServerLowLabel.TextXAlignment = Enum.TextXAlignment.Left
+ServerLowLabel.Parent = ServerLowContainer
+
+-- Кнопка с иконкой (используем тот же отпечаток)
+local LowFingerprintButton = Instance.new("ImageButton")
+LowFingerprintButton.Name = "LowFingerprintButton"
+LowFingerprintButton.Size = UDim2.new(0, 30, 0, 30)
+LowFingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
+LowFingerprintButton.BackgroundTransparency = 1
+LowFingerprintButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+LowFingerprintButton.Parent = ServerLowContainer
+
+-- Функция Server Low
+local function serverLow()
+    local PlaceID = game.PlaceId
+    local AllIDs = {}
+    local foundAnything = ""
+    local actualHour = os.date("!*t").hour
+    local TeleportService = game:GetService("TeleportService")
+    
+    local function TPReturner()
+        local Site
+        if foundAnything == "" then
+            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100'))
+        else
+            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100&cursor='..foundAnything))
+        end
+        
+        local ID = ""
+        if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+            foundAnything = Site.nextPageCursor
+        end
+        
+        local num = 0
+        for i,v in pairs(Site.data) do
+            local Possible = true
+            ID = tostring(v.id)
+            
+            if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                for _,Existing in pairs(AllIDs) do
+                    if num ~= 0 then
+                        if ID == tostring(Existing) then
+                            Possible = false
+                        end
+                    else
+                        if tonumber(actualHour) ~= tonumber(Existing) then
+                            AllIDs = {}
+                            table.insert(AllIDs, actualHour)
+                        end
+                    end
+                    num = num + 1
+                end
+                
+                if Possible then
+                    table.insert(AllIDs, ID)
+                    task.wait()
+                    
+                    pcall(function()
+                        task.wait()
+                        TeleportService:TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+                    end)
+                    
+                    task.wait(4)
+                end
+            end
+        end
+    end
+    
+    -- Запускаем процесс поиска
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        pcall(function()
+            TPReturner()
+            if foundAnything ~= "" then
+                TPReturner()
+            end
+        end)
+    end)
+    
+    -- Отключаем через 30 секунд если не нашли
+    delay(30, function()
+        if connection then
+            connection:Disconnect()
+        end
+    end)
+end
+
+-- Анимация при наведении
+LowFingerprintButton.MouseEnter:Connect(function()
+    TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+LowFingerprintButton.MouseLeave:Connect(function()
+    TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+LowFingerprintButton.MouseButton1Click:Connect(serverLow)
+
+-- Rejoin
+local RejoinContainer = Instance.new("Frame")
+RejoinContainer.Name = "RejoinSettings"
+RejoinContainer.Size = UDim2.new(1, -20, 0, 40)
+RejoinContainer.Position = UDim2.new(0, 10, 0, 560) -- Позиция ниже Server Low
+RejoinContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+RejoinContainer.BackgroundTransparency = 0.5
+RejoinContainer.Parent = ScriptsFrame
+
+local RejoinCorner = Instance.new("UICorner")
+RejoinCorner.CornerRadius = UDim.new(0, 6)
+RejoinCorner.Parent = RejoinContainer
+
+local RejoinLabel = Instance.new("TextLabel")
+RejoinLabel.Name = "Label"
+RejoinLabel.Size = UDim2.new(0, 120, 1, 0)
+RejoinLabel.Position = UDim2.new(0, 10, 0, 0)
+RejoinLabel.BackgroundTransparency = 1
+RejoinLabel.Text = "Rejoin"
+RejoinLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+RejoinLabel.Font = Enum.Font.GothamBold
+RejoinLabel.TextSize = 14
+RejoinLabel.TextXAlignment = Enum.TextXAlignment.Left
+RejoinLabel.Parent = RejoinContainer
+
+-- Кнопка с иконкой (используем тот же отпечаток)
+local RejoinButton = Instance.new("ImageButton")
+RejoinButton.Name = "RejoinButton"
+RejoinButton.Size = UDim2.new(0, 30, 0, 30)
+RejoinButton.Position = UDim2.new(1, -35, 0.5, -15)
+RejoinButton.BackgroundTransparency = 1
+RejoinButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+RejoinButton.Parent = RejoinContainer
+
+-- Функция Rejoin
+local function rejoin()
+    local ts = game:GetService("TeleportService")
+    local p = game:GetService("Players").LocalPlayer
+    
+    -- Анимация перед реджоином
+    TweenService:Create(RejoinButton, TweenInfo.new(0.3), {Rotation = 360}):Play()
+    
+    -- Задержка для анимации
+    task.delay(0.3, function()
+        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
+    end)
+end
+
+-- Анимация при наведении
+RejoinButton.MouseEnter:Connect(function()
+    TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
+end)
+
+RejoinButton.MouseLeave:Connect(function()
+    TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
+end)
+
+-- Обработчик нажатия
+RejoinButton.MouseButton1Click:Connect(rejoin)
+
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
