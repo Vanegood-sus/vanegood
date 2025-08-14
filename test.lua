@@ -1458,7 +1458,7 @@ end)
 local ShiftLockContainer = Instance.new("Frame")
 ShiftLockContainer.Name = "ShiftLockSettings"
 ShiftLockContainer.Size = UDim2.new(1, -20, 0, 40)
-ShiftLockContainer.Position = UDim2.new(0, 10, 0, 260) -- Позиция ниже InfJump
+ShiftLockContainer.Position = UDim2.new(0, 10, 0, 310) -- Позиция ниже Speed
 ShiftLockContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 ShiftLockContainer.BackgroundTransparency = 0.5
 ShiftLockContainer.Parent = ScriptsFrame
@@ -1599,7 +1599,8 @@ local function enableShiftLock()
                 local camera = workspace.CurrentCamera
                 if camera then
                     -- Применяем текущее значение смещения из поля ввода
-                    local offset = CFrame.new(tonumber(SensitivityInput.Text) or shiftLockOffset)
+                    local offset = tonumber(SensitivityInput.Text) or shiftLockOffset
+                    local offsetCFrame = CFrame.new(offset, 0, 0)
                     
                     rootPart.CFrame = CFrame.new(
                         rootPart.Position,
@@ -1610,12 +1611,12 @@ local function enableShiftLock()
                         )
                     )
                     
-                    camera.CFrame = camera.CFrame * CFrame.new(offset, 0, 0)
+                    camera.CFrame = camera.CFrame * offsetCFrame
                     camera.Focus = CFrame.fromMatrix(
                         camera.Focus.Position,
                         camera.CFrame.RightVector,
                         camera.CFrame.UpVector
-                    ) * CFrame.new(offset, 0, 0)
+                    ) * offsetCFrame
                 end
             end
         end
