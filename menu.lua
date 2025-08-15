@@ -1950,5 +1950,45 @@ createButton(teleportTab, "Спавн", function()
 end)
 
 createButton(teleportTab, "Секретная арена", function()
-    teleportTo(CFrame.new(1947, 2, 6191), "Тел
+    teleportTo(CFrame.new(1947, 2, 6191), "Телепорт", "У-хх СЕКРЕТ!")
+end)
 
+createButton(teleportTab, "Маленький остров 0-1к", function()
+    teleportTo(CFrame.new(-34, 7, 1903), "Телепорт", "Это для тебя малыш")
+end)
+
+createButton(teleportTab, "Ледяной зал", function()
+    teleportTo(CFrame.new(-2600.00244, 3.67686558, -403.884369, 0.0873617008, 1.0482899e-09, 0.99617666, 3.07204253e-08, 1, -3.7464023e-09, -0.99617666, 3.09302628e-08, 0.0873617008), "Телепорт", "Тут холодновато")
+end)
+
+createButton(teleportTab, "Мифический портал", function()
+    teleportTo(CFrame.new(2255, 7, 1071), "Телепорт", "Вот это Да,Мистика!")
+end)
+
+createButton(teleportTab, "Адский портал", function()
+    teleportTo(CFrame.new(-6768, 7, -1287), "Телепорт", "Жарковье,прям под сатану")
+end)
+
+createButton(teleportTab, "Легендарный остров", function()
+    teleportTo(CFrame.new(4604, 991, -3887), "Телепорт", "Тихо!Он только для легенд")
+end)
+
+createButton(teleportTab, "Портал мускульного короля", function()
+    teleportTo(CFrame.new(-8646, 17, -5738), "Телепорт", "Ты на стояке у Роналдо,двойная сила!")
+end)
+
+createButton(teleportTab, "Джунгли", function()
+    teleportTo(CFrame.new(-8659, 6, 2384), "Телепорт", "Алё,надо побрить,тут уже обезьянки бегают")
+end)
+
+createButton(teleportTab, "Бой в лаве", function()
+    teleportTo(CFrame.new(4471, 119, -8836), "Телепорт", "Это бой в лаве")
+end)
+
+createButton(teleportTab, "Бой в пустыне", function()
+    teleportTo(CFrame.new(960, 17, -7398), "Телепорт", "Это бой в песчанике")
+end)
+
+createButton(teleportTab, "Бой на ринге", function()
+    teleportTo(CFrame.new(-1849, 20, -6335), "Телепорт", "Тебе завидует Майк Тайсон")
+end)
