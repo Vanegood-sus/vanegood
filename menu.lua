@@ -4,10 +4,17 @@ local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
 
 -- Удаляем старый хаб если есть
 if CoreGui:FindFirstChild("VanegoodHub") then
     CoreGui.VanegoodHub:Destroy()
+end
+if CoreGui:FindFirstChild("TinyDraggableImage") then
+    CoreGui.TinyDraggableImage:Destroy()
 end
 
 -- Создаем GUI
@@ -16,13 +23,12 @@ ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой (для открытия/закрытия)
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
--- Размеры изображения
+-- Размер иконки
 local imageSize = 75
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
@@ -166,7 +172,7 @@ MinimizeButton.MouseButton1Click:Connect(function()
     else
         MainFrame.Size = UDim2.new(0, 500, 0, 350)
         ContentFrame.Visible = true
-        MinimizeButton.Text = "-"
+        MinimizeButton.Text = "—"
     end
 end)
 
@@ -226,7 +232,6 @@ imageFrame.InputBegan:Connect(function(input)
         hubVisible = not hubVisible
         ScreenGui.Enabled = hubVisible
         
-        -- Анимация для обратной связи
         if hubVisible then
             TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
         else
@@ -238,7 +243,6 @@ end)
 -- Создаем вкладки
 local Tabs = {}
 
--- Функция для создания вкладки
 local function createTab(name)
     local tabFrame = Instance.new("ScrollingFrame")
     tabFrame.Name = name
@@ -257,7 +261,6 @@ local function createTab(name)
     return tabFrame
 end
 
--- Функция для создания кнопки
 local function createButton(parent, text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 30)
@@ -277,16 +280,13 @@ local function createButton(parent, text, callback)
     return button
 end
 
--- Функция для создания переключателя
--- Новая функция для создания переключателя с ползунком
 local function createToggle(parent, text, default, callback)
     local toggleContainer = Instance.new("Frame")
     toggleContainer.Name = "ToggleContainer"
     toggleContainer.Size = UDim2.new(1, -10, 0, 30)
     toggleContainer.BackgroundTransparency = 1
     toggleContainer.Parent = parent
-    
-    -- Текст переключателя
+
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.7, 0, 1, 0)
     label.Position = UDim2.new(0, 0, 0, 0)
@@ -297,20 +297,18 @@ local function createToggle(parent, text, default, callback)
     label.TextSize = 14
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = toggleContainer
-    
-    -- Фрейм для ползунка
+
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = "ToggleFrame"
     toggleFrame.Size = UDim2.new(0, 50, 0, 25)
     toggleFrame.Position = UDim2.new(0.7, 5, 0.5, -12)
     toggleFrame.BackgroundColor3 = default and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
     toggleFrame.Parent = toggleContainer
-    
+
     local toggleCorner = Instance.new("UICorner")
     toggleCorner.CornerRadius = UDim.new(1, 0)
     toggleCorner.Parent = toggleFrame
-    
-    -- Кнопка ползунка
+
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
     toggleButton.Size = UDim2.new(0, 21, 0, 21)
@@ -318,35 +316,28 @@ local function createToggle(parent, text, default, callback)
     toggleButton.BackgroundColor3 = default and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     toggleButton.Text = ""
     toggleButton.Parent = toggleFrame
-    
+
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(1, 0)
     buttonCorner.Parent = toggleButton
-    
-    -- Функция обновления состояния
+
     local function updateToggle(state)
         local goal = {
             Position = state and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
             BackgroundColor3 = state and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
         }
-        
         toggleFrame.BackgroundColor3 = state and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-        
-        local tween = TweenService:Create(toggleButton, TweenInfo.new(0.2), goal)
-        tween:Play()
-        
+        TweenService:Create(toggleButton, TweenInfo.new(0.2), goal):Play()
         if callback then
             callback(state)
         end
     end
-    
-    -- Обработчик клика
+
     toggleButton.MouseButton1Click:Connect(function()
         local newState = not (toggleButton.Position == UDim2.new(1, -23, 0.5, -10))
         updateToggle(newState)
     end)
-    
-    -- Возвращаем функцию для внешнего управления
+
     return {
         Set = function(self, state)
             updateToggle(state)
@@ -360,11 +351,9 @@ end
 -- Создаем вкладки
 local mainTab = createTab("Меню")
 local farmTab = createTab("Фарм")
-
--- Показываем основную вкладку по умолчанию
 Tabs["Меню"].Visible = true
 
--- Добавляем заголовок
+-- Заголовок
 local welcomeLabel = Instance.new("TextLabel")
 welcomeLabel.Size = UDim2.new(1, -10, 0, 30)
 welcomeLabel.Position = UDim2.new(0, 5, 0, 0)
@@ -375,27 +364,22 @@ welcomeLabel.Font = Enum.Font.GothamBold
 welcomeLabel.TextSize = 16
 welcomeLabel.Parent = mainTab
 
--- Anti-AFK System
+-- Anti-AFK
 local VirtualUser = game:GetService("VirtualUser")
 local antiAFKConnection
 
 local function setupAntiAFK()
-    -- Disconnect previous connection if it exists
     if antiAFKConnection then
         antiAFKConnection:Disconnect()
     end
-    
-    -- Connect to PlayerIdleEvent to prevent AFK kicks
     antiAFKConnection = player.Idled:Connect(function()
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
         print("Анти-Афк сработал")
     end)
-    
     print("Включено Анти-Афк")
 end
 
--- Добавляем переключатель Anti-AFK
 createToggle(mainTab, "Анти-Афк", true, function(state)
     if state then
         setupAntiAFK()
@@ -408,9 +392,9 @@ createToggle(mainTab, "Анти-Афк", true, function(state)
     end
 end)
 
--- Функция для скрытия индикаторов
+-- Скрыть индикаторы
 local function toggleIndicators(hide)
-    local rSto = game:GetService("ReplicatedStorage")
+    local rSto = ReplicatedStorage
     for _, obj in pairs(rSto:GetChildren()) do
         if obj.Name:match("Frame$") then
             obj.Visible = not hide
@@ -418,24 +402,22 @@ local function toggleIndicators(hide)
     end
 end
 
--- Добавляем переключатель для скрытия индикаторов
-createToggle(mainTab, "Скрывать индикаторы", false, function(state)
-    toggleIndicators(state)
-end)
+createToggle(mainTab, "Скрывать индикаторы", false, toggleIndicators)
 
--- Функция для Anti Knockback
+-- Anti Knockback
 local function toggleAntiKnockback(enable)
     if enable then
-        local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
-        if rootPart then
+        local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if rootPart and not rootPart:FindFirstChild("BodyVelocity") then
             local bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Name = "BodyVelocity"
             bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
             bodyVelocity.Velocity = Vector3.new(0, 0, 0)
             bodyVelocity.P = 1250
             bodyVelocity.Parent = rootPart
         end
     else
-        local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if rootPart then
             local existingVelocity = rootPart:FindFirstChild("BodyVelocity")
             if existingVelocity and existingVelocity.MaxForce == Vector3.new(100000, 0, 100000) then
@@ -445,17 +427,16 @@ local function toggleAntiKnockback(enable)
     end
 end
 
--- Добавляем переключатель Anti Knockback
 createToggle(mainTab, "Анти отбрасывание", false, toggleAntiKnockback)
 
--- Функция для блокировки позиции
+-- Блокировка позиции
 local positionLockConnection = nil
 
 local function lockPlayerPosition(enable)
     if enable then
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local currentPosition = player.Character.HumanoidRootPart.CFrame
-            positionLockConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            positionLockConnection = RunService.Heartbeat:Connect(function()
                 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                     player.Character.HumanoidRootPart.CFrame = currentPosition
                 end
@@ -469,33 +450,32 @@ local function lockPlayerPosition(enable)
     end
 end
 
--- Добавляем переключатель блокировки позиции
 createToggle(mainTab, "Стоять на месте", false, lockPlayerPosition)
 
--- Функция для быстрой прокачки силы
+-- Быстрая прокачка силы
+local speedGrindEnabled = false
+local speedGrindThreads = {}
+
 local function toggleSpeedGrind(enable)
+    speedGrindEnabled = enable
     if enable then
-        -- Здесь должна быть логика для быстрой прокачки силы
-        -- Пока просто имитация
         for i = 1, 14 do
-            task.spawn(function()
-                while enable do
+            local thread = task.spawn(function()
+                while speedGrindEnabled do
                     player.muscleEvent:FireServer("rep")
                     task.wait()
                 end
             end)
+            table.insert(speedGrindThreads, thread)
         end
     else
-        -- Остановка прокачки
+        speedGrindThreads = {}
     end
 end
 
--- Добавляем переключатель быстрой прокачки
 createToggle(farmTab, "Быстрая сила", false, toggleSpeedGrind)
 
-local farmTab = createTab("Фарм")
-
--- Создаем папку для битья камней с аккордеоном
+-- Auto Rock Folder (аккордеон)
 local autoRockFolder = Instance.new("Frame")
 autoRockFolder.Name = "AutoRockFolder"
 autoRockFolder.Size = UDim2.new(1, -10, 0, 30)
@@ -529,31 +509,31 @@ local autoRockLayout = Instance.new("UIListLayout")
 autoRockLayout.Padding = UDim.new(0, 5)
 autoRockLayout.Parent = autoRockContent
 
--- Функция для открытия/закрытия аккордеона
 local autoRockExpanded = false
 autoRockTitle.MouseButton1Click:Connect(function()
     autoRockExpanded = not autoRockExpanded
     if autoRockExpanded then
         autoRockTitle.Text = "Бить камень ▲"
-        autoRockContent.Size = UDim2.new(1, 0, 0, 360) -- Высота для 9 кнопок
+        autoRockContent.Size = UDim2.new(1, 0, 0, 360) -- Для 9 кнопок
     else
         autoRockTitle.Text = "Бить камень ▼"
         autoRockContent.Size = UDim2.new(1, 0, 0, 0)
     end
 end)
 
--- Функция для битья камней
 function gettool()
-    for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if v.Name == "Punch" and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
+    for i, v in pairs(player.Backpack:GetChildren()) do
+        if v.Name == "Punch" and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid:EquipTool(v)
         end
     end
-    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+    player.muscleEvent:FireServer("punch", "leftHand")
+    player.muscleEvent:FireServer("punch", "rightHand")
 end
 
--- Создаем переключатели для камней
+local selectrock = nil
+getgenv().autoFarm = false
+
 local rockTypes = {
     {name = "Маленький камень - 0", durability = 0, rockName = "Tiny Island Rock"},
     {name = "Средний камень - 100", durability = 100, rockName = "Starter Island Rock"},
@@ -570,21 +550,20 @@ for _, rock in pairs(rockTypes) do
     createToggle(autoRockContent, rock.name, false, function(Value)
         getgenv().autoFarm = Value
         selectrock = rock.rockName
-        
+
         task.spawn(function()
             while getgenv().autoFarm do
                 task.wait()
                 if not getgenv().autoFarm then break end
-                
-                if game:GetService("Players").LocalPlayer.Durability.Value >= rock.durability then
-                    for i, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
-                        if v.Name == "neededDurability" and v.Value == rock.durability and 
-                           game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and 
-                           game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
-                            firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
-                            firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
-                            firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
-                            firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
+                if player.Durability.Value >= rock.durability then
+                    for _, v in pairs(workspace.machinesFolder:GetDescendants()) do
+                        if v.Name == "neededDurability" and v.Value == rock.durability and
+                           player.Character and player.Character:FindFirstChild("LeftHand") and
+                           player.Character:FindFirstChild("RightHand") then
+                            firetouchinterest(v.Parent.Rock, player.Character.RightHand, 0)
+                            firetouchinterest(v.Parent.Rock, player.Character.RightHand, 1)
+                            firetouchinterest(v.Parent.Rock, player.Character.LeftHand, 0)
+                            firetouchinterest(v.Parent.Rock, player.Character.LeftHand, 1)
                             gettool()
                         end
                     end
@@ -594,7 +573,7 @@ for _, rock in pairs(rockTypes) do
     end)
 end
 
--- Создаем папку для перерождений с аккордеоном
+-- Rebirth Folder
 local rebirthsFolder = Instance.new("Frame")
 rebirthsFolder.Name = "RebirthsFolder"
 rebirthsFolder.Size = UDim2.new(1, -10, 0, 30)
@@ -628,20 +607,18 @@ local rebirthsLayout = Instance.new("UIListLayout")
 rebirthsLayout.Padding = UDim.new(0, 5)
 rebirthsLayout.Parent = rebirthsContent
 
--- Функция для открытия/закрытия аккордеона
 local rebirthsExpanded = false
 rebirthsTitle.MouseButton1Click:Connect(function()
     rebirthsExpanded = not rebirthsExpanded
     if rebirthsExpanded then
         rebirthsTitle.Text = "Перерождения ▲"
-        rebirthsContent.Size = UDim2.new(1, 0, 0, 180) -- Высота для всех элементов
+        rebirthsContent.Size = UDim2.new(1, 0, 0, 180)
     else
         rebirthsTitle.Text = "Перерождения ▼"
         rebirthsContent.Size = UDim2.new(1, 0, 0, 0)
     end
 end)
 
--- Текстовое поле для ввода количества перерождений
 local rebirthInputFrame = Instance.new("Frame")
 rebirthInputFrame.Size = UDim2.new(1, 0, 0, 30)
 rebirthInputFrame.BackgroundTransparency = 1
@@ -681,14 +658,13 @@ rebirthInputButton.MouseButton1Click:Connect(function()
     if newValue and newValue > 0 then
         targetRebirthValue = newValue
         updateStats()
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
+        StarterGui:SetCore("SendNotification", {
             Title = "Понял",
             Text = "Остановлю когда будет " .. targetRebirthValue .. " перерождений",
             Duration = 2
         })
     else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
+        StarterGui:SetCore("SendNotification", {
             Title = "Ошибка",
             Text = "Введите число больше 0",
             Duration = 2
@@ -696,30 +672,25 @@ rebirthInputButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Переключатели для перерождений
 createToggle(rebirthsContent, "Начать перерождаться по количеству", false, function(bool)
     _G.targetRebirthActive = bool
-    
     if bool then
         if _G.infiniteRebirthActive then
             _G.infiniteRebirthActive = false
         end
-        
         task.spawn(function()
             while _G.targetRebirthActive and task.wait(0.1) do
-                local currentRebirths = game.Players.LocalPlayer.leaderstats.Rebirths.Value
-                
+                local currentRebirths = player.leaderstats.Rebirths.Value
                 if currentRebirths >= targetRebirthValue then
                     _G.targetRebirthActive = false
-                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                    StarterGui:SetCore("SendNotification", {
                         Title = "Готово",
                         Text = "Достигнуто " .. targetRebirthValue .. " перерождений",
                         Duration = 2
                     })
                     break
                 end
-                
-                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
             end
         end)
     end
@@ -727,15 +698,13 @@ end)
 
 createToggle(rebirthsContent, "Перерождаться бесконечно", false, function(bool)
     _G.infiniteRebirthActive = bool
-    
     if bool then
         if _G.targetRebirthActive then
             _G.targetRebirthActive = false
         end
-        
         task.spawn(function()
             while _G.infiniteRebirthActive and task.wait(0.1) do
-                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
             end
         end)
     end
@@ -743,27 +712,25 @@ end)
 
 createToggle(rebirthsContent, "Всегда рост 1", false, function(bool)
     _G.autoSizeActive = bool
-    
     task.spawn(function()
         while _G.autoSizeActive and task.wait() do
-            game:GetService("ReplicatedStorage").rEvents.changeSpeedSizeRemote:InvokeServer("changeSize", 1)
+            ReplicatedStorage.rEvents.changeSpeedSizeRemote:InvokeServer("changeSize", 1)
         end
     end)
 end)
 
 createToggle(rebirthsContent, "Телепортироваться к королю", false, function(bool)
     _G.teleportActive = bool
-    
     task.spawn(function()
         while _G.teleportActive and task.wait() do
-            if game.Players.LocalPlayer.Character then
-                game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-8646, 17, -5738))
+            if player.Character then
+                player.Character:MoveTo(Vector3.new(-8646, 17, -5738))
             end
         end
     end)
 end)
 
--- Создаем папку для автоматического кача с аккордеоном
+-- Auto Equip Folder
 local autoEquipFolder = Instance.new("Frame")
 autoEquipFolder.Name = "AutoEquipFolder"
 autoEquipFolder.Size = UDim2.new(1, -10, 0, 30)
@@ -797,20 +764,18 @@ local autoEquipLayout = Instance.new("UIListLayout")
 autoEquipLayout.Padding = UDim.new(0, 5)
 autoEquipLayout.Parent = autoEquipContent
 
--- Функция для открытия/закрытия аккордеона
 local autoEquipExpanded = false
 autoEquipTitle.MouseButton1Click:Connect(function()
     autoEquipExpanded = not autoEquipExpanded
     if autoEquipExpanded then
         autoEquipTitle.Text = "Автоматически качаться ▲"
-        autoEquipContent.Size = UDim2.new(1, 0, 0, 220) -- Высота для всех элементов
+        autoEquipContent.Size = UDim2.new(1, 0, 0, 220)
     else
         autoEquipTitle.Text = "Автоматически качаться ▼"
         autoEquipContent.Size = UDim2.new(1, 0, 0, 0)
     end
 end)
 
--- Кнопка для автолифта
 local autoLiftButton = Instance.new("TextButton")
 autoLiftButton.Size = UDim2.new(1, 0, 0, 30)
 autoLiftButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
@@ -821,22 +786,20 @@ autoLiftButton.TextSize = 14
 autoLiftButton.Parent = autoEquipContent
 
 autoLiftButton.MouseButton1Click:Connect(function()
-    local gamepassFolder = game:GetService("ReplicatedStorage").gamepassIds
-    local player = game:GetService("Players").LocalPlayer
+    local gamepassFolder = ReplicatedStorage.gamepassIds
     for _, gamepass in pairs(gamepassFolder:GetChildren()) do
         local value = Instance.new("IntValue")
         value.Name = gamepass.Name
         value.Value = gamepass.Value
         value.Parent = player.ownedGamepasses
     end
-    game:GetService("StarterGui"):SetCore("SendNotification", {
+    StarterGui:SetCore("SendNotification", {
         Title = "Готово",
         Text = "Автолифт активирован",
         Duration = 2
     })
 end)
 
--- Переключатели для автоматического кача
 local exerciseTypes = {
     {name = "Авто гантеля", tool = "Weight"},
     {name = "Авто отжимания", tool = "Pushups"},
@@ -848,43 +811,38 @@ local exerciseTypes = {
 for _, exercise in pairs(exerciseTypes) do
     createToggle(autoEquipContent, exercise.name, false, function(Value)
         _G["Auto"..exercise.tool] = Value
-        
         if Value then
-            local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(exercise.tool)
-            if tool then
-                game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+            local tool = player.Backpack:FindFirstChild(exercise.tool)
+            if tool and player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid:EquipTool(tool)
             end
         else
-            local character = game.Players.LocalPlayer.Character
-            local equipped = character:FindFirstChild(exercise.tool)
-            if equipped then
-                equipped.Parent = game.Players.LocalPlayer.Backpack
+            if player.Character then
+                local equipped = player.Character:FindFirstChild(exercise.tool)
+                if equipped then
+                    equipped.Parent = player.Backpack
+                end
             end
         end
-        
-        if exercise.tool ~= "Punch" then
-            task.spawn(function()
-                while _G["Auto"..exercise.tool] do
-                    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+
+        task.spawn(function()
+            while _G["Auto"..exercise.tool] do
+                if exercise.tool ~= "Punch" then
+                    player.muscleEvent:FireServer("rep")
                     task.wait(0.1)
-                end
-            end)
-        else
-            task.spawn(function()
-                while _G.AutoPunch do
-                    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                else
+                    player.muscleEvent:FireServer("punch", "rightHand")
+                    player.muscleEvent:FireServer("punch", "leftHand")
                     task.wait(0)
                 end
-            end)
-        end
+            end
+        end)
     end)
 end
 
--- Переключатель для быстрых предметов
 createToggle(autoEquipContent, "Быстрые предметы", false, function(Value)
     _G.FastTools = Value
-    
+
     local defaultSpeeds = {
         {"Punch", "attackTime", Value and 0 or 0.35},
         {"Ground Slam", "attackTime", Value and 0 or 6},
@@ -894,42 +852,45 @@ createToggle(autoEquipContent, "Быстрые предметы", false, functio
         {"Pushups", "repTime", Value and 0 or 2.5},
         {"Weight", "repTime", Value and 0 or 3}
     }
-    
+
     for _, toolData in pairs(defaultSpeeds) do
-        local toolName, property, speed = toolData[1], toolData[2], toolData[3]
-        
-        local backpackTool = game.Players.LocalPlayer.Backpack:FindFirstChild(toolName)
+        local toolName, property, speed = toolData[1], toolData, toolData
+
+        local backpackTool = player.Backpack:FindFirstChild(toolName)
         if backpackTool and backpackTool:FindFirstChild(property) then
             backpackTool[property].Value = speed
         end
-        
-        local equippedTool = game.Players.LocalPlayer.Character:FindFirstChild(toolName)
-        if equippedTool and equippedTool:FindFirstChild(property) then
-            equippedTool[property].Value = speed
-        end
-    end
-end)
 
--- Переключатель для антилага
-createToggle(autoEquipContent, "Анти лаг", false, function(Value)
-    _G.AntiLag = Value
-    
-    if Value then
-        game:GetService("Lighting").GlobalShadows = false
-        game:GetService("Lighting").FogEnd = 9e9
-        
-        for _, obj in pairs(game:GetService("Workspace"):GetDescendants()) do
-            if obj:IsA("BasePart") and not obj.Parent:FindFirstChild("Humanoid") then
-                obj.Material = "Plastic"
-                obj.Reflectance = 0
-            elseif obj:IsA("Decal") or obj:IsA("Texture") then
-                obj:Destroy()
+        if player.Character then
+            local equippedTool = player.Character:FindFirstChild(toolName)
+            if equippedTool and equippedTool:FindFirstChild(property) then
+                equippedTool[property].Value = speed
             end
         end
     end
 end)
 
--- Создаем папку для статистики с аккордеоном
+createToggle(autoEquipContent, "Анти лаг", false, function(Value)
+    _G.AntiLag = Value
+    if Value then
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and not obj.Parent:FindFirstChild("Humanoid") then
+                obj.Material = Enum.Material.Plastic
+                obj.Reflectance = 0
+            elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                obj:Destroy()
+            end
+        end
+    else
+        Lighting.GlobalShadows = true
+        Lighting.FogEnd = 1000 -- или значение по умолчанию
+        -- При желании можно добавить восстановление материалов/декалей
+    end
+end)
+
+-- Stats Folder
 local statsFolder = Instance.new("Frame")
 statsFolder.Name = "StatsFolder"
 statsFolder.Size = UDim2.new(1, -10, 0, 30)
@@ -963,20 +924,18 @@ local statsLayout = Instance.new("UIListLayout")
 statsLayout.Padding = UDim.new(0, 5)
 statsLayout.Parent = statsContent
 
--- Функция для открытия/закрытия аккордеона
 local statsExpanded = false
 statsTitle.MouseButton1Click:Connect(function()
     statsExpanded = not statsExpanded
     if statsExpanded then
         statsTitle.Text = "Статистика ▲"
-        statsContent.Size = UDim2.new(1, 0, 0, 250) -- Высота для всех элементов
+        statsContent.Size = UDim2.new(1, 0, 0, 250)
     else
         statsTitle.Text = "Статистика ▼"
         statsContent.Size = UDim2.new(1, 0, 0, 0)
     end
 end)
 
--- Инициализация переменных для статистики
 local sessionStartTime = os.time()
 local sessionStartStrength = 0
 local sessionStartDurability = 0
@@ -985,7 +944,6 @@ local sessionStartRebirths = 0
 local sessionStartBrawls = 0
 local hasStartedTracking = false
 
--- Функции для форматирования
 local function formatNumber(number)
     if number >= 1e15 then return string.format("%.2fQ", number/1e15)
     elseif number >= 1e12 then return string.format("%.2fT", number/1e12)
@@ -1003,7 +961,6 @@ local function formatTime(seconds)
     return string.format("%02d:%02d:%02d", hours, minutes, secs)
 end
 
--- Создаем элементы статистики
 local statLabels = {
     {title = "Сила", name = "Strength"},
     {title = "Долговечность", name = "Durability"},
@@ -1024,7 +981,7 @@ for _, stat in pairs(statLabels) do
     titleLabel.TextSize = 14
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = statsContent
-    
+
     local currentLabel = Instance.new("TextLabel")
     currentLabel.Size = UDim2.new(1, 0, 0, 20)
     currentLabel.BackgroundTransparency = 1
@@ -1034,7 +991,7 @@ for _, stat in pairs(statLabels) do
     currentLabel.TextSize = 12
     currentLabel.TextXAlignment = Enum.TextXAlignment.Left
     currentLabel.Parent = statsContent
-    
+
     local gainLabel = Instance.new("TextLabel")
     gainLabel.Size = UDim2.new(1, 0, 0, 20)
     gainLabel.BackgroundTransparency = 1
@@ -1051,7 +1008,6 @@ for _, stat in pairs(statLabels) do
     }
 end
 
--- Время сессии
 local timeLabel = Instance.new("TextLabel")
 timeLabel.Size = UDim2.new(1, 0, 0, 20)
 timeLabel.BackgroundTransparency = 1
@@ -1062,7 +1018,6 @@ timeLabel.TextSize = 14
 timeLabel.TextXAlignment = Enum.TextXAlignment.Left
 timeLabel.Parent = statsContent
 
--- Кнопки управления статистикой
 local resetButton = Instance.new("TextButton")
 resetButton.Size = UDim2.new(0.48, 0, 0, 30)
 resetButton.Position = UDim2.new(0, 0, 0, 0)
@@ -1083,10 +1038,9 @@ copyButton.Font = Enum.Font.GothamBold
 copyButton.TextSize = 14
 copyButton.Parent = statsContent
 
--- Функция для обновления статистики
+local sessionStartStats = {}
+
 local function updateStats()
-    local player = game.Players.LocalPlayer
-    
     if not hasStartedTracking then
         sessionStartStrength = player.leaderstats.Strength.Value
         sessionStartDurability = player.Durability.Value
@@ -1094,9 +1048,18 @@ local function updateStats()
         sessionStartRebirths = player.leaderstats.Rebirths.Value
         sessionStartBrawls = player.leaderstats.Brawls.Value
         sessionStartTime = os.time()
+
+        sessionStartStats = {
+            Strength = sessionStartStrength,
+            Durability = sessionStartDurability,
+            Kills = sessionStartKills,
+            Rebirths = sessionStartRebirths,
+            Brawls = sessionStartBrawls
+        }
+
         hasStartedTracking = true
     end
-    
+
     local currentStats = {
         Strength = player.leaderstats.Strength.Value,
         Durability = player.Durability.Value,
@@ -1104,891 +1067,41 @@ local function updateStats()
         Rebirths = player.leaderstats.Rebirths.Value,
         Brawls = player.leaderstats.Brawls.Value
     }
-    
+
     for statName, elements in pairs(statElements) do
         elements.current.Text = "Текущее: " .. formatNumber(currentStats[statName])
         elements.gain.Text = "Получено: " .. formatNumber(currentStats[statName] - sessionStartStats[statName])
     end
-    
+
     local elapsedTime = os.time() - sessionStartTime
     timeLabel.Text = "Время: " .. formatTime(elapsedTime)
 end
 
--- Обработчики кнопок
+-- Перезапуск статистики
 resetButton.MouseButton1Click:Connect(function()
-    sessionStartStrength = game.Players.LocalPlayer.leaderstats.Strength.Value
-    sessionStartDurability = game.Players.LocalPlayer.Durability.Value
-    sessionStartKills = game.Players.LocalPlayer.leaderstats.Kills.Value
-    sessionStartRebirths = game.Players.LocalPlayer.leaderstats.Rebirths.Value
-    sessionStartBrawls = game.Players.LocalPlayer.leaderstats.Brawls.Value
-    sessionStartTime = os.time()
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Готово",
-        Text = "Статистика очищена",
-        Duration = 2
-    })
+    hasStartedTracking = false
+    updateStats()
 end)
 
+-- Копировать статистику в буфер обмена (требуется плагин или наружние методы, здесь просто сообщение)
 copyButton.MouseButton1Click:Connect(function()
-    local player = game.Players.LocalPlayer
-    local statsText = "Muscle Legends Статистика:\n\n"
-    
-    statsText = statsText .. "Сила: " .. formatNumber(player.leaderstats.Strength.Value) .. "\n"
-    statsText = statsText .. "Долговечность: " .. formatNumber(player.Durability.Value) .. "\n"
-    statsText = statsText .. "Перерождения: " .. formatNumber(player.leaderstats.Rebirths.Value) .. "\n"
-    statsText = statsText .. "Убийства: " .. formatNumber(player.leaderstats.Kills.Value) .. "\n"
-    statsText = statsText .. "Поединки: " .. formatNumber(player.leaderstats.Brawls.Value) .. "\n"
-    
-    if hasStartedTracking then
-        local elapsedTime = os.time() - sessionStartTime
-        statsText = statsText .. "\nСтатистика сессии:\n"
-        statsText = statsText .. "Время: " .. formatTime(elapsedTime) .. "\n"
-        statsText = statsText .. "Сила: +" .. formatNumber(player.leaderstats.Strength.Value - sessionStartStrength) .. "\n"
-        statsText = statsText .. "Долговечность: +" .. formatNumber(player.Durability.Value - sessionStartDurability) .. "\n"
-        statsText = statsText .. "Перерождения: +" .. formatNumber(player.leaderstats.Rebirths.Value - sessionStartRebirths) .. "\n"
-        statsText = statsText .. "Убийства: +" .. formatNumber(player.leaderstats.Kills.Value - sessionStartKills) .. "\n"
-        statsText = statsText .. "Поединки: +" .. formatNumber(player.leaderstats.Brawls.Value - sessionStartBrawls) .. "\n"
+    local statsText = ""
+    for statName, elements in pairs(statElements) do
+        statsText = statsText .. statName .. ": " .. elements.current.Text .. ", " .. elements.gain.Text .. "\n"
     end
-    
-    setclipboard(statsText)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Готово",
-        Text = "Статистика скопирована",
-        Duration = 2
+    statsText = statsText .. timeLabel.Text
+
+    -- Здесь можно добавить функцию копирования в буфер обмена, если доступна
+    StarterGui:SetCore("SendNotification", {
+        Title = "Статистика",
+        Text = "Статистика скопирована (уведомление, замените копирование сами)",
+        Duration = 3
     })
+
+    print(statsText) -- Для пользователи можно посмотреть в выводе
 end)
 
--- Обновление статистики каждые 2 секунды
-task.spawn(function()
-    while task.wait(2) do
-        updateStats()
-    end
-end)
-
--- Создаем вкладку для питомцев
-local petsTab = createTab("Петы")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- Добавляем заголовок для питомцев
-local petsLabel = Instance.new("TextLabel")
-petsLabel.Size = UDim2.new(1, -10, 0, 30)
-petsLabel.Position = UDim2.new(0, 5, 0, 0)
-petsLabel.BackgroundTransparency = 1
-petsLabel.Text = "Петы"
-petsLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-petsLabel.Font = Enum.Font.GothamBold
-petsLabel.TextSize = 16
-petsLabel.Parent = petsTab
-
--- Выпадающий список для выбора питомца
-local selectedPet = "Neon Guardian"
-local petDropdownFrame = Instance.new("Frame")
-petDropdownFrame.Size = UDim2.new(1, -10, 0, 30)
-petDropdownFrame.BackgroundTransparency = 1
-petDropdownFrame.Parent = petsTab
-
-local petDropdownLabel = Instance.new("TextLabel")
-petDropdownLabel.Size = UDim2.new(0.7, 0, 1, 0)
-petDropdownLabel.Position = UDim2.new(0, 0, 0, 0)
-petDropdownLabel.BackgroundTransparency = 1
-petDropdownLabel.Text = "Выбери пета:"
-petDropdownLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-petDropdownLabel.Font = Enum.Font.Gotham
-petDropdownLabel.TextSize = 14
-petDropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
-petDropdownLabel.Parent = petDropdownFrame
-
-local petDropdownButton = Instance.new("TextButton")
-petDropdownButton.Size = UDim2.new(0.3, -5, 1, 0)
-petDropdownButton.Position = UDim2.new(0.7, 5, 0, 0)
-petDropdownButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-petDropdownButton.Text = selectedPet
-petDropdownButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-petDropdownButton.Font = Enum.Font.Gotham
-petDropdownButton.TextSize = 14
-petDropdownButton.Parent = petDropdownFrame
-
-local petDropdownCorner = Instance.new("UICorner")
-petDropdownCorner.CornerRadius = UDim.new(0, 4)
-petDropdownCorner.Parent = petDropdownButton
-
--- Список питомцев
-local petOptions = {
-    "Neon Guardian", "Blue Birdie", "Blue Bunny", "Blue Firecaster", "Blue Pheonix",
-    "Crimson Falcon", "Cybernetic Showdown Dragon", "Dark Golem", "Dark Legends Manticore",
-    "Dark Vampy", "Darkstar Hunter", "Eternal Strike Leviathan", "Frostwave Legends Penguin",
-    "Gold Warrior", "Golden Pheonix", "Golden Viking", "Green Butterfly", "Green Firecaster",
-    "Infernal Dragon", "Lightning Strike Phantom", "Magic Butterfly", "Muscle Sensei",
-    "Orange Hedgehog", "Orange Pegasus", "Phantom Genesis Dragon", "Purple Dragon",
-    "Purple Falcon", "Red Dragon", "Red Firecaster", "Red Kitty", "Silver Dog",
-    "Ultimate Supernova Pegasus", "Ultra Birdie", "White Pegasus", "White Pheonix",
-    "Yellow Butterfly"
-}
-
--- Фрейм для списка питомцев (появляется при нажатии)
-local petOptionsFrame = Instance.new("ScrollingFrame")
-petOptionsFrame.Size = UDim2.new(0.3, -5, 0, 150)
-petOptionsFrame.Position = UDim2.new(0.7, 5, 0, 35)
-petOptionsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-petOptionsFrame.Visible = false
-petOptionsFrame.Parent = petsTab
-
-local petOptionsLayout = Instance.new("UIListLayout")
-petOptionsLayout.Padding = UDim.new(0, 5)
-petOptionsLayout.Parent = petOptionsFrame
-
--- Заполняем список питомцев
-for _, petName in ipairs(petOptions) do
-    local petOption = Instance.new("TextButton")
-    petOption.Size = UDim2.new(1, -10, 0, 30)
-    petOption.Position = UDim2.new(0, 5, 0, 0)
-    petOption.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    petOption.Text = petName
-    petOption.TextColor3 = Color3.fromRGB(220, 220, 220)
-    petOption.Font = Enum.Font.Gotham
-    petOption.TextSize = 14
-    petOption.Parent = petOptionsFrame
-    
-    petOption.MouseButton1Click:Connect(function()
-        selectedPet = petName
-        petDropdownButton.Text = petName
-        petOptionsFrame.Visible = false
-    end)
-end
-
--- Обработчик открытия/закрытия списка
-petDropdownButton.MouseButton1Click:Connect(function()
-    petOptionsFrame.Visible = not petOptionsFrame.Visible
-end)
-
--- Переключатель для автоматической покупки питомцев
-createToggle(petsTab, "Купить", false, function(state)
-    _G.AutoHatchPet = state
-    
-    if state then
-        task.spawn(function()
-            while _G.AutoHatchPet and selectedPet ~= "" do
-                local petToOpen = ReplicatedStorage.cPetShopFolder:FindFirstChild(selectedPet)
-                if petToOpen then
-                    ReplicatedStorage.cPetShopRemote:InvokeServer(petToOpen)
-                end
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Добавляем разделитель
-local separator1 = Instance.new("Frame")
-separator1.Size = UDim2.new(1, -10, 0, 1)
-separator1.Position = UDim2.new(0, 5, 0, 0)
-separator1.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-separator1.BorderSizePixel = 0
-separator1.Parent = petsTab
-
--- Добавляем заголовок для аур
-local aurasLabel = Instance.new("TextLabel")
-aurasLabel.Size = UDim2.new(1, -10, 0, 30)
-aurasLabel.Position = UDim2.new(0, 5, 0, 0)
-aurasLabel.BackgroundTransparency = 1
-aurasLabel.Text = "Ауры"
-aurasLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-aurasLabel.Font = Enum.Font.GothamBold
-aurasLabel.TextSize = 16
-aurasLabel.Parent = petsTab
-
--- Выпадающий список для выбора ауры
-local selectedAura = "Blue Aura"
-local auraDropdownFrame = Instance.new("Frame")
-auraDropdownFrame.Size = UDim2.new(1, -10, 0, 30)
-auraDropdownFrame.BackgroundTransparency = 1
-auraDropdownFrame.Parent = petsTab
-
-local auraDropdownLabel = Instance.new("TextLabel")
-auraDropdownLabel.Size = UDim2.new(0.7, 0, 1, 0)
-auraDropdownLabel.Position = UDim2.new(0, 0, 0, 0)
-auraDropdownLabel.BackgroundTransparency = 1
-auraDropdownLabel.Text = "Выбери ауру:"
-auraDropdownLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-auraDropdownLabel.Font = Enum.Font.Gotham
-auraDropdownLabel.TextSize = 14
-auraDropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
-auraDropdownLabel.Parent = auraDropdownFrame
-
-local auraDropdownButton = Instance.new("TextButton")
-auraDropdownButton.Size = UDim2.new(0.3, -5, 1, 0)
-auraDropdownButton.Position = UDim2.new(0.7, 5, 0, 0)
-auraDropdownButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-auraDropdownButton.Text = selectedAura
-auraDropdownButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-auraDropdownButton.Font = Enum.Font.Gotham
-auraDropdownButton.TextSize = 14
-auraDropdownButton.Parent = auraDropdownFrame
-
-local auraDropdownCorner = Instance.new("UICorner")
-auraDropdownCorner.CornerRadius = UDim.new(0, 4)
-auraDropdownCorner.Parent = auraDropdownButton
-
--- Список аур
-local auraOptions = {
-    "Astral Electro", "Azure Tundra", "Blue Aura", "Dark Electro", "Dark Lightning",
-    "Dark Storm", "Electro", "Enchanted Mirage", "Entropic Blast", "Eternal Megastrike",
-    "Grand Supernova", "Green Aura", "Inferno", "Lightning", "Muscle King",
-    "Power Lightning", "Purple Aura", "Purple Nova", "Red Aura", "Supernova",
-    "Ultra Inferno", "Ultra Mirage", "Unstable Mirage", "Yellow Aura"
-}
-
--- Фрейм для списка аур (появляется при нажатии)
-local auraOptionsFrame = Instance.new("ScrollingFrame")
-auraOptionsFrame.Size = UDim2.new(0.3, -5, 0, 150)
-auraOptionsFrame.Position = UDim2.new(0.7, 5, 0, 35)
-auraOptionsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-auraOptionsFrame.Visible = false
-auraOptionsFrame.Parent = petsTab
-
-local auraOptionsLayout = Instance.new("UIListLayout")
-auraOptionsLayout.Padding = UDim.new(0, 5)
-auraOptionsLayout.Parent = auraOptionsFrame
-
--- Заполняем список аур
-for _, auraName in ipairs(auraOptions) do
-    local auraOption = Instance.new("TextButton")
-    auraOption.Size = UDim2.new(1, -10, 0, 30)
-    auraOption.Position = UDim2.new(0, 5, 0, 0)
-    auraOption.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    auraOption.Text = auraName
-    auraOption.TextColor3 = Color3.fromRGB(220, 220, 220)
-    auraOption.Font = Enum.Font.Gotham
-    auraOption.TextSize = 14
-    auraOption.Parent = auraOptionsFrame
-    
-    auraOption.MouseButton1Click:Connect(function()
-        selectedAura = auraName
-        auraDropdownButton.Text = auraName
-        auraOptionsFrame.Visible = false
-    end)
-end
-
--- Обработчик открытия/закрытия списка
-auraDropdownButton.MouseButton1Click:Connect(function()
-    auraOptionsFrame.Visible = not auraOptionsFrame.Visible
-end)
-
--- Переключатель для автоматической покупки аур
-createToggle(petsTab, "Купить", false, function(state)
-    _G.AutoHatchAura = state
-    
-    if state then
-        task.spawn(function()
-            while _G.AutoHatchAura and selectedAura ~= "" do
-                local auraToOpen = ReplicatedStorage.cPetShopFolder:FindFirstChild(selectedAura)
-                if auraToOpen then
-                    ReplicatedStorage.cPetShopRemote:InvokeServer(auraToOpen)
-                end
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Создаем вкладку "Другое"
-local miscTab = createTab("Другое")
-
--- Создаем папку "Авто рулетка и подарки"
-local miscFolder = Instance.new("Frame")
-miscFolder.Name = "MiscFolder"
-miscFolder.Size = UDim2.new(1, -10, 0, 30)
-miscFolder.Position = UDim2.new(0, 5, 0, 0)
-miscFolder.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-miscFolder.Parent = miscTab
-
-local miscCorner = Instance.new("UICorner")
-miscCorner.CornerRadius = UDim.new(0, 4)
-miscCorner.Parent = miscFolder
-
-local miscTitle = Instance.new("TextButton")
-miscTitle.Size = UDim2.new(1, 0, 1, 0)
-miscTitle.Position = UDim2.new(0, 0, 0, 0)
-miscTitle.BackgroundTransparency = 1
-miscTitle.Text = "Авто рулетка и подарки ▼"
-miscTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
-miscTitle.Font = Enum.Font.GothamBold
-miscTitle.TextSize = 14
-miscTitle.Parent = miscFolder
-
-local miscContent = Instance.new("Frame")
-miscContent.Name = "Content"
-miscContent.Size = UDim2.new(1, 0, 0, 0)
-miscContent.Position = UDim2.new(0, 0, 0, 35)
-miscContent.BackgroundTransparency = 1
-miscContent.ClipsDescendants = true
-miscContent.Parent = miscFolder
-
-local miscLayout = Instance.new("UIListLayout")
-miscLayout.Padding = UDim.new(0, 5)
-miscLayout.Parent = miscContent
-
--- Функция для открытия/закрытия аккордеона
-local miscExpanded = false
-miscTitle.MouseButton1Click:Connect(function()
-    miscExpanded = not miscExpanded
-    if miscExpanded then
-        miscTitle.Text = "Авто рулетка и подарки ▲"
-        miscContent.Size = UDim2.new(1, 0, 0, 70) -- Высота для двух элементов
-    else
-        miscTitle.Text = "Авто рулетка и подарки ▼"
-        miscContent.Size = UDim2.new(1, 0, 0, 0)
-    end
-end)
-
--- Переключатель для авто прокрутки колеса удачи
-createToggle(miscContent, "Авто прокрутка колеса удачи", false, function(bool)
-    _G.AutoSpinWheel = bool
-    
-    if bool then
-        task.spawn(function()
-            while _G.AutoSpinWheel do
-                game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Переключатель для авто сбора подарков
-createToggle(miscContent, "Авто сбор подарков", false, function(bool)
-    _G.AutoClaimGifts = bool
-    
-    if bool then
-        task.spawn(function()
-            while _G.AutoClaimGifts do
-                for i = 1, 8 do
-                    game:GetService("ReplicatedStorage").rEvents.freeGiftClaimRemote:InvokeServer("claimGift", i)
-                end
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Создаем вкладку "Убийства"
-local killerTab = createTab("Убийства")
-
--- Инициализация переменных
-_G.whitelistedPlayers = _G.whitelistedPlayers or {}
-_G.targetPlayer = _G.targetPlayer or ""
-
--- Функция для проверки персонажа
-local function checkCharacter()
-    local player = game.Players.LocalPlayer
-    if not player then return nil end
-    
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-        local startTime = tick()
-        repeat
-            task.wait(0.1)
-            if tick() - startTime > 5 then return nil end
-        until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    end
-    
-    return player.Character
-end
-
--- Функция для экипировки инструмента
-local function gettool()
-    pcall(function()
-        if not game.Players.LocalPlayer.Character or not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            return
-        end
-        
-        for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-            if v.Name == "Punch" then
-                game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
-                break
-            end
-        end
-        
-        game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-        game:GetService("Players").LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-    end)
-end
-
--- Функция для убийства игрока
-local function killPlayer(target)
-    local character = checkCharacter()
-    if not character then return end
-    
-    if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
-        return
-    end
-    
-    if not character:FindFirstChild("LeftHand") then
-        return
-    end
-    
-    pcall(function()
-        firetouchinterest(target.Character.HumanoidRootPart, character.LeftHand, 0)
-        task.wait(0.01)
-        firetouchinterest(target.Character.HumanoidRootPart, character.LeftHand, 1)
-        gettool()
-    end)
-end
-
--- Функция для поиска игрока по имени
-local function findClosestPlayer(input)
-    if not input or input == "" then return nil end
-    
-    input = input:lower()
-    local bestMatch = nil
-    local bestScore = 0
-    
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            local username = player.Name:lower()
-            local displayName = player.DisplayName:lower()
-            
-            local usernameMatch = username:find(input, 1, true) ~= nil
-            local displayMatch = displayName:find(input, 1, true) ~= nil
-            
-            local usernameScore = 0
-            local displayScore = 0
-            
-            if usernameMatch then
-                usernameScore = (#input / #username) * 100
-                if username:sub(1, #input) == input then
-                    usernameScore = usernameScore + 50
-                end
-            end
-            
-            if displayMatch then
-                displayScore = (#input / #displayName) * 100
-                if displayName:sub(1, #input) == input then
-                    displayScore = displayScore + 50
-                end
-            end
-            
-            local score = math.max(usernameScore, displayScore)
-            
-            if score > bestScore then
-                bestScore = score
-                bestMatch = player
-            end
-        end
-    end
-    
-    if bestScore > 20 then
-        return bestMatch
-    end
-    
-    return nil
-end
-
--- Создаем элементы интерфейса
-local whitelistedPlayersLabel = Instance.new("TextLabel")
-whitelistedPlayersLabel.Size = UDim2.new(1, -10, 0, 30)
-whitelistedPlayersLabel.Position = UDim2.new(0, 5, 0, 0)
-whitelistedPlayersLabel.BackgroundTransparency = 1
-whitelistedPlayersLabel.Text = "Белый список: Нету"
-whitelistedPlayersLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-whitelistedPlayersLabel.Font = Enum.Font.Gotham
-whitelistedPlayersLabel.TextSize = 14
-whitelistedPlayersLabel.TextXAlignment = Enum.TextXAlignment.Left
-whitelistedPlayersLabel.Parent = killerTab
-
-local targetPlayerLabel = Instance.new("TextLabel")
-targetPlayerLabel.Size = UDim2.new(1, -10, 0, 30)
-targetPlayerLabel.Position = UDim2.new(0, 5, 0, 35)
-targetPlayerLabel.BackgroundTransparency = 1
-targetPlayerLabel.Text = "Атаковать игрока: Нету"
-targetPlayerLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-targetPlayerLabel.Font = Enum.Font.Gotham
-targetPlayerLabel.TextSize = 14
-targetPlayerLabel.TextXAlignment = Enum.TextXAlignment.Left
-targetPlayerLabel.Parent = killerTab
-
--- Функции для обновления UI
-local function updateWhitelistedPlayersLabel()
-    if #_G.whitelistedPlayers == 0 then
-        whitelistedPlayersLabel.Text = "Белый список: Нету"
-    else
-        local displayText = "Белый список: "
-        for i, playerInfo in ipairs(_G.whitelistedPlayers) do
-            if i > 1 then displayText = displayText .. ", " end
-            displayText = displayText .. playerInfo
-        end
-        whitelistedPlayersLabel.Text = displayText
-    end
-end
-
-local function updateTargetPlayerLabel()
-    if _G.targetPlayer == "" then
-        targetPlayerLabel.Text = "Кого убивать: Нету"
-    else
-        targetPlayerLabel.Text = "Кого убивать: " .. _G.targetPlayer
-    end
-end
-
--- Переключатель для авто-добавления друзей в белый список
-createToggle(killerTab, "Автоматом друзей в белый список", false, function(bool)
-    _G.autoWhitelistFriends = bool
-    
-    if bool then
-        pcall(function()
-            for _, player in pairs(game.Players:GetPlayers()) do
-                if player:IsFriendsWith(game.Players.LocalPlayer.UserId) then
-                    local playerInfo = player.Name .. " (" .. player.DisplayName .. ")"
-                    if not table.find(_G.whitelistedPlayers, playerInfo) then
-                        table.insert(_G.whitelistedPlayers, playerInfo)
-                    end
-                end
-            end
-            updateWhitelistedPlayersLabel()
-        end)
-    end
-end)
-
--- Обработчик добавления игроков
-game.Players.PlayerAdded:Connect(function(player)
-    if _G.autoWhitelistFriends then
-        pcall(function()
-            if player:IsFriendsWith(game.Players.LocalPlayer.UserId) then
-                local playerInfo = player.Name .. " (" .. player.DisplayName .. ")"
-                if not table.find(_G.whitelistedPlayers, playerInfo) then
-                    table.insert(_G.whitelistedPlayers, playerInfo)
-                    updateWhitelistedPlayersLabel()
-                end
-            end
-        end)
-    end
-end)
-
--- Текстовое поле для добавления в белый список
-local addWhitelistFrame = Instance.new("Frame")
-addWhitelistFrame.Size = UDim2.new(1, -10, 0, 30)
-addWhitelistFrame.BackgroundTransparency = 1
-addWhitelistFrame.Parent = killerTab
-
-local addWhitelistBox = Instance.new("TextBox")
-addWhitelistBox.Size = UDim2.new(0.7, 0, 1, 0)
-addWhitelistBox.Position = UDim2.new(0, 0, 0, 0)
-addWhitelistBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-addWhitelistBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-addWhitelistBox.Font = Enum.Font.Gotham
-addWhitelistBox.TextSize = 14
-addWhitelistBox.PlaceholderText = "Добавить в белый список (ник)"
-addWhitelistBox.Parent = addWhitelistFrame
-
-local addWhitelistButton = Instance.new("TextButton")
-addWhitelistButton.Size = UDim2.new(0.3, -5, 1, 0)
-addWhitelistButton.Position = UDim2.new(0.7, 5, 0, 0)
-addWhitelistButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-addWhitelistButton.Text = "Добавить"
-addWhitelistButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-addWhitelistButton.Font = Enum.Font.Gotham
-addWhitelistButton.TextSize = 14
-addWhitelistButton.Parent = addWhitelistFrame
-
-addWhitelistButton.MouseButton1Click:Connect(function()
-    local text = addWhitelistBox.Text
-    if text and text ~= "" then
-        local player = findClosestPlayer(text)
-        if player then
-            local playerInfo = player.Name .. " (" .. player.DisplayName .. ")"
-            
-            local alreadyWhitelisted = false
-            for _, info in ipairs(_G.whitelistedPlayers) do
-                if info:find(player.Name, 1, true) then
-                    alreadyWhitelisted = true
-                    break
-                end
-            end
-            
-            if not alreadyWhitelisted then
-                table.insert(_G.whitelistedPlayers, playerInfo)
-                updateWhitelistedPlayersLabel()
-            end
-        end
-    end
-end)
-
--- Текстовое поле для удаления из белого списка
-local removeWhitelistFrame = Instance.new("Frame")
-removeWhitelistFrame.Size = UDim2.new(1, -10, 0, 30)
-removeWhitelistFrame.BackgroundTransparency = 1
-removeWhitelistFrame.Parent = killerTab
-
-local removeWhitelistBox = Instance.new("TextBox")
-removeWhitelistBox.Size = UDim2.new(0.7, 0, 1, 0)
-removeWhitelistBox.Position = UDim2.new(0, 0, 0, 0)
-removeWhitelistBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-removeWhitelistBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-removeWhitelistBox.Font = Enum.Font.Gotham
-removeWhitelistBox.TextSize = 14
-removeWhitelistBox.PlaceholderText = "Удалить с белого списка (ник)"
-removeWhitelistBox.Parent = removeWhitelistFrame
-
-local removeWhitelistButton = Instance.new("TextButton")
-removeWhitelistButton.Size = UDim2.new(0.3, -5, 1, 0)
-removeWhitelistButton.Position = UDim2.new(0.7, 5, 0, 0)
-removeWhitelistButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-removeWhitelistButton.Text = "Удалить"
-removeWhitelistButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-removeWhitelistButton.Font = Enum.Font.Gotham
-removeWhitelistButton.TextSize = 14
-removeWhitelistButton.Parent = removeWhitelistFrame
-
-removeWhitelistButton.MouseButton1Click:Connect(function()
-    local text = removeWhitelistBox.Text
-    if text and text ~= "" then
-        local textLower = text:lower()
-        for i, playerInfo in ipairs(_G.whitelistedPlayers) do
-            if playerInfo:lower():find(textLower, 1, true) then
-                table.remove(_G.whitelistedPlayers, i)
-                updateWhitelistedPlayersLabel()
-                return
-            end
-        end
-        
-        local player = findClosestPlayer(text)
-        if player then
-            for i, playerInfo in ipairs(_G.whitelistedPlayers) do
-                if playerInfo:find(player.Name, 1, true) then
-                    table.remove(_G.whitelistedPlayers, i)
-                    updateWhitelistedPlayersLabel()
-                    break
-                end
-            end
-        end
-    end
-end)
-
--- Кнопка для очистки белого списка
-local clearWhitelistButton = createButton(killerTab, "Очистить белый список", function()
-    _G.whitelistedPlayers = {}
-    updateWhitelistedPlayersLabel()
-end)
-
--- Переключатель для убийства всех игроков
-createToggle(killerTab, "Убивать всех (кроме белого списка)", false, function(bool)
-    _G.autoKillAll = bool
-    
-    if bool then
-        task.spawn(function()
-            while _G.autoKillAll do
-                pcall(function()
-                    local players = game:GetService("Players"):GetPlayers()
-                    
-                    for _, player in ipairs(players) do
-                        if player == game.Players.LocalPlayer or not _G.autoKillAll then
-                            continue
-                        end
-                        
-                        -- Проверка на белый список
-                        local isWhitelisted = false
-                        for _, whitelistedInfo in ipairs(_G.whitelistedPlayers) do
-                            if whitelistedInfo:find(player.Name, 1, true) then
-                                isWhitelisted = true
-                                break
-                            end
-                        end
-                        
-                        -- Убийство если не в белом списке
-                        if not isWhitelisted and player.Character and 
-                           player.Character:FindFirstChild("HumanoidRootPart") and
-                           player.Character:FindFirstChild("Humanoid") and
-                           player.Character.Humanoid.Health > 0 then
-                            
-                            pcall(function()
-                                killPlayer(player)
-                            end)
-                            
-                            task.wait(0.05)
-                        end
-                    end
-                end)
-                
-                task.wait(0.2)
-            end
-        end)
-    end
-end)
-
--- Текстовое поле для выбора цели
-local setTargetFrame = Instance.new("Frame")
-setTargetFrame.Size = UDim2.new(1, -10, 0, 30)
-setTargetFrame.BackgroundTransparency = 1
-setTargetFrame.Parent = killerTab
-
-local setTargetBox = Instance.new("TextBox")
-setTargetBox.Size = UDim2.new(0.7, 0, 1, 0)
-setTargetBox.Position = UDim2.new(0, 0, 0, 0)
-setTargetBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-setTargetBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-setTargetBox.Font = Enum.Font.Gotham
-setTargetBox.TextSize = 14
-setTargetBox.PlaceholderText = "Убивать кого: (ник)"
-setTargetBox.Parent = setTargetFrame
-
-local setTargetButton = Instance.new("TextButton")
-setTargetButton.Size = UDim2.new(0.3, -5, 1, 0)
-setTargetButton.Position = UDim2.new(0.7, 5, 0, 0)
-setTargetButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-setTargetButton.Text = "Установить"
-setTargetButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-setTargetButton.Font = Enum.Font.Gotham
-setTargetButton.TextSize = 14
-setTargetButton.Parent = setTargetFrame
-
-setTargetButton.MouseButton1Click:Connect(function()
-    local text = setTargetBox.Text
-    if text and text ~= "" then
-        local player = findClosestPlayer(text)
-        if player then
-            _G.targetPlayer = player.Name .. " (" .. player.DisplayName .. ")"
-            updateTargetPlayerLabel()
-        end
-    end
-end)
-
--- Кнопка для очистки цели
-local clearTargetButton = createButton(killerTab, "Очистить убийство", function()
-    _G.targetPlayer = ""
-    updateTargetPlayerLabel()
-end)
-
--- Переключатель для убийства выбранной цели
-createToggle(killerTab, "Убийство выбранного", false, function(bool)
-    _G.autoKillTarget = bool
-    
-    if bool and _G.targetPlayer ~= "" then
-        task.spawn(function()
-            while _G.autoKillTarget and _G.targetPlayer ~= "" do
-                pcall(function()
-                    local targetName = _G.targetPlayer:match("^([^%(]+)")
-                    if targetName then
-                        targetName = targetName:gsub("%s+$", "")
-                        local targetPlayer = game.Players:FindFirstChild(targetName)
-                        if targetPlayer and targetPlayer.Character and 
-                           targetPlayer.Character:FindFirstChild("HumanoidRootPart") and
-                           targetPlayer.Character:FindFirstChild("Humanoid") and
-                           targetPlayer.Character.Humanoid.Health > 0 then
-                            
-                            killPlayer(targetPlayer)
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-        end)
-    end
-end)
-
--- Кнопка для ручного убийства всех
-createButton(killerTab, "Очистить всё (кроме белого списка)", function()
-    pcall(function()
-        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                local isWhitelisted = false
-                for _, whitelistedInfo in ipairs(_G.whitelistedPlayers) do
-                    if whitelistedInfo:find(player.Name, 1, true) then
-                        isWhitelisted = true
-                        break
-                    end
-                end
-                
-                if not isWhitelisted and player.Character and 
-                   player.Character:FindFirstChild("HumanoidRootPart") then
-                    killPlayer(player)
-                    task.wait(0.05)
-                end
-            end
-        end
-    end)
-end)
-
--- Кнопка для убийства выбранной цели
-createButton(killerTab, "Удалить куклу для киллов", function()
-    if _G.targetPlayer ~= "" then
-        pcall(function()
-            local targetName = _G.targetPlayer:match("^([^%(]+)")
-            if targetName then
-                targetName = targetName:gsub("%s+$", "")
-                local targetPlayer = game.Players:FindFirstChild(targetName)
-                if targetPlayer then
-                    killPlayer(targetPlayer)
-                end
-            end
-        end)
-    end
-end)
-
--- Инициализация UI
-updateWhitelistedPlayersLabel()
-updateTargetPlayerLabel()
-
--- Создаем вкладку "Телепорт"
-local teleportTab = createTab("Телепорт")
-
--- Функция для телепортации
-local function teleportTo(position, title, text)
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    humanoidRootPart.CFrame = position
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = 2
-    })
-end
-
--- Кнопки телепортации
-createButton(teleportTab, "Спавн", function()
-    teleportTo(CFrame.new(2, 8, 115), "Телепорт", "Прямиком на спавн")
-end)
-
-createButton(teleportTab, "Секретная арена", function()
-    teleportTo(CFrame.new(1947, 2, 6191), "Телепорт", "У-хх СЕКРЕТ!")
-end)
-
-createButton(teleportTab, "Маленький остров 0-1к", function()
-    teleportTo(CFrame.new(-34, 7, 1903), "Телепорт", "Это для тебя малыш")
-end)
-
-createButton(teleportTab, "Ледяной зал", function()
-    teleportTo(CFrame.new(-2600.00244, 3.67686558, -403.884369, 0.0873617008, 1.0482899e-09, 0.99617666, 3.07204253e-08, 1, -3.7464023e-09, -0.99617666, 3.09302628e-08, 0.0873617008), "Телепорт", "Тут холодновато")
-end)
-
-createButton(teleportTab, "Мифический портал", function()
-    teleportTo(CFrame.new(2255, 7, 1071), "Телепорт", "Вот это Да,Мистика!")
-end)
-
-createButton(teleportTab, "Адский портал", function()
-    teleportTo(CFrame.new(-6768, 7, -1287), "Телепорт", "Жарковье,прям под сатану")
-end)
-
-createButton(teleportTab, "Легендарный остров", function()
-    teleportTo(CFrame.new(4604, 991, -3887), "Телепорт", "Тихо!Он только для легенд")
-end)
-
-createButton(teleportTab, "Портал мускульного короля", function()
-    teleportTo(CFrame.new(-8646, 17, -5738), "Телепорт", "Ты на стояке у Роналдо,двойная сила!")
-end)
-
-createButton(teleportTab, "Джунгли", function()
-    teleportTo(CFrame.new(-8659, 6, 2384), "Телепорт", "Алё,надо побрить,тут уже обезьянки бегают")
-end)
-
-createButton(teleportTab, "Бой в лаве", function()
-    teleportTo(CFrame.new(4471, 119, -8836), "Телепорт", "Это бой в лаве")
-end)
-
-createButton(teleportTab, "Бой в пустыне", function()
-    teleportTo(CFrame.new(960, 17, -7398), "Телепорт", "Это бой в песчанике")
-end)
-
-createButton(teleportTab, "Бой на ринге", function()
-    teleportTo(CFrame.new(-1849, 20, -6335), "Телепорт", "Тебе завидует Майк Тайсон")
+-- Обновлять статистику раз в секунду
+RunService.Heartbeat:Connect(function(dt)
+    updateStats()
 end)
