@@ -665,6 +665,7 @@ CollectChestsButton.MouseButton1Click:Connect(function()
 end)
 
 -- Создаем элементы для вкладки Питомцы
+-- Создаем элементы для вкладки Питомцы
 local PetsContainer = Instance.new("Frame")
 PetsContainer.Size = UDim2.new(1, 0, 0, 200)
 PetsContainer.BackgroundTransparency = 1
@@ -694,6 +695,7 @@ local petsList = {
 }
 
 local selectedPet = petsList[1]
+local TweenService = game:GetService("TweenService")
 
 -- Создаем выпадающее меню
 local DropdownFrame = Instance.new("Frame")
@@ -729,13 +731,13 @@ DropdownIcon.Parent = DropdownButton
 
 local DropdownList = Instance.new("ScrollingFrame")
 DropdownList.Name = "DropdownList"
-DropdownList.Size = UDim2.new(1, 0, 0, 0)
-DropdownList.Position = UDim2.new(0, 0, 0, 40)
+DropdownList.Size = UDim2.new(1, 0, 0, 150) -- Фиксированная высота для списка
+DropdownList.Position = UDim2.new(0, 0, 1, 5) -- Позиция под кнопкой
 DropdownList.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 DropdownList.ScrollBarThickness = 5
 DropdownList.Visible = false
-DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+DropdownList.BorderSizePixel = 0
+DropdownList.CanvasSize = UDim2.new(0, 0, 0, #petsList * 32)
 DropdownList.Parent = DropdownFrame
 
 local DropdownListLayout = Instance.new("UIListLayout")
@@ -788,19 +790,24 @@ end)
 -- Закрытие выпадающего списка при клике вне его
 local UserInputService = game:GetService("UserInputService")
 
+local function isPointInFrame(frame, point)
+    local framePos = frame.AbsolutePosition
+    local frameSize = frame.AbsoluteSize
+    return point.X >= framePos.X and point.X <= framePos.X + frameSize.X and
+           point.Y >= framePos.Y and point.Y <= framePos.Y + frameSize.Y
+end
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+    if gameProcessed or input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
     
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = input.Position
-        local isOverDropdown = DropdownFrame.AbsolutePosition.Y <= mousePos.Y and mousePos.Y <= (DropdownFrame.AbsolutePosition.Y + DropdownFrame.AbsoluteSize.Y)
-        local isOverList = DropdownList.Visible and DropdownList.AbsolutePosition.Y <= mousePos.Y and mousePos.Y <= (DropdownList.AbsolutePosition.Y + DropdownList.AbsoluteSize.Y)
-        
-        if not isOverDropdown and not isOverList then
-            isDropdownOpen = false
-            DropdownList.Visible = false
-            TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 0}):Play()
-        end
+    local mousePos = input.Position
+    local isOverDropdown = isPointInFrame(DropdownFrame, mousePos)
+    local isOverList = DropdownList.Visible and isPointInFrame(DropdownList, mousePos)
+    
+    if not isOverDropdown and not isOverList then
+        isDropdownOpen = false
+        DropdownList.Visible = false
+        TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 0}):Play()
     end
 end)
 
