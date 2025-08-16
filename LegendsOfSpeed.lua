@@ -146,7 +146,7 @@ local MainTab = Instance.new("TextButton")
 MainTab.Size = UDim2.new(0.33, 0, 1, 0)
 MainTab.Position = UDim2.new(0, 0, 0, 0)
 MainTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-MainTab.Text = "АВТОФАРМ"
+MainTab.Text = ""
 MainTab.TextColor3 = Color3.fromRGB(220, 220, 220)
 MainTab.Font = Enum.Font.GothamBold
 MainTab.TextSize = 12
@@ -176,7 +176,7 @@ MiscTab.Parent = TabBar
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.33, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
-ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)  
 ActiveTabIndicator.Parent = TabBar
 
 -- Контент
@@ -291,7 +291,7 @@ CloseButton.MouseButton1Click:Connect(function()
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
     YesButton.Text = "Да"
     YesButton.TextColor3 = Color3.new(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
@@ -342,8 +342,8 @@ AutoFarmContainer.Parent = MainFrameContent
 
 local AutoFarmTitle = Instance.new("TextLabel")
 AutoFarmTitle.Size = UDim2.new(1, 0, 0, 30)
-AutoFarmTitle.Text = "АВТОФАРМ"
-AutoFarmTitle.TextColor3 = Color3.fromRGB(0, 200, 100)
+AutoFarmTitle.Text = ""
+AutoFarmTitle.TextColor3 = Color3.fromRGB(255, 165, 50)
 AutoFarmTitle.Font = Enum.Font.GothamBold
 AutoFarmTitle.TextSize = 16
 AutoFarmTitle.BackgroundTransparency = 1
@@ -513,7 +513,7 @@ HardOrbFarmButtonCorner.Parent = HardOrbFarmToggleButton
 local CollectChestsButton = Instance.new("TextButton")
 CollectChestsButton.Size = UDim2.new(1, 0, 0, 30)
 CollectChestsButton.Position = UDim2.new(0, 0, 0, 130)
-CollectChestsButton.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+CollectChestsButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 CollectChestsButton.Text = "Собрать сундуки"
 CollectChestsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CollectChestsButton.Font = Enum.Font.GothamBold
@@ -567,7 +567,7 @@ end
 local function ToggleAutoSteps()
     AutoStepsEnabled = not AutoStepsEnabled
     if AutoStepsEnabled then
-        TweenService:Create(AutoStepsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(AutoStepsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoStepsToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
@@ -583,7 +583,7 @@ local function ToggleAutoSteps()
             end
         end)
     else
-        TweenService:Create(AutoStepsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -10), BackgroundColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+        TweenService:Create(AutoStepsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoStepsToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 60)}):Play()
     end
 end
@@ -591,7 +591,7 @@ end
 local function ToggleAutoGems()
     AutoGemsEnabled = not AutoGemsEnabled
     if AutoGemsEnabled then
-        TweenService:Create(AutoGemsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(AutoGemsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoGemsToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
@@ -617,7 +617,7 @@ end
 local function ToggleAutoRebirth()
     AutoRebirthEnabled = not AutoRebirthEnabled
     if AutoRebirthEnabled then
-        TweenService:Create(AutoRebirthToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(AutoRebirthToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoRebirthToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
@@ -639,7 +639,7 @@ end
 local function ToggleHardOrbFarm()
     HardOrbFarmEnabled = not HardOrbFarmEnabled
     if HardOrbFarmEnabled then
-        TweenService:Create(HardOrbFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(HardOrbFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(HardOrbFarmToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         startOrbFarm()
     else
@@ -673,7 +673,7 @@ PetsContainer.Parent = PetsFrameContent
 local PetsTitle = Instance.new("TextLabel")
 PetsTitle.Size = UDim2.new(1, 0, 0, 30)
 PetsTitle.Text = "АВТОПОКУПКА ПИТОМЦЕВ"
-PetsTitle.TextColor3 = Color3.fromRGB(0, 200, 100)
+PetsTitle.TextColor3 = Color3.fromRGB(255, 165, 50)
 PetsTitle.Font = Enum.Font.GothamBold
 PetsTitle.TextSize = 16
 PetsTitle.BackgroundTransparency = 1
@@ -816,7 +816,7 @@ local PetFarmEnabled = false
 local function TogglePetFarm()
     PetFarmEnabled = not PetFarmEnabled
     if PetFarmEnabled then
-        TweenService:Create(PetFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(PetFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(PetFarmToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
@@ -848,8 +848,8 @@ MiscContainer.Parent = MiscFrameContent
 
 local MiscTitle = Instance.new("TextLabel")
 MiscTitle.Size = UDim2.new(1, 0, 0, 30)
-MiscTitle.Text = "ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ"
-MiscTitle.TextColor3 = Color3.fromRGB(0, 200, 100)
+MiscTitle.Text = ""
+MiscTitle.TextColor3 = Color3.fromRGB(255, 165, 50)
 MiscTitle.Font = Enum.Font.GothamBold
 MiscTitle.TextSize = 16
 MiscTitle.BackgroundTransparency = 1
@@ -942,7 +942,7 @@ local AutoGiftsEnabled = false
 local function ToggleAutoWheel()
     AutoWheelEnabled = not AutoWheelEnabled
     if AutoWheelEnabled then
-        TweenService:Create(AutoWheelToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(AutoWheelToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoWheelToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
@@ -959,7 +959,7 @@ end
 local function ToggleAutoGifts()
     AutoGiftsEnabled = not AutoGiftsEnabled
     if AutoGiftsEnabled then
-        TweenService:Create(AutoGiftsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(0, 200, 100)}):Play()
+        TweenService:Create(AutoGiftsToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
         TweenService:Create(AutoGiftsToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
         
         spawn(function()
