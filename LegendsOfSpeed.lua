@@ -648,10 +648,74 @@ local function ToggleHardOrbFarm()
     end
 end
 
+local HoopsFarmToggle = Instance.new("Frame")
+HoopsFarmToggle.Size = UDim2.new(1, 0, 0, 25)
+HoopsFarmToggle.Position = UDim2.new(0, 0, 0, 120) -- Сдвигаем вниз
+HoopsFarmToggle.BackgroundTransparency = 1
+HoopsFarmToggle.Parent = AutoFarmContainer
+
+local HoopsFarmLabel = Instance.new("TextLabel")
+HoopsFarmLabel.Size = UDim2.new(0.7, 0, 1, 0)
+HoopsFarmLabel.Text = "Фарм колец (обычный)"
+HoopsFarmLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HoopsFarmLabel.Font = Enum.Font.Gotham
+HoopsFarmLabel.TextSize = 14
+HoopsFarmLabel.BackgroundTransparency = 1
+HoopsFarmLabel.TextXAlignment = Enum.TextXAlignment.Left
+HoopsFarmLabel.Parent = HoopsFarmToggle
+
+local HoopsFarmToggleFrame = Instance.new("Frame")
+HoopsFarmToggleFrame.Name = "ToggleFrame"
+HoopsFarmToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HoopsFarmToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+HoopsFarmToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HoopsFarmToggleFrame.Parent = HoopsFarmToggle
+
+local HoopsFarmToggleCorner = Instance.new("UICorner")
+HoopsFarmToggleCorner.CornerRadius = UDim.new(1, 0)
+HoopsFarmToggleCorner.Parent = HoopsFarmToggleFrame
+
+local HoopsFarmToggleButton = Instance.new("TextButton")
+HoopsFarmToggleButton.Name = "ToggleButton"
+HoopsFarmToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HoopsFarmToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HoopsFarmToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HoopsFarmToggleButton.Text = ""
+HoopsFarmToggleButton.Parent = HoopsFarmToggleFrame
+
+local HoopsFarmButtonCorner = Instance.new("UICorner")
+HoopsFarmButtonCorner.CornerRadius = UDim.new(1, 0)
+HoopsFarmButtonCorner.Parent = HoopsFarmToggleButton
+
+-- Логика Hoops Farm
+local HoopsFarmEnabled = false
+
+local function ToggleHoopsFarm()
+    HoopsFarmEnabled = not HoopsFarmEnabled
+    if HoopsFarmEnabled then
+        TweenService:Create(HoopsFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+        TweenService:Create(HoopsFarmToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 90)}):Play()
+        
+        spawn(function()
+            while HoopsFarmEnabled and task.wait() do
+                pcall(function()
+                    for _, hoop in pairs(game:GetService("Workspace").Hoops:GetChildren()) do
+                        hoop.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    end
+                end)
+            end
+        end)
+    else
+        TweenService:Create(HoopsFarmToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -10), BackgroundColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+        TweenService:Create(HoopsFarmToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 60)}):Play()
+    end
+end
+
 AutoStepsToggleButton.MouseButton1Click:Connect(ToggleAutoSteps)
 AutoGemsToggleButton.MouseButton1Click:Connect(ToggleAutoGems)
 AutoRebirthToggleButton.MouseButton1Click:Connect(ToggleAutoRebirth)
 HardOrbFarmToggleButton.MouseButton1Click:Connect(ToggleHardOrbFarm)
+HoopsFarmToggleButton.MouseButton1Click:Connect(ToggleHoopsFarm)
 
 CollectChestsButton.MouseButton1Click:Connect(function()
     local args = {[1] = "groupRewards"}
