@@ -693,81 +693,115 @@ local petsList = {
     "Utimate Overdrive Bunny"
 }
 
-local currentPetIndex = 1
-local selectedPet = petsList[currentPetIndex]
+local selectedPet = petsList[1]
 
--- Контейнер для выбора питомца
-local PetSelectionContainer = Instance.new("Frame")
-PetSelectionContainer.Size = UDim2.new(1, 0, 0, 40)
-PetSelectionContainer.Position = UDim2.new(0, 0, 0, 40)
-PetSelectionContainer.BackgroundTransparency = 1
-PetSelectionContainer.Parent = PetsContainer
+-- Создаем выпадающее меню
+local DropdownFrame = Instance.new("Frame")
+DropdownFrame.Name = "PetDropdown"
+DropdownFrame.Size = UDim2.new(1, 0, 0, 35)
+DropdownFrame.Position = UDim2.new(0, 0, 0, 40)
+DropdownFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+DropdownFrame.Parent = PetsContainer
 
--- Кнопка назад
-local PrevPetButton = Instance.new("TextButton")
-PrevPetButton.Size = UDim2.new(0, 30, 0, 30)
-PrevPetButton.Position = UDim2.new(0, 0, 0.5, -15)
-PrevPetButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-PrevPetButton.Text = "<"
-PrevPetButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-PrevPetButton.Font = Enum.Font.GothamBold
-PrevPetButton.TextSize = 16
-PrevPetButton.Parent = PetSelectionContainer
+local DropdownCorner = Instance.new("UICorner")
+DropdownCorner.CornerRadius = UDim.new(0, 6)
+DropdownCorner.Parent = DropdownFrame
 
-local PrevPetCorner = Instance.new("UICorner")
-PrevPetCorner.CornerRadius = UDim.new(0, 6)
-PrevPetCorner.Parent = PrevPetButton
+local DropdownButton = Instance.new("TextButton")
+DropdownButton.Name = "DropdownButton"
+DropdownButton.Size = UDim2.new(1, 0, 1, 0)
+DropdownButton.BackgroundTransparency = 1
+DropdownButton.Text = selectedPet
+DropdownButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+DropdownButton.Font = Enum.Font.Gotham
+DropdownButton.TextSize = 14
+DropdownButton.Parent = DropdownFrame
 
--- Название текущего питомца
-local CurrentPetLabel = Instance.new("TextLabel")
-CurrentPetLabel.Size = UDim2.new(1, -60, 0, 30)
-CurrentPetLabel.Position = UDim2.new(0, 35, 0.5, -15)
-CurrentPetLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-CurrentPetLabel.Text = selectedPet
-CurrentPetLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-CurrentPetLabel.Font = Enum.Font.Gotham
-CurrentPetLabel.TextSize = 14
-CurrentPetLabel.Parent = PetSelectionContainer
+local DropdownIcon = Instance.new("ImageLabel")
+DropdownIcon.Name = "Icon"
+DropdownIcon.Size = UDim2.new(0, 20, 0, 20)
+DropdownIcon.Position = UDim2.new(1, -25, 0.5, -10)
+DropdownIcon.BackgroundTransparency = 1
+DropdownIcon.Image = "rbxassetid://3926305904"
+DropdownIcon.ImageRectOffset = Vector2.new(364, 364)
+DropdownIcon.ImageRectSize = Vector2.new(36, 36)
+DropdownIcon.Parent = DropdownButton
 
-local CurrentPetCorner = Instance.new("UICorner")
-CurrentPetCorner.CornerRadius = UDim.new(0, 6)
-CurrentPetCorner.Parent = CurrentPetLabel
+local DropdownList = Instance.new("ScrollingFrame")
+DropdownList.Name = "DropdownList"
+DropdownList.Size = UDim2.new(1, 0, 0, 0)
+DropdownList.Position = UDim2.new(0, 0, 0, 40)
+DropdownList.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+DropdownList.ScrollBarThickness = 5
+DropdownList.Visible = false
+DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
+DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+DropdownList.Parent = DropdownFrame
 
--- Кнопка вперед
-local NextPetButton = Instance.new("TextButton")
-NextPetButton.Size = UDim2.new(0, 30, 0, 30)
-NextPetButton.Position = UDim2.new(1, -30, 0.5, -15)
-NextPetButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-NextPetButton.Text = ">"
-NextPetButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-NextPetButton.Font = Enum.Font.GothamBold
-NextPetButton.TextSize = 16
-NextPetButton.Parent = PetSelectionContainer
+local DropdownListLayout = Instance.new("UIListLayout")
+DropdownListLayout.Padding = UDim.new(0, 2)
+DropdownListLayout.Parent = DropdownList
 
-local NextPetCorner = Instance.new("UICorner")
-NextPetCorner.CornerRadius = UDim.new(0, 6)
-NextPetCorner.Parent = NextPetButton
+local DropdownListCorner = Instance.new("UICorner")
+DropdownListCorner.CornerRadius = UDim.new(0, 6)
+DropdownListCorner.Parent = DropdownList
 
--- Функции для переключения питомцев
-local function updatePetSelection()
-    selectedPet = petsList[currentPetIndex]
-    CurrentPetLabel.Text = selectedPet
+-- Создаем элементы списка
+for _, petName in ipairs(petsList) do
+    local OptionButton = Instance.new("TextButton")
+    OptionButton.Name = petName
+    OptionButton.Size = UDim2.new(1, -10, 0, 30)
+    OptionButton.Position = UDim2.new(0, 5, 0, 0)
+    OptionButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    OptionButton.Text = petName
+    OptionButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+    OptionButton.Font = Enum.Font.Gotham
+    OptionButton.TextSize = 14
+    OptionButton.Parent = DropdownList
+    
+    local OptionCorner = Instance.new("UICorner")
+    OptionCorner.CornerRadius = UDim.new(0, 4)
+    OptionCorner.Parent = OptionButton
+    
+    OptionButton.MouseButton1Click:Connect(function()
+        selectedPet = petName
+        DropdownButton.Text = petName
+        DropdownList.Visible = false
+        TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 0}):Play()
+    end)
 end
 
-PrevPetButton.MouseButton1Click:Connect(function()
-    currentPetIndex = currentPetIndex - 1
-    if currentPetIndex < 1 then
-        currentPetIndex = #petsList
+-- Функционал открытия/закрытия выпадающего списка
+local isDropdownOpen = false
+
+DropdownButton.MouseButton1Click:Connect(function()
+    isDropdownOpen = not isDropdownOpen
+    DropdownList.Visible = isDropdownOpen
+    
+    if isDropdownOpen then
+        TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 180}):Play()
+    else
+        TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 0}):Play()
     end
-    updatePetSelection()
 end)
 
-NextPetButton.MouseButton1Click:Connect(function()
-    currentPetIndex = currentPetIndex + 1
-    if currentPetIndex > #petsList then
-        currentPetIndex = 1
+-- Закрытие выпадающего списка при клике вне его
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = input.Position
+        local isOverDropdown = DropdownFrame.AbsolutePosition.Y <= mousePos.Y and mousePos.Y <= (DropdownFrame.AbsolutePosition.Y + DropdownFrame.AbsoluteSize.Y)
+        local isOverList = DropdownList.Visible and DropdownList.AbsolutePosition.Y <= mousePos.Y and mousePos.Y <= (DropdownList.AbsolutePosition.Y + DropdownList.AbsoluteSize.Y)
+        
+        if not isOverDropdown and not isOverList then
+            isDropdownOpen = false
+            DropdownList.Visible = false
+            TweenService:Create(DropdownIcon, TweenInfo.new(0.2), {Rotation = 0}):Play()
+        end
     end
-    updatePetSelection()
 end)
 
 -- Тумблер автопокупки
@@ -935,6 +969,21 @@ local AutoGiftsButtonCorner = Instance.new("UICorner")
 AutoGiftsButtonCorner.CornerRadius = UDim.new(1, 0)
 AutoGiftsButtonCorner.Parent = AutoGiftsToggleButton
 
+-- Кнопка активации кодов
+local RedeemCodesButton = Instance.new("TextButton")
+RedeemCodesButton.Size = UDim2.new(1, 0, 0, 30)
+RedeemCodesButton.Position = UDim2.new(0, 0, 0, 70)
+RedeemCodesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
+RedeemCodesButton.Text = "Активировать все коды"
+RedeemCodesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+RedeemCodesButton.Font = Enum.Font.GothamBold
+RedeemCodesButton.TextSize = 14
+RedeemCodesButton.Parent = MiscContainer
+
+local RedeemCodesCorner = Instance.new("UICorner")
+RedeemCodesCorner.CornerRadius = UDim.new(0, 6)
+RedeemCodesCorner.Parent = RedeemCodesButton
+
 -- Логика дополнительных функций
 local AutoWheelEnabled = false
 local AutoGiftsEnabled = false
@@ -975,8 +1024,33 @@ local function ToggleAutoGifts()
     end
 end
 
+local function RedeemAllCodes()
+    local codes = {
+        "swiftjungle1000", -- 1000 алмазов
+        "speedchampion000", -- 5000 алмазов
+        "racer300", -- 300 шагов
+        "SPRINT250", -- 250 шагов
+        "hyper250", -- 250 шагов
+        "legends500", -- 500 шагов
+        "sparkles300", -- 300 шагов
+        "Launch200" -- 200 шагов
+    }
+    
+    local remote = ReplicatedStorage:FindFirstChild("rEvents") and ReplicatedStorage.rEvents:FindFirstChild("redeemCodeRemote")
+    
+    if remote then
+        for _, code in ipairs(codes) do
+            remote:InvokeServer("redeemCode", code)
+            wait(0.5) -- Небольшая задержка между кодами
+        end
+    else
+        warn("Не удалось найти remote для активации кодов!")
+    end
+end
+
 AutoWheelToggleButton.MouseButton1Click:Connect(ToggleAutoWheel)
 AutoGiftsToggleButton.MouseButton1Click:Connect(ToggleAutoGifts)
+RedeemCodesButton.MouseButton1Click:Connect(RedeemAllCodes)
 
 -- Инициализация
 switchTab("main")
