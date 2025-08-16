@@ -1245,7 +1245,7 @@ SpectateButtonCorner.Parent = SpectateToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y)
+PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y - 65)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1281,7 +1281,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5,
-        0, SpectateContainer.AbsolutePosition.Y
+        0, SpectateContainer.AbsolutePosition.Y - 65
     )
 end
 
@@ -1736,7 +1736,7 @@ TeleportButtonCorner.Parent = TeleportToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y)
+PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 65)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1772,7 +1772,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
-        0, TeleportContainer.AbsolutePosition.Y
+        0, TeleportContainer.AbsolutePosition.Y - 65
     )
 end
 
