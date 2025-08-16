@@ -146,7 +146,7 @@ local MainTab = Instance.new("TextButton")
 MainTab.Size = UDim2.new(0.33, 0, 1, 0)
 MainTab.Position = UDim2.new(0, 0, 0, 0)
 MainTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-MainTab.Text = ""
+MainTab.Text = "МЕНЮ"
 MainTab.TextColor3 = Color3.fromRGB(220, 220, 220)
 MainTab.Font = Enum.Font.GothamBold
 MainTab.TextSize = 12
@@ -358,7 +358,7 @@ AutoStepsToggle.Parent = AutoFarmContainer
 
 local AutoStepsLabel = Instance.new("TextLabel")
 AutoStepsLabel.Size = UDim2.new(0.7, 0, 1, 0)
-AutoStepsLabel.Text = "Авто шаги"
+AutoStepsLabel.Text = "Авто шаги OP"
 AutoStepsLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 AutoStepsLabel.Font = Enum.Font.Gotham
 AutoStepsLabel.TextSize = 14
@@ -478,7 +478,7 @@ HardOrbFarmToggle.Parent = AutoFarmContainer
 
 local HardOrbFarmLabel = Instance.new("TextLabel")
 HardOrbFarmLabel.Size = UDim2.new(0.7, 0, 1, 0)
-HardOrbFarmLabel.Text = "Жесткий фарм орбов"
+HardOrbFarmLabel.Text = "Жесткий фарм орбов (вызывает задержку)"
 HardOrbFarmLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 HardOrbFarmLabel.Font = Enum.Font.Gotham
 HardOrbFarmLabel.TextSize = 14
