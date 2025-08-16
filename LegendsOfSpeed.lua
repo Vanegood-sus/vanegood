@@ -512,7 +512,7 @@ HardOrbFarmButtonCorner.Parent = HardOrbFarmToggleButton
 -- Кнопка сбора сундуков
 local CollectChestsButton = Instance.new("TextButton")
 CollectChestsButton.Size = UDim2.new(1, 0, 0, 30)
-CollectChestsButton.Position = UDim2.new(0, 0, 0, 130)
+CollectChestsButton.Position = UDim2.new(0, 0, 0, 90)
 CollectChestsButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 CollectChestsButton.Text = "Собрать сундуки"
 CollectChestsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
