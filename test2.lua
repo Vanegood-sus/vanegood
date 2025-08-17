@@ -1,27 +1,27 @@
--- vanegood from muscle legends --
+-- Vanegood's Muscle Legends Script
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
--- Удаляем старый хаб если есть
+-- Remove old hub if exists
 if CoreGui:FindFirstChild("VanegoodHub") then
     CoreGui.VanegoodHub:Destroy()
 end
 
--- Создаем GUI
+-- Create GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой
+-- Create button with image
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
--- Размеры изображения
+-- Image settings
 local imageSize = 75
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
@@ -37,13 +37,13 @@ uiCorner.Parent = imageFrame
 
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
-image.Image = "rbxassetid://111084287166716" -- Ваше изображение
+image.Image = "rbxassetid://111084287166716" -- Your image
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
 image.Parent = imageFrame
 
--- Перетаскивание
+-- Dragging functionality
 local touchStartPos, frameStartPos
 local isDragging = false
 
@@ -73,7 +73,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Основное окно хаба
+-- Main hub window
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 500, 0, 350)
 MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
@@ -88,7 +88,7 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
--- Оранжевая обводка
+-- Orange border
 local Border = Instance.new("Frame")
 Border.Size = UDim2.new(1, 2, 1, 2)
 Border.Position = UDim2.new(0, -1, 0, -1)
@@ -101,7 +101,7 @@ UIStroke.Thickness = 1.5
 UIStroke.Transparency = 0.3
 UIStroke.Parent = Border
 
--- Верхняя панель
+-- Top bar
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 TopBar.Position = UDim2.new(0, 0, 0, 0)
@@ -112,7 +112,7 @@ local TopBarCorner = Instance.new("UICorner")
 TopBarCorner.CornerRadius = UDim.new(0, 8)
 TopBarCorner.Parent = TopBar
 
--- Заголовок
+-- Title
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 120, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
@@ -124,7 +124,7 @@ Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
--- Кнопка закрытия (оранжевая)
+-- Close button (orange)
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Position = UDim2.new(1, -25, 0.5, -10)
@@ -135,7 +135,7 @@ CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 18
 CloseButton.Parent = TopBar
 
--- Кнопка минимизации (оранжевая)
+-- Minimize button (orange)
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 20, 0, 20)
 MinimizeButton.Position = UDim2.new(1, -50, 0.5, -10)
@@ -146,14 +146,14 @@ MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.TextSize = 18
 MinimizeButton.Parent = TopBar
 
--- Панель вкладок
+-- Tab bar
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, 0, 0, 30)
 TabBar.Position = UDim2.new(0, 0, 0, 30)
 TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TabBar.Parent = MainFrame
 
--- Вкладки (5 штук как в Muscle Legends)
+-- Tabs (5 like in Muscle Legends)
 local MainTab = Instance.new("TextButton")
 MainTab.Size = UDim2.new(0.2, 0, 1, 0)
 MainTab.Position = UDim2.new(0, 0, 0, 0)
@@ -204,14 +204,14 @@ TeleportTab.Font = Enum.Font.GothamBold
 TeleportTab.TextSize = 12
 TeleportTab.Parent = TabBar
 
--- Индикатор вкладки (оранжевый)
+-- Active tab indicator (orange)
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.2, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
 ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
 ActiveTabIndicator.Parent = TabBar
 
--- Контент
+-- Content
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Size = UDim2.new(1, -20, 1, -70)
 ContentFrame.Position = UDim2.new(0, 10, 0, 65)
@@ -219,7 +219,7 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.ClipsDescendants = true
 ContentFrame.Parent = MainFrame
 
--- Фреймы для контента
+-- Content frames
 local MainFrameContent = Instance.new("ScrollingFrame")
 MainFrameContent.Size = UDim2.new(1, 0, 1, 0)
 MainFrameContent.Position = UDim2.new(0, 0, 0, 0)
@@ -265,7 +265,7 @@ TeleportFrameContent.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)
 TeleportFrameContent.Visible = false
 TeleportFrameContent.Parent = ContentFrame
 
--- Функция переключения вкладок
+-- Tab switching function
 local function switchTab(tab)
     MainTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     FarmTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
@@ -313,14 +313,14 @@ local function switchTab(tab)
     end
 end
 
--- Обработчики вкладок
+-- Tab handlers
 MainTab.MouseButton1Click:Connect(function() switchTab("main") end)
 FarmTab.MouseButton1Click:Connect(function() switchTab("farm") end)
 PetsTab.MouseButton1Click:Connect(function() switchTab("pets") end)
 KillerTab.MouseButton1Click:Connect(function() switchTab("killer") end)
 TeleportTab.MouseButton1Click:Connect(function() switchTab("teleport") end)
 
--- Функция минимизации
+-- Minimize function
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -337,7 +337,7 @@ MinimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Функция закрытия
+-- Close function
 CloseButton.MouseButton1Click:Connect(function()
     local MessageFrame = Instance.new("Frame")
     MessageFrame.Size = UDim2.new(0, 250, 0, 120)
@@ -359,7 +359,7 @@ CloseButton.MouseButton1Click:Connect(function()
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Orange
     YesButton.Text = "Да"
     YesButton.TextColor3 = Color3.new(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
@@ -386,14 +386,14 @@ CloseButton.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Функция для кнопки с картинкой
+-- Image button function
 local hubVisible = true
 imageFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         hubVisible = not hubVisible
         ScreenGui.Enabled = hubVisible
         
-        -- Анимация для обратной связи
+        -- Animation for feedback
         if hubVisible then
             TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
         else
@@ -429,7 +429,7 @@ setupAntiAFK()
 
 -- Create Main Window
 local window = library:AddWindow("Muscle Legends", {
-main_color = Color3.fromRGB(200, 200, 200), -- темно-красный
+    main_color = Color3.fromRGB(200, 200, 200), -- dark red
     min_size = Vector2.new(800, 900),
     can_resize = true,
 })
@@ -440,7 +440,6 @@ local farmPlusTab = window:AddTab("Фарм")
 mainTab:Show() -- Show this tab by default
 
 mainTab:AddLabel("Добро Пожаловать!")
-
 
 -- Add Anti-AFK toggle
 local antiAFKEnabled = true
@@ -673,7 +672,6 @@ autoBrawlsFolder:AddSwitch("Автоматом вступать в бой", func
         end
     end)
 end)
-
 
 -- NEW: Farm Gyms Folder
 local farmGymsFolder = mainTab:AddFolder("Залы")
@@ -1831,9 +1829,7 @@ misc1Folder:AddSwitch("Авто сбор подарков", function(bool)
     end
 end)
 
-
 local killerTab = window:AddTab("Убийства")
-
 
 _G.whitelistedPlayers = _G.whitelistedPlayers or {}
 _G.targetPlayer = _G.targetPlayer or ""
@@ -2201,8 +2197,6 @@ end)
 -- Initialize UI
 updateWhitelistedPlayersLabel()
 updateTargetPlayerLabel()
-
-
 
 local teleportTab = window:AddTab("Телепорт")
 
