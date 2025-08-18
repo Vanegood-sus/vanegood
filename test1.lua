@@ -4,122 +4,72 @@ local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
+-- Удаляем старый хаб если есть
+if CoreGui:FindFirstChild("VanegoodHub") then
+    CoreGui.VanegoodHub:Destroy()
+end
+
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой (оптимизированная версия)
+-- Создаем кнопку с фоткой
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
-TinyImageGui.DisplayOrder = 999 -- Чтобы всегда была поверх других элементов
 
--- Настройки изображения
+-- Размеры изображения
 local imageSize = 75
-local initialPosition = UDim2.new(0, 20, 0.5, -imageSize/2) -- Центрирован по вертикали, 20px от левого края
-
--- Основной контейнер для изображения
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
 imageFrame.Size = UDim2.new(0, imageSize, 0, imageSize)
-imageFrame.Position = initialPosition -- Сохраняем начальную позицию
-imageFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50) -- Фон для плавного скругления
-imageFrame.BackgroundTransparency = 0.5 -- Полупрозрачный фон
-imageFrame.ClipsDescendants = true -- Обрезаем содержимое по границам
+imageFrame.Position = UDim2.new(0, 20, 0, 20)
+imageFrame.BackgroundTransparency = 1
+imageFrame.ClipsDescendants = true
 imageFrame.Parent = TinyImageGui
 
--- Идеальное скругление углов (круг)
 local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0.5, 0) -- 50% для идеального круга
+uiCorner.CornerRadius = UDim.new(0.25, 0)
 uiCorner.Parent = imageFrame
 
--- Внутренний контейнер для плавного скругления (дополнительный эффект)
-local innerFrame = Instance.new("Frame")
-innerFrame.Name = "InnerFrame"
-innerFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
-innerFrame.Position = UDim2.new(0.05, 0, 0.05, 0)
-innerFrame.BackgroundTransparency = 1
-innerFrame.ClipsDescendants = true
-innerFrame.Parent = imageFrame
-
-local innerCorner = Instance.new("UICorner")
-innerCorner.CornerRadius = UDim.new(0.5, 0)
-innerCorner.Parent = innerFrame
-
--- Само изображение
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
 image.Image = "rbxassetid://111084287166716"
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
-image.ScaleType = Enum.ScaleType.Stretch -- Для правильного масштабирования
-image.Parent = innerFrame
+image.Parent = imageFrame
 
--- Эффект при наведении
-image.MouseEnter:Connect(function()
-    TweenService:Create(imageFrame, TweenInfo.new(0.2), {
-        BackgroundTransparency = 0.3,
-        Size = UDim2.new(0, imageSize+5, 0, imageSize+5)
-    }):Play()
-end)
-
-image.MouseLeave:Connect(function()
-    TweenService:Create(imageFrame, TweenInfo.new(0.2), {
-        BackgroundTransparency = 0.5,
-        Size = UDim2.new(0, imageSize, 0, imageSize)
-    }):Play()
-end)
-
--- Перетаскивание (оптимизированная версия)
-local dragStartPos, frameStartPos
+-- Перетаскивание
+local touchStartPos, frameStartPos
 local isDragging = false
 
-local function updatePosition(input)
-    local delta = input.Position - dragStartPos
-    imageFrame.Position = UDim2.new(
-        frameStartPos.X.Scale,
-        frameStartPos.X.Offset + delta.X,
-        frameStartPos.Y.Scale,
-        frameStartPos.Y.Offset + delta.Y
-    )
-end
-
-image.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       input.UserInputType == Enum.UserInputType.Touch then
+imageFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         isDragging = true
-        dragStartPos = input.Position
+        touchStartPos = input.Position
         frameStartPos = imageFrame.Position
-        
-        -- Эффект при нажатии
-        TweenService:Create(imageFrame, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, imageSize-3, 0, imageSize-3),
-            BackgroundTransparency = 0.2
-        }):Play()
+    end
+end)
+
+imageFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = false
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or 
-                      input.UserInputType == Enum.UserInputType.Touch) then
-        updatePosition(input)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or 
-        input.UserInputType == Enum.UserInputType.Touch) and isDragging then
-        isDragging = false
-        
-        -- Возвращаем нормальный размер после перетаскивания
-        TweenService:Create(imageFrame, TweenInfo.new(0.2), {
-            Size = UDim2.new(0, imageSize, 0, imageSize),
-            BackgroundTransparency = 0.5
-        }):Play()
+    if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - touchStartPos
+        imageFrame.Position = UDim2.new(
+            frameStartPos.X.Scale,
+            frameStartPos.X.Offset + delta.X,
+            frameStartPos.Y.Scale,
+            frameStartPos.Y.Offset + delta.Y
+        )
     end
 end)
 
@@ -713,10 +663,8 @@ RunService.RenderStepped:Connect(function()
                 pcall(function()
                     local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
                     if rootPart then
-                        -- УВЕЛИЧЕНА ВЫСОТА ХИТБОКСА (hipHeight * 3 вместо * 2)
-                        local humanoid = player.Character:FindFirstChild("Humanoid")
-                        local height = humanoid and humanoid.HipHeight * 3 or _G.Size
-                        rootPart.Size = Vector3.new(_G.Size, height, _G.Size)
+                        -- Делаем хитбокс квадратным (кубическим)
+                        rootPart.Size = Vector3.new(_G.Size, _G.Size, _G.Size)
                         rootPart.Transparency = 0.7
                         rootPart.BrickColor = BrickColor.new("Really red")
                         rootPart.Material = "Neon"
@@ -1295,7 +1243,7 @@ SpectateButtonCorner.Parent = SpectateToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y - 200)
+PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y - 110)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1331,7 +1279,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5,
-        0, SpectateContainer.AbsolutePosition.Y - 200
+        0, SpectateContainer.AbsolutePosition.Y - 110
     )
 end
 
@@ -1786,7 +1734,7 @@ TeleportButtonCorner.Parent = TeleportToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 250)
+PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1822,7 +1770,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
-        0, TeleportContainer.AbsolutePosition.Y - 250
+        0, TeleportContainer.AbsolutePosition.Y - 135
     )
 end
 
@@ -1934,6 +1882,55 @@ GamesFrame.ScrollBarThickness = 3
 GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 GamesFrame.Visible = false
 GamesFrame.Parent = ContentFrame
+
+-- Создаем кнопку Muscle Legends
+local MuscleLegendsButton = Instance.new("TextButton")
+MuscleLegendsButton.Name = "MuscleLegendsButton"
+MuscleLegendsButton.Size = UDim2.new(1, -20, 0, 40)
+MuscleLegendsButton.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в GamesFrame
+MuscleLegendsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MuscleLegendsButton.BackgroundTransparency = 0.5
+MuscleLegendsButton.Text = "Muscle Legends"
+MuscleLegendsButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+MuscleLegendsButton.Font = Enum.Font.GothamBold
+MuscleLegendsButton.TextSize = 14
+MuscleLegendsButton.Parent = GamesFrame
+
+-- Скругление углов
+local MuscleLegendsCorner = Instance.new("UICorner")
+MuscleLegendsCorner.CornerRadius = UDim.new(0, 6)
+MuscleLegendsCorner.Parent = MuscleLegendsButton
+
+-- Иконка игры (можно заменить на другую)
+local GameIcon = Instance.new("ImageLabel")
+GameIcon.Name = "GameIcon"
+GameIcon.Size = UDim2.new(0, 30, 0, 30)
+GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
+GameIcon.BackgroundTransparency = 1
+GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Parent = MuscleLegendsButton
+
+-- Анимация при наведении
+MuscleLegendsButton.MouseEnter:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
+end)
+
+MuscleLegendsButton.MouseLeave:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
+end)
+
+-- Обработчик нажатия
+MuscleLegendsButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua"))()
+    
+    -- Анимация нажатия
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+end)
+
+-- Тут будет легенд оф спеад
 
 local TrollFrame = Instance.new("ScrollingFrame")
 TrollFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -2156,6 +2153,257 @@ end)
 
 -- Инициализация
 updateWalkFlingToggle()
+
+-- You F*ck (в разделе Троллинг)
+local YouFuckContainer = Instance.new("Frame")
+YouFuckContainer.Name = "YouFuckSettings"
+YouFuckContainer.Size = UDim2.new(1, -20, 0, 40)
+YouFuckContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
+YouFuckContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+YouFuckContainer.BackgroundTransparency = 0.5
+YouFuckContainer.Parent = TrollFrame
+
+local YouFuckCorner = Instance.new("UICorner")
+YouFuckCorner.CornerRadius = UDim.new(0, 6)
+YouFuckCorner.Parent = YouFuckContainer
+
+local YouFuckLabel = Instance.new("TextLabel")
+YouFuckLabel.Name = "Label"
+YouFuckLabel.Size = UDim2.new(0, 120, 1, 0)
+YouFuckLabel.Position = UDim2.new(0, 10, 0, 0)
+YouFuckLabel.BackgroundTransparency = 1
+YouFuckLabel.Text = "Е**ть игроков"
+YouFuckLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+YouFuckLabel.Font = Enum.Font.GothamBold
+YouFuckLabel.TextSize = 14
+YouFuckLabel.TextXAlignment = Enum.TextXAlignment.Left
+YouFuckLabel.Parent = YouFuckContainer
+
+local YouFuckToggleButton = Instance.new("TextButton")
+YouFuckToggleButton.Name = "YouFuckToggle"
+YouFuckToggleButton.Size = UDim2.new(0, 120, 0, 25)
+YouFuckToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
+YouFuckToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+YouFuckToggleButton.Text = "Select ▷"
+YouFuckToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+YouFuckToggleButton.Font = Enum.Font.Gotham
+YouFuckToggleButton.TextSize = 12
+YouFuckToggleButton.Parent = YouFuckContainer
+
+local YouFuckButtonCorner = Instance.new("UICorner")
+YouFuckButtonCorner.CornerRadius = UDim.new(0, 4)
+YouFuckButtonCorner.Parent = YouFuckToggleButton
+
+-- Меню выбора игрока
+local YouFuckSideMenu = Instance.new("Frame")
+YouFuckSideMenu.Name = "YouFuckSideMenu"
+YouFuckSideMenu.Size = UDim2.new(0, 150, 0, 0)
+YouFuckSideMenu.Position = UDim2.new(0, YouFuckContainer.AbsolutePosition.X + YouFuckContainer.AbsoluteSize.X + 5, 0, YouFuckContainer.AbsolutePosition.Y - 250)
+YouFuckSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+YouFuckSideMenu.BorderSizePixel = 0
+YouFuckSideMenu.Visible = false
+YouFuckSideMenu.ClipsDescendants = true
+YouFuckSideMenu.Parent = ScreenGui
+
+local YouFuckUICorner = Instance.new("UICorner")
+YouFuckUICorner.CornerRadius = UDim.new(0, 6)
+YouFuckUICorner.Parent = YouFuckSideMenu
+
+local YouFuckUIStroke = Instance.new("UIStroke")
+YouFuckUIStroke.Color = Color3.fromRGB(80, 80, 80)
+YouFuckUIStroke.Thickness = 1
+YouFuckUIStroke.Parent = YouFuckSideMenu
+
+local YouFuckPlayersList = Instance.new("ScrollingFrame")
+YouFuckPlayersList.Size = UDim2.new(1, -5, 1, -5)
+YouFuckPlayersList.Position = UDim2.new(0, 5, 0, 5)
+YouFuckPlayersList.BackgroundTransparency = 1
+YouFuckPlayersList.ScrollBarThickness = 3
+YouFuckPlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+YouFuckPlayersList.Parent = YouFuckSideMenu
+
+local YouFuckPlayersListLayout = Instance.new("UIListLayout")
+YouFuckPlayersListLayout.Padding = UDim.new(0, 5)
+YouFuckPlayersListLayout.Parent = YouFuckPlayersList
+
+YouFuckPlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    YouFuckPlayersList.CanvasSize = UDim2.new(0, 0, 0, YouFuckPlayersListLayout.AbsoluteContentSize.Y)
+    YouFuckSideMenu.Size = UDim2.new(0, 150, 0, math.min(YouFuckPlayersListLayout.AbsoluteContentSize.Y + 10, 300))
+end)
+
+local function updateYouFuckMenuPosition()
+    YouFuckSideMenu.Position = UDim2.new(
+        0, YouFuckContainer.AbsolutePosition.X + YouFuckContainer.AbsoluteSize.X + 5,
+        0, YouFuckContainer.AbsolutePosition.Y - 250
+    )
+end
+
+YouFuckContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateYouFuckMenuPosition)
+YouFuckContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateYouFuckMenuPosition)
+
+-- Переменные для YouFuck
+local youFuckEnabled = false
+local youFuckTarget = nil
+local youFuckConnection = nil
+local youFuckOffset = 0
+local youFuckDirection = 1
+
+local function youFuckPlayer(player)
+    if not youFuckEnabled or not player or not player.Character then return end
+    
+    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChild("Torso")
+    local myRoot = LocalPlayer.Character and (LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or LocalPlayer.Character:FindFirstChild("Torso"))
+    
+    if not (targetRoot and myRoot) then return end
+    
+    -- Меняем смещение для эффекта "движения"
+    youFuckOffset = youFuckOffset + (0.2 * youFuckDirection)
+    if math.abs(youFuckOffset) > 1.5 then
+        youFuckDirection = youFuckDirection * -1
+    end
+    
+    -- Вычисляем позицию за спиной игрока с небольшим смещением
+    local targetCFrame = targetRoot.CFrame
+    local offset = targetCFrame.LookVector * (-2 + youFuckOffset) + Vector3.new(0, 0.5, 0)
+    
+    myRoot.CFrame = CFrame.new(targetCFrame.Position + offset, targetCFrame.Position + targetCFrame.LookVector * 10)
+end
+
+local function createYouFuckPlayerButton(player)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Position = UDim2.new(0, 5, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+    button.TextColor3 = Color3.fromRGB(220, 220, 220)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 12
+    button.Text = player.Name
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = YouFuckPlayersList
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
+    
+    button.MouseButton1Click:Connect(function()
+        if youFuckTarget == player then
+            -- Если уже выбран этот игрок, отключаем
+            youFuckEnabled = false
+            youFuckTarget = nil
+            YouFuckToggleButton.Text = "Select ▷"
+            if youFuckConnection then
+                youFuckConnection:Disconnect()
+                youFuckConnection = nil
+            end
+        else
+            -- Выбираем нового игрока
+            youFuckTarget = player
+            youFuckEnabled = true
+            YouFuckToggleButton.Text = player.Name.." ◁"
+            
+            if youFuckConnection then
+                youFuckConnection:Disconnect()
+            end
+            
+            youFuckConnection = RunService.Heartbeat:Connect(function()
+                youFuckPlayer(player)
+            end)
+        end
+        
+        YouFuckSideMenu.Visible = false
+    end)
+    
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+    end)
+    
+    return button
+end
+
+local isYouFuckMenuOpen = false
+YouFuckToggleButton.MouseButton1Click:Connect(function()
+    if youFuckEnabled and youFuckTarget then
+        -- Если уже активировано, отключаем
+        youFuckEnabled = false
+        youFuckTarget = nil
+        YouFuckToggleButton.Text = "Select ▷"
+        if youFuckConnection then
+            youFuckConnection:Disconnect()
+            youFuckConnection = nil
+        end
+    else
+        -- Открываем меню выбора
+        isYouFuckMenuOpen = not isYouFuckMenuOpen
+        
+        if isYouFuckMenuOpen then
+            YouFuckToggleButton.Text = "Select ◁"
+            updateYouFuckMenuPosition()
+            YouFuckSideMenu.Visible = true
+        else
+            YouFuckToggleButton.Text = "Select ▷"
+            YouFuckSideMenu.Visible = false
+        end
+    end
+end)
+
+-- Добавляем существующих игроков
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        createYouFuckPlayerButton(player)
+    end
+end
+
+-- Обработка новых игроков
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        createYouFuckPlayerButton(player)
+    end
+end)
+
+-- Обработка ушедших игроков
+Players.PlayerRemoving:Connect(function(player)
+    if player == youFuckTarget then
+        youFuckEnabled = false
+        youFuckTarget = nil
+        YouFuckToggleButton.Text = "Select ▷"
+        if youFuckConnection then
+            youFuckConnection:Disconnect()
+            youFuckConnection = nil
+        end
+    end
+    
+    for _, child in ipairs(YouFuckPlayersList:GetChildren()) do
+        if child:IsA("TextButton") and child.Text == player.Name then
+            child:Destroy()
+            break
+        end
+    end
+end)
+
+-- Закрытие меню при клике вне его
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = UserInputService:GetMouseLocation()
+        local menuPos = YouFuckSideMenu.AbsolutePosition
+        local menuSize = YouFuckSideMenu.AbsoluteSize
+        local buttonPos = YouFuckToggleButton.AbsolutePosition
+        local buttonSize = YouFuckToggleButton.AbsoluteSize
+        
+        if isYouFuckMenuOpen and 
+           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
+           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
+            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
+            isYouFuckMenuOpen = false
+            YouFuckSideMenu.Visible = false
+            YouFuckToggleButton.Text = "Select ▷"
+        end
+    end
+end)
 
 -- Функция переключения вкладок
 local function switchTab(tab)
