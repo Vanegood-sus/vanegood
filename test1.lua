@@ -1883,6 +1883,53 @@ GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 GamesFrame.Visible = false
 GamesFrame.Parent = ContentFrame
 
+-- Создаем кнопку Muscle Legends
+local MuscleLegendsButton = Instance.new("TextButton")
+MuscleLegendsButton.Name = "MuscleLegendsButton"
+MuscleLegendsButton.Size = UDim2.new(1, -20, 0, 40)
+MuscleLegendsButton.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в GamesFrame
+MuscleLegendsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MuscleLegendsButton.BackgroundTransparency = 0.5
+MuscleLegendsButton.Text = "Muscle Legends"
+MuscleLegendsButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+MuscleLegendsButton.Font = Enum.Font.GothamBold
+MuscleLegendsButton.TextSize = 14
+MuscleLegendsButton.Parent = GamesFrame
+
+-- Скругление углов
+local MuscleLegendsCorner = Instance.new("UICorner")
+MuscleLegendsCorner.CornerRadius = UDim.new(0, 6)
+MuscleLegendsCorner.Parent = MuscleLegendsButton
+
+-- Иконка игры (можно заменить на другую)
+local GameIcon = Instance.new("ImageLabel")
+GameIcon.Name = "GameIcon"
+GameIcon.Size = UDim2.new(0, 30, 0, 30)
+GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
+GameIcon.BackgroundTransparency = 1
+GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Parent = MuscleLegendsButton
+
+-- Анимация при наведении
+MuscleLegendsButton.MouseEnter:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
+end)
+
+MuscleLegendsButton.MouseLeave:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
+end)
+
+-- Обработчик нажатия
+MuscleLegendsButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua"))()
+    
+    -- Анимация нажатия
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+end)
+
 local TrollFrame = Instance.new("ScrollingFrame")
 TrollFrame.Size = UDim2.new(1, 0, 1, 0)
 TrollFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -2104,257 +2151,6 @@ end)
 
 -- Инициализация
 updateWalkFlingToggle()
-
--- You F*ck (в разделе Троллинг)
-local YouFuckContainer = Instance.new("Frame")
-YouFuckContainer.Name = "YouFuckSettings"
-YouFuckContainer.Size = UDim2.new(1, -20, 0, 40)
-YouFuckContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
-YouFuckContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-YouFuckContainer.BackgroundTransparency = 0.5
-YouFuckContainer.Parent = TrollFrame
-
-local YouFuckCorner = Instance.new("UICorner")
-YouFuckCorner.CornerRadius = UDim.new(0, 6)
-YouFuckCorner.Parent = YouFuckContainer
-
-local YouFuckLabel = Instance.new("TextLabel")
-YouFuckLabel.Name = "Label"
-YouFuckLabel.Size = UDim2.new(0, 120, 1, 0)
-YouFuckLabel.Position = UDim2.new(0, 10, 0, 0)
-YouFuckLabel.BackgroundTransparency = 1
-YouFuckLabel.Text = "Е**ть игроков"
-YouFuckLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-YouFuckLabel.Font = Enum.Font.GothamBold
-YouFuckLabel.TextSize = 14
-YouFuckLabel.TextXAlignment = Enum.TextXAlignment.Left
-YouFuckLabel.Parent = YouFuckContainer
-
-local YouFuckToggleButton = Instance.new("TextButton")
-YouFuckToggleButton.Name = "YouFuckToggle"
-YouFuckToggleButton.Size = UDim2.new(0, 120, 0, 25)
-YouFuckToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
-YouFuckToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-YouFuckToggleButton.Text = "Select ▷"
-YouFuckToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-YouFuckToggleButton.Font = Enum.Font.Gotham
-YouFuckToggleButton.TextSize = 12
-YouFuckToggleButton.Parent = YouFuckContainer
-
-local YouFuckButtonCorner = Instance.new("UICorner")
-YouFuckButtonCorner.CornerRadius = UDim.new(0, 4)
-YouFuckButtonCorner.Parent = YouFuckToggleButton
-
--- Меню выбора игрока
-local YouFuckSideMenu = Instance.new("Frame")
-YouFuckSideMenu.Name = "YouFuckSideMenu"
-YouFuckSideMenu.Size = UDim2.new(0, 150, 0, 0)
-YouFuckSideMenu.Position = UDim2.new(0, YouFuckContainer.AbsolutePosition.X + YouFuckContainer.AbsoluteSize.X + 5, 0, YouFuckContainer.AbsolutePosition.Y - 250)
-YouFuckSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-YouFuckSideMenu.BorderSizePixel = 0
-YouFuckSideMenu.Visible = false
-YouFuckSideMenu.ClipsDescendants = true
-YouFuckSideMenu.Parent = ScreenGui
-
-local YouFuckUICorner = Instance.new("UICorner")
-YouFuckUICorner.CornerRadius = UDim.new(0, 6)
-YouFuckUICorner.Parent = YouFuckSideMenu
-
-local YouFuckUIStroke = Instance.new("UIStroke")
-YouFuckUIStroke.Color = Color3.fromRGB(80, 80, 80)
-YouFuckUIStroke.Thickness = 1
-YouFuckUIStroke.Parent = YouFuckSideMenu
-
-local YouFuckPlayersList = Instance.new("ScrollingFrame")
-YouFuckPlayersList.Size = UDim2.new(1, -5, 1, -5)
-YouFuckPlayersList.Position = UDim2.new(0, 5, 0, 5)
-YouFuckPlayersList.BackgroundTransparency = 1
-YouFuckPlayersList.ScrollBarThickness = 3
-YouFuckPlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-YouFuckPlayersList.Parent = YouFuckSideMenu
-
-local YouFuckPlayersListLayout = Instance.new("UIListLayout")
-YouFuckPlayersListLayout.Padding = UDim.new(0, 5)
-YouFuckPlayersListLayout.Parent = YouFuckPlayersList
-
-YouFuckPlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    YouFuckPlayersList.CanvasSize = UDim2.new(0, 0, 0, YouFuckPlayersListLayout.AbsoluteContentSize.Y)
-    YouFuckSideMenu.Size = UDim2.new(0, 150, 0, math.min(YouFuckPlayersListLayout.AbsoluteContentSize.Y + 10, 300))
-end)
-
-local function updateYouFuckMenuPosition()
-    YouFuckSideMenu.Position = UDim2.new(
-        0, YouFuckContainer.AbsolutePosition.X + YouFuckContainer.AbsoluteSize.X + 5,
-        0, YouFuckContainer.AbsolutePosition.Y - 250
-    )
-end
-
-YouFuckContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateYouFuckMenuPosition)
-YouFuckContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateYouFuckMenuPosition)
-
--- Переменные для YouFuck
-local youFuckEnabled = false
-local youFuckTarget = nil
-local youFuckConnection = nil
-local youFuckOffset = 0
-local youFuckDirection = 1
-
-local function youFuckPlayer(player)
-    if not youFuckEnabled or not player or not player.Character then return end
-    
-    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChild("Torso")
-    local myRoot = LocalPlayer.Character and (LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or LocalPlayer.Character:FindFirstChild("Torso"))
-    
-    if not (targetRoot and myRoot) then return end
-    
-    -- Меняем смещение для эффекта "движения"
-    youFuckOffset = youFuckOffset + (0.2 * youFuckDirection)
-    if math.abs(youFuckOffset) > 1.5 then
-        youFuckDirection = youFuckDirection * -1
-    end
-    
-    -- Вычисляем позицию за спиной игрока с небольшим смещением
-    local targetCFrame = targetRoot.CFrame
-    local offset = targetCFrame.LookVector * (-2 + youFuckOffset) + Vector3.new(0, 0.5, 0)
-    
-    myRoot.CFrame = CFrame.new(targetCFrame.Position + offset, targetCFrame.Position + targetCFrame.LookVector * 10)
-end
-
-local function createYouFuckPlayerButton(player)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 30)
-    button.Position = UDim2.new(0, 5, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-    button.TextColor3 = Color3.fromRGB(220, 220, 220)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 12
-    button.Text = player.Name
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = YouFuckPlayersList
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 4)
-    buttonCorner.Parent = button
-    
-    button.MouseButton1Click:Connect(function()
-        if youFuckTarget == player then
-            -- Если уже выбран этот игрок, отключаем
-            youFuckEnabled = false
-            youFuckTarget = nil
-            YouFuckToggleButton.Text = "Select ▷"
-            if youFuckConnection then
-                youFuckConnection:Disconnect()
-                youFuckConnection = nil
-            end
-        else
-            -- Выбираем нового игрока
-            youFuckTarget = player
-            youFuckEnabled = true
-            YouFuckToggleButton.Text = player.Name.." ◁"
-            
-            if youFuckConnection then
-                youFuckConnection:Disconnect()
-            end
-            
-            youFuckConnection = RunService.Heartbeat:Connect(function()
-                youFuckPlayer(player)
-            end)
-        end
-        
-        YouFuckSideMenu.Visible = false
-    end)
-    
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
-    end)
-    
-    return button
-end
-
-local isYouFuckMenuOpen = false
-YouFuckToggleButton.MouseButton1Click:Connect(function()
-    if youFuckEnabled and youFuckTarget then
-        -- Если уже активировано, отключаем
-        youFuckEnabled = false
-        youFuckTarget = nil
-        YouFuckToggleButton.Text = "Select ▷"
-        if youFuckConnection then
-            youFuckConnection:Disconnect()
-            youFuckConnection = nil
-        end
-    else
-        -- Открываем меню выбора
-        isYouFuckMenuOpen = not isYouFuckMenuOpen
-        
-        if isYouFuckMenuOpen then
-            YouFuckToggleButton.Text = "Select ◁"
-            updateYouFuckMenuPosition()
-            YouFuckSideMenu.Visible = true
-        else
-            YouFuckToggleButton.Text = "Select ▷"
-            YouFuckSideMenu.Visible = false
-        end
-    end
-end)
-
--- Добавляем существующих игроков
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        createYouFuckPlayerButton(player)
-    end
-end
-
--- Обработка новых игроков
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        createYouFuckPlayerButton(player)
-    end
-end)
-
--- Обработка ушедших игроков
-Players.PlayerRemoving:Connect(function(player)
-    if player == youFuckTarget then
-        youFuckEnabled = false
-        youFuckTarget = nil
-        YouFuckToggleButton.Text = "Select ▷"
-        if youFuckConnection then
-            youFuckConnection:Disconnect()
-            youFuckConnection = nil
-        end
-    end
-    
-    for _, child in ipairs(YouFuckPlayersList:GetChildren()) do
-        if child:IsA("TextButton") and child.Text == player.Name then
-            child:Destroy()
-            break
-        end
-    end
-end)
-
--- Закрытие меню при клике вне его
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = UserInputService:GetMouseLocation()
-        local menuPos = YouFuckSideMenu.AbsolutePosition
-        local menuSize = YouFuckSideMenu.AbsoluteSize
-        local buttonPos = YouFuckToggleButton.AbsolutePosition
-        local buttonSize = YouFuckToggleButton.AbsoluteSize
-        
-        if isYouFuckMenuOpen and 
-           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
-           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
-            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
-            isYouFuckMenuOpen = false
-            YouFuckSideMenu.Visible = false
-            YouFuckToggleButton.Text = "Select ▷"
-        end
-    end
-end)
 
 -- Функция переключения вкладок
 local function switchTab(tab)
