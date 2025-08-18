@@ -10,61 +10,116 @@ ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой
+-- Создаем кнопку с фоткой (оптимизированная версия)
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
+TinyImageGui.DisplayOrder = 999 -- Чтобы всегда была поверх других элементов
 
--- Размеры изображения
+-- Настройки изображения
 local imageSize = 75
+local initialPosition = UDim2.new(0, 20, 0.5, -imageSize/2) -- Центрирован по вертикали, 20px от левого края
+
+-- Основной контейнер для изображения
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
 imageFrame.Size = UDim2.new(0, imageSize, 0, imageSize)
-imageFrame.Position = UDim2.new(0, 20, 0, 20)
-imageFrame.BackgroundTransparency = 1
-imageFrame.ClipsDescendants = true
+imageFrame.Position = initialPosition -- Сохраняем начальную позицию
+imageFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50) -- Фон для плавного скругления
+imageFrame.BackgroundTransparency = 0.5 -- Полупрозрачный фон
+imageFrame.ClipsDescendants = true -- Обрезаем содержимое по границам
 imageFrame.Parent = TinyImageGui
 
+-- Идеальное скругление углов (круг)
 local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0.25, 0)
+uiCorner.CornerRadius = UDim.new(0.5, 0) -- 50% для идеального круга
 uiCorner.Parent = imageFrame
 
+-- Внутренний контейнер для плавного скругления (дополнительный эффект)
+local innerFrame = Instance.new("Frame")
+innerFrame.Name = "InnerFrame"
+innerFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
+innerFrame.Position = UDim2.new(0.05, 0, 0.05, 0)
+innerFrame.BackgroundTransparency = 1
+innerFrame.ClipsDescendants = true
+innerFrame.Parent = imageFrame
+
+local innerCorner = Instance.new("UICorner")
+innerCorner.CornerRadius = UDim.new(0.5, 0)
+innerCorner.Parent = innerFrame
+
+-- Само изображение
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
 image.Image = "rbxassetid://111084287166716"
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
-image.Parent = imageFrame
+image.ScaleType = Enum.ScaleType.Stretch -- Для правильного масштабирования
+image.Parent = innerFrame
 
--- Перетаскивание
-local touchStartPos, frameStartPos
-local isDragging = false
-
-imageFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDragging = true
-        touchStartPos = input.Position
-        frameStartPos = imageFrame.Position
-    end
+-- Эффект при наведении
+image.MouseEnter:Connect(function()
+    TweenService:Create(imageFrame, TweenInfo.new(0.2), {
+        BackgroundTransparency = 0.3,
+        Size = UDim2.new(0, imageSize+5, 0, imageSize+5)
+    }):Play()
 end)
 
-imageFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDragging = false
+image.MouseLeave:Connect(function()
+    TweenService:Create(imageFrame, TweenInfo.new(0.2), {
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(0, imageSize, 0, imageSize)
+    }):Play()
+end)
+
+-- Перетаскивание (оптимизированная версия)
+local dragStartPos, frameStartPos
+local isDragging = false
+
+local function updatePosition(input)
+    local delta = input.Position - dragStartPos
+    imageFrame.Position = UDim2.new(
+        frameStartPos.X.Scale,
+        frameStartPos.X.Offset + delta.X,
+        frameStartPos.Y.Scale,
+        frameStartPos.Y.Offset + delta.Y
+    )
+end
+
+image.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+       input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        dragStartPos = input.Position
+        frameStartPos = imageFrame.Position
+        
+        -- Эффект при нажатии
+        TweenService:Create(imageFrame, TweenInfo.new(0.1), {
+            Size = UDim2.new(0, imageSize-3, 0, imageSize-3),
+            BackgroundTransparency = 0.2
+        }):Play()
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-        local delta = input.Position - touchStartPos
-        imageFrame.Position = UDim2.new(
-            frameStartPos.X.Scale,
-            frameStartPos.X.Offset + delta.X,
-            frameStartPos.Y.Scale,
-            frameStartPos.Y.Offset + delta.Y
-        )
+    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or 
+                      input.UserInputType == Enum.UserInputType.Touch) then
+        updatePosition(input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or 
+        input.UserInputType == Enum.UserInputType.Touch) and isDragging then
+        isDragging = false
+        
+        -- Возвращаем нормальный размер после перетаскивания
+        TweenService:Create(imageFrame, TweenInfo.new(0.2), {
+            Size = UDim2.new(0, imageSize, 0, imageSize),
+            BackgroundTransparency = 0.5
+        }):Play()
     end
 end)
 
