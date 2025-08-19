@@ -447,7 +447,7 @@ updateWalkFlingToggle()
 local HeadSitContainer = Instance.new("Frame")
 HeadSitContainer.Name = "HeadSitSettings"
 HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
-HeadSitContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция под WalkFling (+50 по Y)
+HeadSitContainer.Position = UDim2.new(0, 10, 0, 60)
 HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 HeadSitContainer.BackgroundTransparency = 0.5
 HeadSitContainer.Parent = TrollFrame
@@ -487,7 +487,7 @@ HeadSitButtonCorner.Parent = HeadSitToggleButton
 local HeadSitPlayersMenu = Instance.new("Frame")
 HeadSitPlayersMenu.Name = "HeadSitPlayersMenu"
 HeadSitPlayersMenu.Size = UDim2.new(0, 150, 0, 0)
-HeadSitPlayersMenu.Position = UDim2.new(0, HeadSitContainer.AbsolutePosition.X + HeadSitContainer.AbsoluteSize.X + 5, 0, HeadSitContainer.AbsolutePosition.Y - 135)
+HeadSitPlayersMenu.Position = UDim2.new(0, 0, 0, 0)
 HeadSitPlayersMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 HeadSitPlayersMenu.BorderSizePixel = 0
 HeadSitPlayersMenu.Visible = false
@@ -509,6 +509,7 @@ HeadSitPlayersList.Position = UDim2.new(0, 5, 0, 5)
 HeadSitPlayersList.BackgroundTransparency = 1
 HeadSitPlayersList.ScrollBarThickness = 3
 HeadSitPlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+HeadSitPlayersList.AutomaticCanvasSize = Enum.AutomaticSize.Y
 HeadSitPlayersList.Parent = HeadSitPlayersMenu
 
 local HeadSitPlayersListLayout = Instance.new("UIListLayout")
@@ -521,18 +522,19 @@ HeadSitPlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect
 end)
 
 local function updateHeadSitMenuPosition()
+    local containerPos = HeadSitContainer.AbsolutePosition
+    local containerSize = HeadSitContainer.AbsoluteSize
+    
     HeadSitPlayersMenu.Position = UDim2.new(
-        0, HeadSitContainer.AbsolutePosition.X + HeadSitContainer.AbsoluteSize.X + 5,
-        0, HeadSitContainer.AbsolutePosition.Y - 135
+        0, containerPos.X + containerSize.X + 5,
+        0, containerPos.Y - 50
     )
 end
-
-HeadSitContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateHeadSitMenuPosition)
-HeadSitContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateHeadSitMenuPosition)
 
 -- Переменные для Head Sit
 local headSitConnection = nil
 local currentHeadSitTarget = nil
+local isHeadSitMenuOpen = false
 
 local function getRoot(character)
     return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
@@ -573,6 +575,7 @@ local function startHeadSit(player)
     
     HeadSitToggleButton.Text = player.Name .. " ◁"
     HeadSitPlayersMenu.Visible = false
+    isHeadSitMenuOpen = false
 end
 
 local function stopHeadSit()
@@ -596,7 +599,6 @@ end
 local function createHeadSitPlayerButton(player)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 30)
-    button.Position = UDim2.new(0, 5, 0, 0)
     button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
     button.TextColor3 = Color3.fromRGB(220, 220, 220)
     button.Font = Enum.Font.Gotham
@@ -614,17 +616,14 @@ local function createHeadSitPlayerButton(player)
     end)
     
     button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
+        game:GetService("TweenService"):Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
     end)
     
     button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+        game:GetService("TweenService"):Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
     end)
-    
-    return button
 end
 
-local isHeadSitMenuOpen = false
 HeadSitToggleButton.MouseButton1Click:Connect(function()
     if headSitConnection then
         stopHeadSit()
@@ -670,22 +669,19 @@ game.Players.PlayerRemoving:Connect(function(player)
 end)
 
 -- Закрытие меню при клике вне его
-UserInputService.InputBegan:Connect(function(input, processed)
+game:GetService("UserInputService").InputBegan:Connect(function(input, processed)
     if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = UserInputService:GetMouseLocation()
+        local mousePos = game:GetService("UserInputService"):GetMouseLocation()
         local menuPos = HeadSitPlayersMenu.AbsolutePosition
         local menuSize = HeadSitPlayersMenu.AbsoluteSize
-        local buttonPos = HeadSitToggleButton.AbsolutePosition
-        local buttonSize = HeadSitToggleButton.AbsoluteSize
         
-        if isHeadSitMenuOpen and 
-           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
-           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
-            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
-            isHeadSitMenuOpen = false
-            HeadSitPlayersMenu.Visible = false
-            HeadSitToggleButton.Text = "Select ▷"
+        if isHeadSitMenuOpen then
+            if mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+               mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y then
+                isHeadSitMenuOpen = false
+                HeadSitPlayersMenu.Visible = false
+                HeadSitToggleButton.Text = "Select ▷"
+            end
         end
     end
 end)
@@ -708,6 +704,11 @@ game:GetService("Players").PlayerRemoving:Connect(function(player)
         stopHeadSit()
     end
 end)
+
+-- Обновляем позицию при изменении
+HeadSitContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateHeadSitMenuPosition)
+HeadSitContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateHeadSitMenuPosition)
+
 
 -- Функция переключения вкладок
 local function switchTab(tab)
