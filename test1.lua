@@ -1,8 +1,10 @@
--- Vanegood Hub 
+-- Vanegood Test Hub
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService") 
+local LocalPlayer = Players.LocalPlayer 
 
 -- Удаляем старый хаб если есть
 if CoreGui:FindFirstChild("VanegoodHub") then
@@ -1691,11 +1693,11 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport 
+-- Teleport с поиском игроков
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
-TeleportContainer.Position = UDim2.new(0, 10, 0, 610)
+TeleportContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в ScriptsFrame
 TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TeleportContainer.BackgroundTransparency = 0.5
 TeleportContainer.Parent = ScriptsFrame
@@ -1716,162 +1718,123 @@ TeleportLabel.TextSize = 14
 TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
 TeleportLabel.Parent = TeleportContainer
 
-local TeleportToggleButton = Instance.new("TextButton")
-TeleportToggleButton.Name = "TeleportToggle"
-TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
-TeleportToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
-TeleportToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-TeleportToggleButton.Text = "Select ▷"
-TeleportToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-TeleportToggleButton.Font = Enum.Font.Gotham
-TeleportToggleButton.TextSize = 12
-TeleportToggleButton.Parent = TeleportContainer
+-- Контейнер для элементов управления
+local TeleportControlContainer = Instance.new("Frame")
+TeleportControlContainer.Size = UDim2.new(0, 150, 0, 25)
+TeleportControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+TeleportControlContainer.BackgroundTransparency = 1
+TeleportControlContainer.Parent = TeleportContainer
+
+-- Поле ввода для поиска игрока
+local TeleportPlayerInput = Instance.new("TextBox")
+TeleportPlayerInput.Name = "PlayerInput"
+TeleportPlayerInput.Size = UDim2.new(0, 80, 1, 0)
+TeleportPlayerInput.Position = UDim2.new(0, 0, 0, 0)
+TeleportPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+TeleportPlayerInput.TextColor3 = Color3.new(1, 1, 1)
+TeleportPlayerInput.Font = Enum.Font.Gotham
+TeleportPlayerInput.TextSize = 12
+TeleportPlayerInput.PlaceholderText = "Имя/часть"
+TeleportPlayerInput.Text = ""
+TeleportPlayerInput.Parent = TeleportControlContainer
+
+-- Кнопка телепорта
+local TeleportButton = Instance.new("TextButton")
+TeleportButton.Name = "TeleportButton"
+TeleportButton.Size = UDim2.new(0, 60, 0, 25)
+TeleportButton.Position = UDim2.new(0, 90, 0, 0)
+TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
+TeleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportButton.Font = Enum.Font.GothamBold
+TeleportButton.TextSize = 12
+TeleportButton.Text = "TP"
+TeleportButton.Parent = TeleportControlContainer
 
 local TeleportButtonCorner = Instance.new("UICorner")
 TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
-TeleportButtonCorner.Parent = TeleportToggleButton
+TeleportButtonCorner.Parent = TeleportButton
 
-local PlayersSideMenu = Instance.new("Frame")
-PlayersSideMenu.Name = "PlayersSideMenu"
-PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
-PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-PlayersSideMenu.BorderSizePixel = 0
-PlayersSideMenu.Visible = false
-PlayersSideMenu.ClipsDescendants = true
-PlayersSideMenu.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = PlayersSideMenu
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(80, 80, 80)
-UIStroke.Thickness = 1
-UIStroke.Parent = PlayersSideMenu
-
-local PlayersList = Instance.new("ScrollingFrame")
-PlayersList.Size = UDim2.new(1, -5, 1, -5)
-PlayersList.Position = UDim2.new(0, 5, 0, 5)
-PlayersList.BackgroundTransparency = 1
-PlayersList.ScrollBarThickness = 3
-PlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-PlayersList.Parent = PlayersSideMenu
-
-local PlayersListLayout = Instance.new("UIListLayout")
-PlayersListLayout.Padding = UDim.new(0, 5)
-PlayersListLayout.Parent = PlayersList
-
-PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
-    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
-end)
-
-local function updateMenuPosition()
-    PlayersSideMenu.Position = UDim2.new(
-        0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
-        0, TeleportContainer.AbsolutePosition.Y - 135
-    )
-end
-
-TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
-TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
-
-local function teleportToPlayer(player)
-    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+-- Функция для поиска игрока
+local function findPlayerForTeleport(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            if nameLower == searchLower or displayLower == searchLower then
+                return player -- Точное совпадение
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
         end
     end
+    
+    if #matches > 0 then
+        return matches[1] -- Первый найденный
+    end
+    
+    return nil
 end
 
-local function createPlayerButton(player)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 30)
-    button.Position = UDim2.new(0, 5, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-    button.TextColor3 = Color3.fromRGB(220, 220, 220)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 12
-    button.Text = player.Name
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = PlayersList
+-- Функция телепортации
+local function teleportToPlayer()
+    local searchText = TeleportPlayerInput.Text
+    if searchText == "" then
+        TeleportPlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
     
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 4)
-    buttonCorner.Parent = button
+    local target = findPlayerForTeleport(searchText)
+    if not target then
+        TeleportPlayerInput.Text = ""
+        TeleportPlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
     
-    button.MouseButton1Click:Connect(function()
-        teleportToPlayer(player)
-        PlayersSideMenu.Visible = false
-        TeleportToggleButton.Text = "Select ▷"
-    end)
+    -- Проверяем что у целевого игрока есть персонаж и корневая часть
+    if not target.Character or not getRoot(target.Character) then
+        TeleportPlayerInput.Text = ""
+        TeleportPlayerInput.PlaceholderText = "Нет персонажа!"
+        return
+    end
     
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
-    end)
+    -- Телепортируемся
+    local targetRoot = getRoot(target.Character)
+    local myRoot = getRoot(LocalPlayer.Character)
     
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
-    end)
-    
-    return button
-end
-
-local isMenuOpen = false
-TeleportToggleButton.MouseButton1Click:Connect(function()
-    isMenuOpen = not isMenuOpen
-    
-    if isMenuOpen then
-        TeleportToggleButton.Text = "Select ◁"
-        updateMenuPosition()
-        PlayersSideMenu.Visible = true
+    if targetRoot and myRoot then
+        myRoot.CFrame = targetRoot.CFrame
+        TeleportPlayerInput.PlaceholderText = "Телепорт: " .. target.Name
     else
-        TeleportToggleButton.Text = "Select ▷"
-        PlayersSideMenu.Visible = false
-    end
-end)
-
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        createPlayerButton(player)
+        TeleportPlayerInput.PlaceholderText = "Ошибка телепорта!"
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        createPlayerButton(player)
+-- Обработчик клика по кнопке
+TeleportButton.MouseButton1Click:Connect(function()
+    teleportToPlayer()
+end)
+
+-- Автотелепорт при нажатии Enter
+TeleportPlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        teleportToPlayer()
     end
 end)
 
-Players.PlayerRemoving:Connect(function(player)
-    for _, child in ipairs(PlayersList:GetChildren()) do
-        if child:IsA("TextButton") and child.Text == player.Name then
-            child:Destroy()
-            break
-        end
-    end
+-- Анимация кнопки при наведении
+TeleportButton.MouseEnter:Connect(function()
+    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 185, 70)}):Play()
 end)
 
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = UserInputService:GetMouseLocation()
-        local menuPos = PlayersSideMenu.AbsolutePosition
-        local menuSize = PlayersSideMenu.AbsoluteSize
-        local buttonPos = TeleportToggleButton.AbsolutePosition
-        local buttonSize = TeleportToggleButton.AbsoluteSize
-        
-        if isMenuOpen and 
-           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
-           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
-            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
-            isMenuOpen = false
-            PlayersSideMenu.Visible = false
-            TeleportToggleButton.Text = "Select ▷"
-        end
-    end
+TeleportButton.MouseLeave:Connect(function()
+    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
 end)
             
 local GamesFrame = Instance.new("ScrollingFrame")
@@ -1907,7 +1870,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://132736576796022" -- Замените на нужный ID изображения
 GameIcon.Parent = MuscleLegendsButton
 
 -- Анимация при наведении
@@ -1954,7 +1917,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://138413936384363" -- Замените на нужный ID изображения
 GameIcon.Parent = LegendsOfSpeedButton
 
 -- Анимация при наведении
@@ -2198,6 +2161,500 @@ end)
 
 -- Инициализация
 updateWalkFlingToggle()
+
+-- HeadSit (в разделе Троллинг)
+local HeadSitContainer = Instance.new("Frame")
+HeadSitContainer.Name = "HeadSitSettings"
+HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
+HeadSitContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
+HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HeadSitContainer.BackgroundTransparency = 0.5
+HeadSitContainer.Parent = TrollFrame
+
+local HeadSitCorner = Instance.new("UICorner")
+HeadSitCorner.CornerRadius = UDim.new(0, 6)
+HeadSitCorner.Parent = HeadSitContainer
+
+local HeadSitLabel = Instance.new("TextLabel")
+HeadSitLabel.Name = "Label"
+HeadSitLabel.Size = UDim2.new(0, 120, 1, 0)
+HeadSitLabel.Position = UDim2.new(0, 10, 0, 0)
+HeadSitLabel.BackgroundTransparency = 1
+HeadSitLabel.Text = "Head Sit"
+HeadSitLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitLabel.Font = Enum.Font.GothamBold
+HeadSitLabel.TextSize = 14
+HeadSitLabel.TextXAlignment = Enum.TextXAlignment.Left
+HeadSitLabel.Parent = HeadSitContainer
+
+-- Контейнер для элементов управления
+local HeadSitControlContainer = Instance.new("Frame")
+HeadSitControlContainer.Size = UDim2.new(0, 150, 0, 25)
+HeadSitControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+HeadSitControlContainer.BackgroundTransparency = 1
+HeadSitControlContainer.Parent = HeadSitContainer
+
+-- Выбор игрока
+local HeadSitPlayerInput = Instance.new("TextBox")
+HeadSitPlayerInput.Name = "PlayerInput"
+HeadSitPlayerInput.Size = UDim2.new(0, 80, 1, 0)
+HeadSitPlayerInput.Position = UDim2.new(0, 0, 0, 0)
+HeadSitPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+HeadSitPlayerInput.TextColor3 = Color3.new(1, 1, 1)
+HeadSitPlayerInput.Font = Enum.Font.Gotham
+HeadSitPlayerInput.TextSize = 12
+HeadSitPlayerInput.PlaceholderText = "Имя/часть"
+HeadSitPlayerInput.Text = ""
+HeadSitPlayerInput.Parent = HeadSitControlContainer
+
+-- Переключатель
+local HeadSitToggleFrame = Instance.new("Frame")
+HeadSitToggleFrame.Name = "ToggleFrame"
+HeadSitToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HeadSitToggleFrame.Position = UDim2.new(0, 90, 0, 0)
+HeadSitToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HeadSitToggleFrame.Parent = HeadSitControlContainer
+
+local HeadSitToggleCorner = Instance.new("UICorner")
+HeadSitToggleCorner.CornerRadius = UDim.new(1, 0)
+HeadSitToggleCorner.Parent = HeadSitToggleFrame
+
+local HeadSitToggleButton = Instance.new("TextButton")
+HeadSitToggleButton.Name = "ToggleButton"
+HeadSitToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HeadSitToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HeadSitToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitToggleButton.Text = ""
+HeadSitToggleButton.Parent = HeadSitToggleFrame
+
+local HeadSitButtonCorner = Instance.new("UICorner")
+HeadSitButtonCorner.CornerRadius = UDim.new(1, 0)
+HeadSitButtonCorner.Parent = HeadSitToggleButton
+
+-- Логика HeadSit
+local headSitEnabled = false
+local headSitConnection = nil
+local currentTarget = nil
+
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    -- Ищем точные совпадения и частичные
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            -- Проверяем разные варианты совпадений
+            if nameLower == searchLower or displayLower == searchLower then
+                return player -- Точное совпадение
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    -- Возвращаем лучший результат
+    if #matches > 0 then
+        return matches[1] -- Первый найденный
+    end
+    
+    return nil
+end
+
+local function updateHeadSitToggle()
+    local goal = {
+        Position = headSitEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    HeadSitToggleFrame.BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(HeadSitToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableHeadSit()
+    local searchText = HeadSitPlayerInput.Text
+    if searchText == "" then
+        HeadSitPlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
+    
+    local target = findBestPlayerMatch(searchText)
+    if not target then
+        HeadSitPlayerInput.Text = ""
+        HeadSitPlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
+    
+    currentTarget = target
+    headSitEnabled = true
+    updateHeadSitToggle()
+    
+    -- Обновляем плейсхолдер с именем найденного игрока
+    HeadSitPlayerInput.PlaceholderText = "Найден: " .. target.Name
+    
+    -- Заставляем персонажа сесть
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
+    end
+    
+    -- Создаем соединение для сидения на голове
+    headSitConnection = RunService.Heartbeat:Connect(function()
+        if not headSitEnabled or not currentTarget then return end
+        
+        if Players:FindFirstChild(currentTarget.Name) and currentTarget.Character ~= nil and 
+           getRoot(currentTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+            
+            getRoot(LocalPlayer.Character).CFrame = getRoot(currentTarget.Character).CFrame * 
+                CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
+        else
+            disableHeadSit()
+        end
+    end)
+end
+
+local function disableHeadSit()
+    headSitEnabled = false
+    currentTarget = nil
+    updateHeadSitToggle()
+    
+    if headSitConnection then
+        headSitConnection:Disconnect()
+        headSitConnection = nil
+    end
+    
+    -- Восстанавливаем плейсхолдер
+    HeadSitPlayerInput.PlaceholderText = "Имя/часть"
+    
+    -- Встаем
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
+    end
+end
+
+HeadSitToggleButton.MouseButton1Click:Connect(function()
+    if headSitEnabled then
+        disableHeadSit()
+    else
+        enableHeadSit()
+    end
+end)
+
+-- Автопоиск при нажатии Enter
+HeadSitPlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and not headSitEnabled then
+        enableHeadSit()
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if headSitEnabled then
+            disableHeadSit()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableHeadSit()
+    elseif player == currentTarget then
+        disableHeadSit()
+    end
+end)
+
+-- Инициализация
+updateHeadSitToggle()
+
+-- Backpack,Backride
+local BackRideContainer = Instance.new("Frame")
+BackRideContainer.Name = "BackRideSettings"
+BackRideContainer.Size = UDim2.new(1, -20, 0, 40)
+BackRideContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
+BackRideContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+BackRideContainer.BackgroundTransparency = 0.5
+BackRideContainer.Parent = TrollFrame
+
+local BackRideCorner = Instance.new("UICorner")
+BackRideCorner.CornerRadius = UDim.new(0, 6)
+BackRideCorner.Parent = BackRideContainer
+
+local BackRideLabel = Instance.new("TextLabel")
+BackRideLabel.Name = "Label"
+BackRideLabel.Size = UDim2.new(0, 120, 1, 0)
+BackRideLabel.Position = UDim2.new(0, 10, 0, 0)
+BackRideLabel.BackgroundTransparency = 1
+BackRideLabel.Text = "Backpack"
+BackRideLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+BackRideLabel.Font = Enum.Font.GothamBold
+BackRideLabel.TextSize = 14
+BackRideLabel.TextXAlignment = Enum.TextXAlignment.Left
+BackRideLabel.Parent = BackRideContainer
+
+-- Контейнер для элементов управления
+local BackRideControlContainer = Instance.new("Frame")
+BackRideControlContainer.Size = UDim2.new(0, 150, 0, 25)
+BackRideControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+BackRideControlContainer.BackgroundTransparency = 1
+BackRideControlContainer.Parent = BackRideContainer
+
+-- Выбор игрока
+local BackRidePlayerInput = Instance.new("TextBox")
+BackRidePlayerInput.Name = "PlayerInput"
+BackRidePlayerInput.Size = UDim2.new(0, 80, 1, 0)
+BackRidePlayerInput.Position = UDim2.new(0, 0, 0, 0)
+BackRidePlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+BackRidePlayerInput.TextColor3 = Color3.new(1, 1, 1)
+BackRidePlayerInput.Font = Enum.Font.Gotham
+BackRidePlayerInput.TextSize = 12
+BackRidePlayerInput.PlaceholderText = "Имя/часть"
+BackRidePlayerInput.Text = ""
+BackRidePlayerInput.Parent = BackRideControlContainer
+
+-- Переключатель
+local BackRideToggleFrame = Instance.new("Frame")
+BackRideToggleFrame.Name = "ToggleFrame"
+BackRideToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+BackRideToggleFrame.Position = UDim2.new(0, 90, 0, 0)
+BackRideToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BackRideToggleFrame.Parent = BackRideControlContainer
+
+local BackRideToggleCorner = Instance.new("UICorner")
+BackRideToggleCorner.CornerRadius = UDim.new(1, 0)
+BackRideToggleCorner.Parent = BackRideToggleFrame
+
+local BackRideToggleButton = Instance.new("TextButton")
+BackRideToggleButton.Name = "ToggleButton"
+BackRideToggleButton.Size = UDim2.new(0, 21, 0, 21)
+BackRideToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+BackRideToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+BackRideToggleButton.Text = ""
+BackRideToggleButton.Parent = BackRideToggleFrame
+
+local BackRideButtonCorner = Instance.new("UICorner")
+BackRideButtonCorner.CornerRadius = UDim.new(1, 0)
+BackRideButtonCorner.Parent = BackRideToggleButton
+
+-- ДОБАВЬ ЭТИ ФУНКЦИИ ПЕРЕД ЛОГИКОЙ Back Ride:
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+end
+
+local function updateBackRideToggle()
+    local goal = {
+        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            if nameLower == searchLower or displayLower == searchLower then
+                return player
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    if #matches > 0 then
+        return matches[1]
+    end
+    
+    return nil
+end
+
+-- Логика Back Ride
+local backRideEnabled = false
+local backRideConnection = nil
+local currentBackTarget = nil
+
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            if nameLower == searchLower or displayLower == searchLower then
+                return player
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    if #matches > 0 then
+        return matches[1]
+    end
+    
+    return nil
+end
+
+local function updateBackRideToggle()
+    local goal = {
+        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+--еще тут изменил как ты и говорил,верно?
+
+local function enableBackRide()
+    local searchText = BackRidePlayerInput.Text
+    if searchText == "" then
+        BackRidePlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
+    
+    local target = findBestPlayerMatch(searchText)
+    if not target then
+        BackRidePlayerInput.Text = ""
+        BackRidePlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
+    
+    -- Проверяем что у целевого игрока есть персонаж и корневая часть
+    if not target.Character or not getRoot(target.Character) then
+        BackRidePlayerInput.Text = ""
+        BackRidePlayerInput.PlaceholderText = "Нет персонажа!"
+        return
+    end
+    
+    currentBackTarget = target
+    backRideEnabled = true
+    updateBackRideToggle()
+    
+    BackRidePlayerInput.PlaceholderText = "Найден: " .. target.Name
+    
+    -- Заставляем персонажа сесть
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
+        
+        -- Немного ждем прежде чем начать телепортацию
+        wait(0.2)
+    end
+    
+    -- Создаем соединение для сидения на спине
+    backRideConnection = RunService.Heartbeat:Connect(function()
+        if not backRideEnabled or not currentBackTarget then return end
+        
+        -- Проверяем что оба игрока и их корневые части существуют
+        if Players:FindFirstChild(currentBackTarget.Name) and currentBackTarget.Character and 
+           getRoot(currentBackTarget.Character) and LocalPlayer.Character and 
+           getRoot(LocalPlayer.Character) and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+            
+            -- Телепортируемся на спину целевого игрока
+            local targetRoot = getRoot(currentBackTarget.Character)
+            local myRoot = getRoot(LocalPlayer.Character)
+            
+            myRoot.CFrame = targetRoot.CFrame * CFrame.Angles(0, math.rad(180), 0) * CFrame.new(0, 0.3, 0.8)
+        else
+            disableBackRide()
+        end
+    end)
+end
+
+local function disableBackRide()
+    backRideEnabled = false
+    currentBackTarget = nil
+    updateBackRideToggle()
+    
+    if backRideConnection then
+        backRideConnection:Disconnect()
+        backRideConnection = nil
+    end
+    
+    BackRidePlayerInput.PlaceholderText = "Имя/часть"
+    
+    -- Встаем
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
+    end
+end
+
+BackRideToggleButton.MouseButton1Click:Connect(function()
+    if backRideEnabled then
+        disableBackRide()
+    else
+        enableBackRide()
+    end
+end)
+
+-- Автопоиск при нажатии Enter
+BackRidePlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and not backRideEnabled then
+        enableBackRide()
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if backRideEnabled then
+            disableBackRide()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе целевого игрока
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableBackRide()
+    elseif player == currentBackTarget then
+        disableBackRide()
+    end
+end)
+
+-- Инициализация
+updateBackRideToggle() 
+
 
 -- Функция переключения вкладок
 local function switchTab(tab)
