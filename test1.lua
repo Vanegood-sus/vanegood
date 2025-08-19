@@ -2203,7 +2203,7 @@ updateWalkFlingToggle()
 local BackRideContainer = Instance.new("Frame")
 BackRideContainer.Name = "BackRideSettings"
 BackRideContainer.Size = UDim2.new(1, -20, 0, 40)
-BackRideContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame (было 110, меняем на 10)
+BackRideContainer.Position = UDim2.new(0, 10, 0, 60) -- Первая позиция в TrollFrame (было 110, меняем на 10)
 BackRideContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 BackRideContainer.BackgroundTransparency = 0.5
 BackRideContainer.Parent = TrollFrame
