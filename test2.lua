@@ -3,8 +3,8 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService") -- ДОБАВЬ ЭТУ СТРОКУ
-local LocalPlayer = Players.LocalPlayer -- ДОБАВЬ ЭТУ СТРОКУ
+local RunService = game:GetService("RunService") 
+local LocalPlayer = Players.LocalPlayer 
 
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -487,7 +487,7 @@ HeadSitPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 HeadSitPlayerInput.TextColor3 = Color3.new(1, 1, 1)
 HeadSitPlayerInput.Font = Enum.Font.Gotham
 HeadSitPlayerInput.TextSize = 12
-HeadSitPlayerInput.PlaceholderText = "Имя игрока"
+HeadSitPlayerInput.PlaceholderText = "Имя/часть"
 HeadSitPlayerInput.Text = ""
 HeadSitPlayerInput.Parent = HeadSitControlContainer
 
@@ -518,9 +518,36 @@ HeadSitButtonCorner.Parent = HeadSitToggleButton
 -- Логика HeadSit
 local headSitEnabled = false
 local headSitConnection = nil
+local currentTarget = nil
 
-local function getRoot(character)
-    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    -- Ищем точные совпадения и частичные
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            -- Проверяем разные варианты совпадений
+            if nameLower == searchLower or displayLower == searchLower then
+                return player -- Точное совпадение
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    -- Возвращаем лучший результат
+    if #matches > 0 then
+        return matches[1] -- Первый найденный
+    end
+    
+    return nil
 end
 
 local function updateHeadSitToggle()
@@ -536,46 +563,41 @@ local function updateHeadSitToggle()
 end
 
 local function enableHeadSit()
-    local targetName = HeadSitPlayerInput.Text
-    if targetName == "" then
+    local searchText = HeadSitPlayerInput.Text
+    if searchText == "" then
         HeadSitPlayerInput.PlaceholderText = "Введите имя!"
         return
     end
     
-    local players = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if string.find(string.lower(player.Name), string.lower(targetName)) then
-            table.insert(players, player)
-        end
-    end
-    
-    if #players == 0 then
+    local target = findBestPlayerMatch(searchText)
+    if not target then
         HeadSitPlayerInput.Text = ""
         HeadSitPlayerInput.PlaceholderText = "Игрок не найден!"
         return
     end
     
+    currentTarget = target
     headSitEnabled = true
     updateHeadSitToggle()
     
-    local speaker = LocalPlayer
-    local target = players[1]
+    -- Обновляем плейсхолдер с именем найденного игрока
+    HeadSitPlayerInput.PlaceholderText = "Найден: " .. target.Name
     
     -- Заставляем персонажа сесть
-    if speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid") then
-        speaker.Character:FindFirstChildOfClass("Humanoid").Sit = true
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
     end
     
     -- Создаем соединение для сидения на голове
     headSitConnection = RunService.Heartbeat:Connect(function()
-        if not headSitEnabled then return end
+        if not headSitEnabled or not currentTarget then return end
         
-        if Players:FindFirstChild(target.Name) and target.Character ~= nil and 
-           getRoot(target.Character) and speaker.Character and getRoot(speaker.Character) and 
-           speaker.Character:FindFirstChildOfClass("Humanoid") and 
-           speaker.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+        if Players:FindFirstChild(currentTarget.Name) and currentTarget.Character ~= nil and 
+           getRoot(currentTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
             
-            getRoot(speaker.Character).CFrame = getRoot(target.Character).CFrame * 
+            getRoot(LocalPlayer.Character).CFrame = getRoot(currentTarget.Character).CFrame * 
                 CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
         else
             disableHeadSit()
@@ -585,12 +607,16 @@ end
 
 local function disableHeadSit()
     headSitEnabled = false
+    currentTarget = nil
     updateHeadSitToggle()
     
     if headSitConnection then
         headSitConnection:Disconnect()
         headSitConnection = nil
     end
+    
+    -- Восстанавливаем плейсхолдер
+    HeadSitPlayerInput.PlaceholderText = "Имя/часть"
     
     -- Встаем
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -602,6 +628,13 @@ HeadSitToggleButton.MouseButton1Click:Connect(function()
     if headSitEnabled then
         disableHeadSit()
     else
+        enableHeadSit()
+    end
+end)
+
+-- Автопоиск при нажатии Enter
+HeadSitPlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and not headSitEnabled then
         enableHeadSit()
     end
 end)
@@ -623,6 +656,8 @@ end
 -- Очистка при выходе
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
+        disableHeadSit()
+    elseif player == currentTarget then
         disableHeadSit()
     end
 end)
