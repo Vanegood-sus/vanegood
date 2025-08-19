@@ -471,11 +471,230 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
--- Back Ride (сидение на спине) в разделе Троллинг
+-- HeadSit 
+local HeadSitContainer = Instance.new("Frame")
+HeadSitContainer.Name = "HeadSitSettings"
+HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
+HeadSitContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
+HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HeadSitContainer.BackgroundTransparency = 0.5
+HeadSitContainer.Parent = TrollFrame
+
+local HeadSitCorner = Instance.new("UICorner")
+HeadSitCorner.CornerRadius = UDim.new(0, 6)
+HeadSitCorner.Parent = HeadSitContainer
+
+local HeadSitLabel = Instance.new("TextLabel")
+HeadSitLabel.Name = "Label"
+HeadSitLabel.Size = UDim2.new(0, 120, 1, 0)
+HeadSitLabel.Position = UDim2.new(0, 10, 0, 0)
+HeadSitLabel.BackgroundTransparency = 1
+HeadSitLabel.Text = "Head Sit"
+HeadSitLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitLabel.Font = Enum.Font.GothamBold
+HeadSitLabel.TextSize = 14
+HeadSitLabel.TextXAlignment = Enum.TextXAlignment.Left
+HeadSitLabel.Parent = HeadSitContainer
+
+-- Контейнер для элементов управления
+local HeadSitControlContainer = Instance.new("Frame")
+HeadSitControlContainer.Size = UDim2.new(0, 150, 0, 25)
+HeadSitControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+HeadSitControlContainer.BackgroundTransparency = 1
+HeadSitControlContainer.Parent = HeadSitContainer
+
+-- Выбор игрока
+local HeadSitPlayerInput = Instance.new("TextBox")
+HeadSitPlayerInput.Name = "PlayerInput"
+HeadSitPlayerInput.Size = UDim2.new(0, 80, 1, 0)
+HeadSitPlayerInput.Position = UDim2.new(0, 0, 0, 0)
+HeadSitPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+HeadSitPlayerInput.TextColor3 = Color3.new(1, 1, 1)
+HeadSitPlayerInput.Font = Enum.Font.Gotham
+HeadSitPlayerInput.TextSize = 12
+HeadSitPlayerInput.PlaceholderText = "Имя/часть"
+HeadSitPlayerInput.Text = ""
+HeadSitPlayerInput.Parent = HeadSitControlContainer
+
+-- Переключатель
+local HeadSitToggleFrame = Instance.new("Frame")
+HeadSitToggleFrame.Name = "ToggleFrame"
+HeadSitToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HeadSitToggleFrame.Position = UDim2.new(0, 90, 0, 0)
+HeadSitToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HeadSitToggleFrame.Parent = HeadSitControlContainer
+
+local HeadSitToggleCorner = Instance.new("UICorner")
+HeadSitToggleCorner.CornerRadius = UDim.new(1, 0)
+HeadSitToggleCorner.Parent = HeadSitToggleFrame
+
+local HeadSitToggleButton = Instance.new("TextButton")
+HeadSitToggleButton.Name = "ToggleButton"
+HeadSitToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HeadSitToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HeadSitToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitToggleButton.Text = ""
+HeadSitToggleButton.Parent = HeadSitToggleFrame
+
+local HeadSitButtonCorner = Instance.new("UICorner")
+HeadSitButtonCorner.CornerRadius = UDim.new(1, 0)
+HeadSitButtonCorner.Parent = HeadSitToggleButton
+
+-- Логика HeadSit
+local headSitEnabled = false
+local headSitConnection = nil
+local currentTarget = nil
+
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    -- Ищем точные совпадения и частичные
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            -- Проверяем разные варианты совпадений
+            if nameLower == searchLower or displayLower == searchLower then
+                return player -- Точное совпадение
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    -- Возвращаем лучший результат
+    if #matches > 0 then
+        return matches[1] -- Первый найденный
+    end
+    
+    return nil
+end
+
+local function updateHeadSitToggle()
+    local goal = {
+        Position = headSitEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    HeadSitToggleFrame.BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(HeadSitToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableHeadSit()
+    local searchText = HeadSitPlayerInput.Text
+    if searchText == "" then
+        HeadSitPlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
+    
+    local target = findBestPlayerMatch(searchText)
+    if not target then
+        HeadSitPlayerInput.Text = ""
+        HeadSitPlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
+    
+    currentTarget = target
+    headSitEnabled = true
+    updateHeadSitToggle()
+    
+    -- Обновляем плейсхолдер с именем найденного игрока
+    HeadSitPlayerInput.PlaceholderText = "Найден: " .. target.Name
+    
+    -- Заставляем персонажа сесть
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
+    end
+    
+    -- Создаем соединение для сидения на голове
+    headSitConnection = RunService.Heartbeat:Connect(function()
+        if not headSitEnabled or not currentTarget then return end
+        
+        if Players:FindFirstChild(currentTarget.Name) and currentTarget.Character ~= nil and 
+           getRoot(currentTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+           LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+            
+            getRoot(LocalPlayer.Character).CFrame = getRoot(currentTarget.Character).CFrame * 
+                CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
+        else
+            disableHeadSit()
+        end
+    end)
+end
+
+local function disableHeadSit()
+    headSitEnabled = false
+    currentTarget = nil
+    updateHeadSitToggle()
+    
+    if headSitConnection then
+        headSitConnection:Disconnect()
+        headSitConnection = nil
+    end
+    
+    -- Восстанавливаем плейсхолдер
+    HeadSitPlayerInput.PlaceholderText = "Имя/часть"
+    
+    -- Встаем
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
+    end
+end
+
+HeadSitToggleButton.MouseButton1Click:Connect(function()
+    if headSitEnabled then
+        disableHeadSit()
+    else
+        enableHeadSit()
+    end
+end)
+
+-- Автопоиск при нажатии Enter
+HeadSitPlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and not headSitEnabled then
+        enableHeadSit()
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if headSitEnabled then
+            disableHeadSit()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableHeadSit()
+    elseif player == currentTarget then
+        disableHeadSit()
+    end
+end)
+
+-- Инициализация
+updateHeadSitToggle()
+
+-- Backpack,Backride
 local BackRideContainer = Instance.new("Frame")
 BackRideContainer.Name = "BackRideSettings"
 BackRideContainer.Size = UDim2.new(1, -20, 0, 40)
-BackRideContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
+BackRideContainer.Position = UDim2.new(0, 10, 0, 110) 
 BackRideContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 BackRideContainer.BackgroundTransparency = 0.5
 BackRideContainer.Parent = TrollFrame
@@ -489,7 +708,7 @@ BackRideLabel.Name = "Label"
 BackRideLabel.Size = UDim2.new(0, 120, 1, 0)
 BackRideLabel.Position = UDim2.new(0, 10, 0, 0)
 BackRideLabel.BackgroundTransparency = 1
-BackRideLabel.Text = "Back Ride"
+BackRideLabel.Text = "Backpack"
 BackRideLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 BackRideLabel.Font = Enum.Font.GothamBold
 BackRideLabel.TextSize = 14
@@ -628,8 +847,6 @@ local function updateBackRideToggle()
     tween:Play()
 end
 
---еще тут изменил как ты и говорил,верно?
-
 local function enableBackRide()
     local searchText = BackRidePlayerInput.Text
     if searchText == "" then
@@ -743,7 +960,7 @@ game:GetService("Players").PlayerRemoving:Connect(function(player)
 end)
 
 -- Инициализация
-updateBackRideToggle()
+updateBackRideToggle() 
 
 -- Функция переключения вкладок
 local function switchTab(tab)
