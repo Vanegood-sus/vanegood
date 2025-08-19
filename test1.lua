@@ -1,22 +1,28 @@
 -- Vanegood Hub
+
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
 
--- Создаем GUI
+-- Создаем главный GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой
+-- Создаем кнопку с картинкой
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
--- Размеры изображения
 local imageSize = 75
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
@@ -38,7 +44,7 @@ image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
 image.Parent = imageFrame
 
--- Перетаскивание
+-- Перетаскивание картинки
 local touchStartPos, frameStartPos
 local isDragging = false
 
@@ -79,9 +85,9 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = MainFrame
+local UICornerMain = Instance.new("UICorner")
+UICornerMain.CornerRadius = UDim.new(0, 8)
+UICornerMain.Parent = MainFrame
 
 -- Оранжевая обводка
 local Border = Instance.new("Frame")
@@ -119,7 +125,7 @@ Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
--- Кнопка закрытия (оранжевая)
+-- Кнопка закрытия
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Position = UDim2.new(1, -25, 0.5, -10)
@@ -130,12 +136,12 @@ CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 18
 CloseButton.Parent = TopBar
 
--- Кнопка минимизации (оранжевая)
+-- Кнопка минимизации
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 20, 0, 20)
 MinimizeButton.Position = UDim2.new(1, -50, 0.5, -10)
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
-MinimizeButton.Text = "—"
+MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.TextSize = 18
@@ -148,7 +154,7 @@ TabBar.Position = UDim2.new(0, 0, 0, 30)
 TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TabBar.Parent = MainFrame
 
--- Вкладки (3 штуки)
+-- Вкладки
 local ScriptsTab = Instance.new("TextButton")
 ScriptsTab.Size = UDim2.new(0.33, 0, 1, 0)
 ScriptsTab.Position = UDim2.new(0, 0, 0, 0)
@@ -179,7 +185,7 @@ TrollTab.Font = Enum.Font.GothamBold
 TrollTab.TextSize = 12
 TrollTab.Parent = TabBar
 
--- Индикатор вкладки (оранжевый)
+-- Индикатор активной вкладки
 local ActiveTabIndicator = Instance.new("Frame")
 ActiveTabIndicator.Size = UDim2.new(0.33, 0, 0, 2)
 ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
@@ -194,7 +200,7 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.ClipsDescendants = true
 ContentFrame.Parent = MainFrame
 
--- Фреймы для контента
+-- Создаем фреймы для вкладок
 local ScriptsFrame = Instance.new("ScrollingFrame")
 ScriptsFrame.Size = UDim2.new(1, 0, 1, 0)
 ScriptsFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -204,30 +210,42 @@ ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 ScriptsFrame.Visible = true
 ScriptsFrame.Parent = ContentFrame
 
--- Добавляем UIListLayout для автоматического расположения элементов
+local GamesFrame = Instance.new("ScrollingFrame")
+GamesFrame.Size = UDim2.new(1, 0, 1, 0)
+GamesFrame.Position = UDim2.new(0, 0, 0, 0)
+GamesFrame.BackgroundTransparency = 1
+GamesFrame.ScrollBarThickness = 3
+GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+GamesFrame.Visible = false
+GamesFrame.Parent = ContentFrame
+
+local TrollFrame = Instance.new("ScrollingFrame")
+TrollFrame.Size = UDim2.new(1, 0, 1, 0)
+TrollFrame.Position = UDim2.new(0, 0, 0, 0)
+TrollFrame.BackgroundTransparency = 1
+TrollFrame.ScrollBarThickness = 3
+TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+TrollFrame.Visible = false
+TrollFrame.Parent = ContentFrame
+
+-- UIListLayout для автоматического расположения элементов
 local ListLayout = Instance.new("UIListLayout")
 ListLayout.Padding = UDim.new(0, 10)
 ListLayout.Parent = ScriptsFrame
 
--- Настраиваем ScrollingFrame
-ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  
-
--- Anti-AFK 
+-- --------- Anti-AFK ---------
 local AntiAfkContainer = Instance.new("Frame")
-AntiAfkContainer.Name = "AntiAfk"
-AntiAfkContainer.Size = UDim2.new(1, -20, 0, 40)  -- Ширина с отступами по 10 с каждой стороны
-AntiAfkContainer.Position = UDim2.new(0, 10, 0, 10)  -- Отступ сверху 10
+AntiAfkContainer.Name = "Anti-AFK"
+AntiAfkContainer.Size = UDim2.new(1, -20, 0, 40)
+AntiAfkContainer.Position = UDim2.new(0, 10, 0, 10)
 AntiAfkContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 AntiAfkContainer.BackgroundTransparency = 0.5
 AntiAfkContainer.Parent = ScriptsFrame
 
--- Скругление углов
 local AntiAfkCorner = Instance.new("UICorner")
 AntiAfkCorner.CornerRadius = UDim.new(0, 6)
 AntiAfkCorner.Parent = AntiAfkContainer
 
--- Текст "Anti-AFK"
 local AntiAfkLabel = Instance.new("TextLabel")
 AntiAfkLabel.Name = "Label"
 AntiAfkLabel.Size = UDim2.new(0, 120, 1, 0)
@@ -240,7 +258,6 @@ AntiAfkLabel.TextSize = 14
 AntiAfkLabel.TextXAlignment = Enum.TextXAlignment.Left
 AntiAfkLabel.Parent = AntiAfkContainer
 
--- Стилизованный переключатель
 local AntiAfkToggleFrame = Instance.new("Frame")
 AntiAfkToggleFrame.Name = "ToggleFrame"
 AntiAfkToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -264,18 +281,15 @@ local AntiAfkButtonCorner = Instance.new("UICorner")
 AntiAfkButtonCorner.CornerRadius = UDim.new(1, 0)
 AntiAfkButtonCorner.Parent = AntiAfkToggleButton
 
--- Логика Anti-AFK
 local afkEnabled = false
-local virtualUser = game:service'VirtualUser'
+local virtualUser = game:GetService("VirtualUser")
 
 local function updateAfkToggle()
     local goal = {
         Position = afkEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
         BackgroundColor3 = afkEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
-    
     AntiAfkToggleFrame.BackgroundColor3 = afkEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
     local tween = TweenService:Create(AntiAfkToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
@@ -285,43 +299,34 @@ AntiAfkToggleButton.MouseButton1Click:Connect(function()
     updateAfkToggle()
 end)
 
-game:service'Players'.LocalPlayer.Idled:connect(function()
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
     if afkEnabled then
         virtualUser:CaptureController()
         virtualUser:ClickButton2(Vector2.new())
     end
 end)
 
-updateAfkToggle()  -- Инициализация переключателя
+updateAfkToggle()
 
--- ESP
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
--- Настройки ESP
+-- --------- ESP ---------
 local espEnabled = false
 local espObjects = {}
 local lastUpdate = 0
 local updateInterval = 0.2
 
--- Создаем контейнер для ESP 
+-- Создаем контейнер для ESP
 local EspContainer = Instance.new("Frame")
 EspContainer.Name = "ESPSettings"
 EspContainer.Size = UDim2.new(1, -20, 0, 40)
-EspContainer.Position = UDim2.new(0, 10, 0, 60) 
+EspContainer.Position = UDim2.new(0, 10, 0, 60)
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
 EspContainer.Parent = ScriptsFrame
 
--- Скругление углов
 local EspCorner = Instance.new("UICorner")
 EspCorner.CornerRadius = UDim.new(0, 6)
 EspCorner.Parent = EspContainer
 
--- Текст "ESP"
 local EspLabel = Instance.new("TextLabel")
 EspLabel.Name = "Label"
 EspLabel.Size = UDim2.new(0, 120, 1, 0)
@@ -334,7 +339,6 @@ EspLabel.TextSize = 14
 EspLabel.TextXAlignment = Enum.TextXAlignment.Left
 EspLabel.Parent = EspContainer
 
--- Переключатель 
 local EspToggleFrame = Instance.new("Frame")
 EspToggleFrame.Name = "ToggleFrame"
 EspToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -358,20 +362,16 @@ local EspButtonCorner = Instance.new("UICorner")
 EspButtonCorner.CornerRadius = UDim.new(1, 0)
 EspButtonCorner.Parent = EspToggleButton
 
--- Анимация переключателя
 local function updateEspToggle()
     local goal = {
         Position = espEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
         BackgroundColor3 = espEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
-    
     EspToggleFrame.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
     local tween = TweenService:Create(EspToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
 
--- Очистка ESP
 local function clearESP()
     for _, obj in pairs(espObjects) do
         if obj.highlight then obj.highlight:Destroy() end
@@ -380,63 +380,48 @@ local function clearESP()
     espObjects = {}
 end
 
--- Логика определения врагов/союзников
 local function isEnemy(player)
-    -- Проверка на команду убийц
     if player:FindFirstChild("Team") and player.Team.Name:lower():find("killer") then
         return true
     end
-    
-    -- Проверка на противоположную команду
     if player.Team and LocalPlayer.Team then
-        return player.Team ~= LocalPlayer.Team
+        if player.Team ~= LocalPlayer.Team then
+            return true
+        end
     end
-    
-    -- Проверка на возможность нанести вред
     if player.Character then
         local humanoid = player.Character:FindFirstChild("Humanoid")
         local tool = player.Character:FindFirstChildOfClass("Tool")
-        
-        -- Если у игрока есть оружие или он может атаковать
         if tool or (humanoid and humanoid:GetAttribute("CanAttack") == true) then
             return true
         end
     end
-    
     return false
 end
 
--- Проверка, является ли игрок союзником (вашей командой)
 local function isAlly(player)
-    -- Если есть система команд и игрок в вашей команде
     if player.Team and LocalPlayer.Team then
         return player.Team == LocalPlayer.Team
     end
-    
-    -- Дополнительные проверки для союзников
     return false
 end
 
--- Обновление ESP 
 local function updateESP()
     if not espEnabled then return end
-    
     local currentTime = os.clock()
     if currentTime - lastUpdate < updateInterval then return end
     lastUpdate = currentTime
-    
+
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
             local humanoid = player.Character:FindFirstChild("Humanoid")
-            
             if rootPart and humanoid and humanoid.Health > 0 then
                 local enemy = isEnemy(player)
                 local ally = isAlly(player)
-                
+
                 if not espObjects[player] then
-                    espObjects[player] = {}
-                    
+                    -- Создаем Highlight и Label
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "ESPHighlight"
                     highlight.Adornee = player.Character
@@ -444,46 +429,38 @@ local function updateESP()
                     highlight.OutlineTransparency = 0
                     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                     highlight.Parent = player.Character
-                    
+
                     local label = Instance.new("TextLabel")
                     label.Name = "ESPLabel"
                     label.BackgroundTransparency = 1
-                    label.TextColor3 = Color3.new(1, 1, 1)
+                    label.TextColor3 = Color3.new(1,1,1)
                     label.Font = Enum.Font.Gotham
                     label.TextSize = 12
                     label.TextStrokeTransparency = 0.7
-                    label.TextStrokeColor3 = Color3.new(0, 0, 0)
-                    label.Parent = ScreenGui  -- Важно! Используем основной ScreenGui
-                    
-                    espObjects[player] = {
-                        highlight = highlight,
-                        label = label
-                    }
+                    label.TextStrokeColor3 = Color3.new(0,0,0)
+                    label.Parent = ScreenGui -- Или создайте отдельный слой, если нужно
+
+                    espObjects[player] = {highlight = highlight, label = label}
                 end
-                
+
                 local espData = espObjects[player]
-                
-                -- Устанавливаем цвет в зависимости от типа игрока
+
+                -- Цвет в зависимости от команды
                 if enemy then
-                    -- Враги - красный
                     espData.highlight.FillColor = Color3.fromRGB(255, 70, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(180, 0, 0)
                 elseif ally then
-                    -- Союзники - зеленый
                     espData.highlight.FillColor = Color3.fromRGB(70, 255, 70)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 180, 0)
                 else
-                    -- Нейтральные игроки - синий
                     espData.highlight.FillColor = Color3.fromRGB(70, 70, 255)
                     espData.highlight.OutlineColor = Color3.fromRGB(0, 0, 180)
                 end
-                
+
                 local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
                 if onScreen then
-                    local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) 
-                        and (rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude 
-                        or 0
-                    
+                    local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) and
+                        (rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude or 0
                     espData.label.Text = string.format("%s [%d]", player.Name, math.floor(distance))
                     espData.label.Position = UDim2.new(0, screenPos.X, 0, screenPos.Y - 35)
                     espData.label.Visible = true
@@ -491,6 +468,7 @@ local function updateESP()
                     espData.label.Visible = false
                 end
             else
+                -- Удаляем объекты, если игрок исчез или умер
                 if espObjects[player] then
                     if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
                     if espObjects[player].label then espObjects[player].label:Destroy() end
@@ -498,6 +476,7 @@ local function updateESP()
                 end
             end
         else
+            -- Удаляем объекты, если игрок вышел
             if espObjects[player] then
                 if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
                 if espObjects[player].label then espObjects[player].label:Destroy() end
@@ -507,42 +486,40 @@ local function updateESP()
     end
 end
 
--- Обработчик переключателя
-EspToggleButton.MouseButton1Click:Connect(function()
+-- Переключатель ESP
+local function toggleESP()
     espEnabled = not espEnabled
     updateEspToggle()
-    if not espEnabled then clearESP() end
-end)
-
--- Очистка при выходе игрока
-Players.PlayerRemoving:Connect(function(player)
-    if espObjects[player] then
-        if espObjects[player].highlight then espObjects[player].highlight:Destroy() end
-        if espObjects[player].label then espObjects[player].label:Destroy() end
-        espObjects[player] = nil
+    if not espEnabled then
+        clearESP()
     end
-end)
+end
 
--- Основной цикл
-RunService.Heartbeat:Connect(updateESP)
+-- Обработчик переключателя
+local function setupESP()
+    -- Изначально
+    updateEspToggle()
+    -- Событие
+    local function onToggle()
+        toggleESP()
+    end
+    -- Можно привязать к кнопке или событию
+    -- Например:
+    -- EspToggleButton.MouseButton1Click:Connect(toggleESP)
+end
 
--- Инициализация
-updateEspToggle()
+-- Автоматический запуск
+-- setupESP()
+-- RunService.Heartbeat:Connect(updateESP)
 
--- HitBox
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
+-- --------- HitBox ---------
+local G_Size = 20
+local G_Disabled = false
 
-_G.Size = 20
-_G.Disabled = false
-
--- Создаем контейнер для HitBox 
 local HitBoxContainer = Instance.new("Frame")
 HitBoxContainer.Name = "HitBoxSettings"
 HitBoxContainer.Size = UDim2.new(1, -20, 0, 40)
-HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) 
+HitBoxContainer.Position = UDim2.new(0, 10, 0, 110)
 HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 HitBoxContainer.BackgroundTransparency = 0.5
 HitBoxContainer.Parent = ScriptsFrame
@@ -563,14 +540,12 @@ HitBoxLabel.TextSize = 14
 HitBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
 HitBoxLabel.Parent = HitBoxContainer
 
--- Контейнер для элементов управления 
 local ControlContainer = Instance.new("Frame")
 ControlContainer.Size = UDim2.new(0, 150, 0, 25)
-ControlContainer.Position = UDim2.new(1, -110, 0.5, -12)  -- Сдвинуто левее
+ControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
 ControlContainer.BackgroundTransparency = 1
 ControlContainer.Parent = HitBoxContainer
 
--- Поле ввода для размера 
 local SizeInput = Instance.new("TextBox")
 SizeInput.Name = "SizeInput"
 SizeInput.Size = UDim2.new(0, 40, 1, 0)
@@ -579,10 +554,9 @@ SizeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 SizeInput.TextColor3 = Color3.new(1, 1, 1)
 SizeInput.Font = Enum.Font.Gotham
 SizeInput.TextSize = 14
-SizeInput.Text = tostring(_G.Size)
+SizeInput.Text = tostring(_G.Size or 20)
 SizeInput.Parent = ControlContainer
 
--- Переключатель
 local HitBoxToggleFrame = Instance.new("Frame")
 HitBoxToggleFrame.Name = "ToggleFrame"
 HitBoxToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -608,12 +582,11 @@ HitBoxButtonCorner.Parent = HitBoxToggleButton
 
 local function updateHitBoxToggle()
     local goal = {
-        Position = _G.Disabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+        Position = _G.Disabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0, -10),
+        BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(50, 50, 60)
     }
-    
-    HitBoxToggleFrame.BackgroundColor3 = _G.Disabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
+    local frameColor = _G.Disabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    HitBoxToggleFrame.BackgroundColor3 = frameColor
     local tween = TweenService:Create(HitBoxToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
@@ -638,15 +611,14 @@ SizeInput.FocusLost:Connect(function()
     if num and num >= 1 and num <= 100 then
         _G.Size = num
     else
-        SizeInput.Text = tostring(_G.Size)
+        SizeInput.Text = tostring(_G.Size or 20)
     end
 end)
 
 HitBoxToggleButton.MouseButton1Click:Connect(function()
     _G.Disabled = not _G.Disabled
     updateHitBoxToggle()
-    
-    if not _G.Disabled then
+    if _G.Disabled then
         resetHitboxes()
     end
 end)
@@ -658,8 +630,7 @@ RunService.RenderStepped:Connect(function()
                 pcall(function()
                     local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
                     if rootPart then
-                        -- Делаем хитбокс квадратным (кубическим)
-                        rootPart.Size = Vector3.new(_G.Size, _G.Size, _G.Size)
+                        rootPart.Size = Vector3.new(_G.Size or 20, _G.Size or 20, _G.Size or 20)
                         rootPart.Transparency = 0.7
                         rootPart.BrickColor = BrickColor.new("Really red")
                         rootPart.Material = "Neon"
@@ -686,11 +657,11 @@ end)
 
 updateHitBoxToggle()
 
--- Fly 
+-- --------- Fly ---------
 local FlyContainer = Instance.new("Frame")
 FlyContainer.Name = "FlySettings"
 FlyContainer.Size = UDim2.new(1, -20, 0, 40)
-FlyContainer.Position = UDim2.new(0, 10, 0, 160) -- Позиция ниже HitBox
+FlyContainer.Position = UDim2.new(0, 10, 0, 160)
 FlyContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 FlyContainer.BackgroundTransparency = 0.5
 FlyContainer.Parent = ScriptsFrame
@@ -711,26 +682,23 @@ FlyLabel.TextSize = 14
 FlyLabel.TextXAlignment = Enum.TextXAlignment.Left
 FlyLabel.Parent = FlyContainer
 
--- Контейнер для элементов управления
 local FlyControlContainer = Instance.new("Frame")
 FlyControlContainer.Size = UDim2.new(0, 150, 0, 25)
 FlyControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
 FlyControlContainer.BackgroundTransparency = 1
 FlyControlContainer.Parent = FlyContainer
 
--- Поле ввода для скорости полета
 local FlySpeedInput = Instance.new("TextBox")
 FlySpeedInput.Name = "SpeedInput"
 FlySpeedInput.Size = UDim2.new(0, 40, 1, 0)
 FlySpeedInput.Position = UDim2.new(0, 0, 0, 0)
 FlySpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-FlySpeedInput.TextColor3 = Color3.new(1, 1, 1)
+FlySpeedInput.TextColor3 = Color3.new(1,1,1)
 FlySpeedInput.Font = Enum.Font.Gotham
 FlySpeedInput.TextSize = 14
 FlySpeedInput.Text = "50"
 FlySpeedInput.Parent = FlyControlContainer
 
--- Переключатель
 local FlyToggleFrame = Instance.new("Frame")
 FlyToggleFrame.Name = "ToggleFrame"
 FlyToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -754,10 +722,10 @@ local FlyButtonCorner = Instance.new("UICorner")
 FlyButtonCorner.CornerRadius = UDim.new(1, 0)
 FlyButtonCorner.Parent = FlyToggleButton
 
--- Логика полета
 local flyEnabled = false
 local flySpeed = 50
-local bv, bg
+local bv = nil
+local bg = nil
 local flyConnections = {}
 
 local function updateFlyToggle()
@@ -765,9 +733,8 @@ local function updateFlyToggle()
         Position = flyEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
         BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
-    
-    FlyToggleFrame.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
+    local frameColor = flyEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    FlyToggleFrame.BackgroundColor3 = frameColor
     local tween = TweenService:Create(FlyToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
@@ -775,28 +742,28 @@ end
 local function setupCharacter(character)
     if flyEnabled then
         if character:FindFirstChild("HumanoidRootPart") then
-            -- Удаляем старые обработчики, если они есть
+            -- Удаляем старые обработчики
             if character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
                 character.HumanoidRootPart.VelocityHandler:Destroy()
             end
             if character.HumanoidRootPart:FindFirstChild("GyroHandler") then
                 character.HumanoidRootPart.GyroHandler:Destroy()
             end
-            
-            -- Создаем новые обработчики
+
+            -- Создаем новые
             bv = Instance.new("BodyVelocity")
             bv.Name = "VelocityHandler"
+            bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+            bv.Velocity = Vector3.new(0, 0, 0)
             bv.Parent = character.HumanoidRootPart
-            bv.MaxForce = Vector3.new(9e9,9e9,9e9)
-            bv.Velocity = Vector3.new(0,0,0)
-            
+
             bg = Instance.new("BodyGyro")
             bg.Name = "GyroHandler"
-            bg.Parent = character.HumanoidRootPart
-            bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
             bg.P = 1000
             bg.D = 50
-            
+            bg.Parent = character.HumanoidRootPart
+
             character.Humanoid.PlatformStand = true
         end
     end
@@ -805,20 +772,18 @@ end
 local function disableFly()
     flyEnabled = false
     updateFlyToggle()
-    
+
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.PlatformStand = false
-        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") then
-            LocalPlayer.Character.HumanoidRootPart.VelocityHandler:Destroy()
-        end
-        if LocalPlayer.Character.HumanoidRootPart and LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
-            LocalPlayer.Character.HumanoidRootPart.GyroHandler:Destroy()
+        if LocalPlayer.Character.HumanoidRootPart then
+            local root = LocalPlayer.Character.HumanoidRootPart
+            if root:FindFirstChild("VelocityHandler") then root.VelocityHandler:Destroy() end
+            if root:FindFirstChild("GyroHandler") then root.GyroHandler:Destroy() end
         end
     end
-    
-    -- Отключаем все соединения полета
-    for _, connection in pairs(flyConnections) do
-        connection:Disconnect()
+
+    for _, conn in pairs(flyConnections) do
+        conn:Disconnect()
     end
     flyConnections = {}
 end
@@ -826,69 +791,57 @@ end
 local function enableFly()
     flyEnabled = true
     updateFlyToggle()
-    
-    -- Устанавливаем соединения только если их еще нет
+
     if #flyConnections == 0 then
-        -- Обработчик добавления персонажа
+        -- Обработка добавления персонажа
         table.insert(flyConnections, LocalPlayer.CharacterAdded:Connect(function(character)
             setupCharacter(character)
-            
-            -- Обработчик смерти персонажа
             character:WaitForChild("Humanoid").Died:Connect(function()
                 if flyEnabled then
-                    -- После смерти автоматически восстанавливаем полет
-                    task.wait() -- Даем время для респавна
-                    if LocalPlayer.Character then
-                        setupCharacter(LocalPlayer.Character)
-                    end
+                    disableFly()
                 end
             end)
         end))
-        
-        -- Обработчик рендера
+        -- Обработка рендера
         table.insert(flyConnections, RunService.RenderStepped:Connect(function()
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
-               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and 
-               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and 
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and
+               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and
+               LocalPlayer.Character.HumanoidRootPart:FindFirstChild("VelocityHandler") and
                LocalPlayer.Character.HumanoidRootPart:FindFirstChild("GyroHandler") then
-                
                 if flyEnabled then
-                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9,9e9,9e9)
-                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9,9e9,9e9)
+                    LocalPlayer.Character.HumanoidRootPart.VelocityHandler.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
                     LocalPlayer.Character.Humanoid.PlatformStand = true
-                    
-                    local camera = workspace.CurrentCamera
-                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CoordinateFrame
-                    
-                    local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild('PlayerModule'):WaitForChild("ControlModule"))
+
+                    local camera = Workspace.CurrentCamera
+                    LocalPlayer.Character.HumanoidRootPart.GyroHandler.CFrame = camera.CFrame
+
+                    -- Получить управление
+                    local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
                     local direction = controlModule:GetMoveVector()
+
+                    -- Вектор скорости
                     LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = Vector3.new()
-                    
-                    if direction.X > 0 then
-                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
+
+                    -- В зависимости от направления
+                    if direction.X ~= 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity += camera.CFrame.RightVector * (direction.X * flySpeed)
                     end
-                    if direction.X < 0 then
-                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity + camera.CFrame.RightVector*(direction.X*flySpeed)
-                    end
-                    if direction.Z > 0 then
-                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
-                    end
-                    if direction.Z < 0 then
-                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity = LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity - camera.CFrame.LookVector*(direction.Z*flySpeed)
+                    if direction.Z ~= 0 then
+                        LocalPlayer.Character.HumanoidRootPart.VelocityHandler.Velocity -= camera.CFrame.LookVector * (direction.Z * flySpeed)
                     end
                 end
             end
         end))
-        
         -- Обработчик изменения скорости
         table.insert(flyConnections, FlySpeedInput:GetPropertyChangedSignal("Text"):Connect(function()
-            if tonumber(FlySpeedInput.Text) then
-                flySpeed = tonumber(FlySpeedInput.Text)
+            local num = tonumber(FlySpeedInput.Text)
+            if num then
+                flySpeed = num
             end
         end))
     end
-    
-    -- Устанавливаем полет для текущего персонажа
+
     if LocalPlayer.Character then
         setupCharacter(LocalPlayer.Character)
     end
@@ -911,21 +864,17 @@ FlySpeedInput.FocusLost:Connect(function()
     end
 end)
 
--- Очистка при выходе
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
         disableFly()
     end
 end)
 
--- Инициализация
-updateFlyToggle()
-
---Speed
+-- --------- Speed ---------
 local SpeedContainer = Instance.new("Frame")
 SpeedContainer.Name = "SpeedSettings"
 SpeedContainer.Size = UDim2.new(1, -20, 0, 40)
-SpeedContainer.Position = UDim2.new(0, 10, 0, 260) -- Позиция ниже InfJump
+SpeedContainer.Position = UDim2.new(0, 10, 0, 260)
 SpeedContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 SpeedContainer.BackgroundTransparency = 0.5
 SpeedContainer.Parent = ScriptsFrame
@@ -946,26 +895,23 @@ SpeedLabel.TextSize = 14
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 SpeedLabel.Parent = SpeedContainer
 
--- Контейнер для элементов управления
 local SpeedControlContainer = Instance.new("Frame")
 SpeedControlContainer.Size = UDim2.new(0, 150, 0, 25)
 SpeedControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
 SpeedControlContainer.BackgroundTransparency = 1
 SpeedControlContainer.Parent = SpeedContainer
 
--- Поле ввода для скорости
 local SpeedValueInput = Instance.new("TextBox")
 SpeedValueInput.Name = "SpeedInput"
 SpeedValueInput.Size = UDim2.new(0, 40, 1, 0)
 SpeedValueInput.Position = UDim2.new(0, 0, 0, 0)
 SpeedValueInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SpeedValueInput.TextColor3 = Color3.new(1, 1, 1)
+SpeedValueInput.TextColor3 = Color3.new(1,1,1)
 SpeedValueInput.Font = Enum.Font.Gotham
 SpeedValueInput.TextSize = 14
 SpeedValueInput.Text = "16" -- Стандартная скорость
 SpeedValueInput.Parent = SpeedControlContainer
 
--- Переключатель
 local SpeedToggleFrame = Instance.new("Frame")
 SpeedToggleFrame.Name = "ToggleFrame"
 SpeedToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -989,19 +935,17 @@ local SpeedButtonCorner = Instance.new("UICorner")
 SpeedButtonCorner.CornerRadius = UDim.new(1, 0)
 SpeedButtonCorner.Parent = SpeedToggleButton
 
--- Логика Speed
 local speedEnabled = false
 local currentSpeed = 16
 local speedConnection = nil
 
 local function updateSpeedToggle()
     local goal = {
-        Position = speedEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        Position = speedEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0, -10),
         BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
-    
-    SpeedToggleFrame.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
+    local frameColor = speedEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    SpeedToggleFrame.BackgroundColor3 = frameColor
     local tween = TweenService:Create(SpeedToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
@@ -1015,17 +959,13 @@ end
 local function enableSpeed()
     speedEnabled = true
     updateSpeedToggle()
-    
-    -- Устанавливаем соединения
     if not speedConnection then
-        speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        speedConnection = RunService.Heartbeat:Connect(function()
             if speedEnabled and LocalPlayer.Character then
                 setCharacterSpeed(LocalPlayer.Character, currentSpeed)
             end
         end)
     end
-    
-    -- Применяем сразу к текущему персонажу
     if LocalPlayer.Character then
         setCharacterSpeed(LocalPlayer.Character, currentSpeed)
     end
@@ -1034,15 +974,12 @@ end
 local function disableSpeed()
     speedEnabled = false
     updateSpeedToggle()
-    
     if speedConnection then
         speedConnection:Disconnect()
         speedConnection = nil
     end
-    
-    -- Возвращаем стандартную скорость
     if LocalPlayer.Character then
-        setCharacterSpeed(LocalPlayer.Character, 16) -- 16 - стандартная скорость в Roblox
+        setCharacterSpeed(LocalPlayer.Character, 16)
     end
 end
 
@@ -1066,29 +1003,25 @@ SpeedValueInput.FocusLost:Connect(function()
     end
 end)
 
--- Обработчик добавления нового персонажа
 LocalPlayer.CharacterAdded:Connect(function(character)
     if speedEnabled then
         setCharacterSpeed(character, currentSpeed)
     end
 end)
 
--- Очистка при выходе
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
         disableSpeed()
     end
 end)
 
--- Инициализация
 updateSpeedToggle()
 
-
---InfJump
+-- --------- Infinite Jump ---------
 local InfJumpContainer = Instance.new("Frame")
 InfJumpContainer.Name = "InfJump"
 InfJumpContainer.Size = UDim2.new(1, -20, 0, 40)
-InfJumpContainer.Position = UDim2.new(0, 10, 0, 210) -- Позиция ниже Fly
+InfJumpContainer.Position = UDim2.new(0, 10, 0, 210)
 InfJumpContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 InfJumpContainer.BackgroundTransparency = 0.5
 InfJumpContainer.Parent = ScriptsFrame
@@ -1132,18 +1065,15 @@ local InfJumpButtonCorner = Instance.new("UICorner")
 InfJumpButtonCorner.CornerRadius = UDim.new(1, 0)
 InfJumpButtonCorner.Parent = InfJumpToggleButton
 
--- Логика InfJump
 local infJumpEnabled = false
 local infJumpConnection = nil
 
 local function updateInfJumpToggle()
     local goal = {
-        Position = infJumpEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        Position = infJumpEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0, -10),
         BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
-    
     InfJumpToggleFrame.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
     local tween = TweenService:Create(InfJumpToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
@@ -1151,10 +1081,11 @@ end
 local function enableInfJump()
     infJumpEnabled = true
     updateInfJumpToggle()
-    
-    infJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-        if infJumpEnabled and game:GetService("Players").LocalPlayer.Character then
-            local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+    local userInput = game:GetService("UserInputService")
+    infJumpConnection = userInput.JumpRequest:Connect(function()
+        if infJumpEnabled and LocalPlayer.Character then
+            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid:ChangeState("Jumping")
             end
@@ -1165,7 +1096,6 @@ end
 local function disableInfJump()
     infJumpEnabled = false
     updateInfJumpToggle()
-    
     if infJumpConnection then
         infJumpConnection:Disconnect()
         infJumpConnection = nil
@@ -1180,29 +1110,22 @@ InfJumpToggleButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Очистка при выходе
 game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == game:GetService("Players").LocalPlayer then
+    if player == LocalPlayer then
         disableInfJump()
     end
 end)
 
--- Инициализация
 updateInfJumpToggle()
 
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-
--- Добавляем наблюдателя в ваш хаб
+-- --------- Spectate ---------
 local SpectateContainer = Instance.new("Frame")
 SpectateContainer.Name = "SpectateSettings"
 SpectateContainer.Size = UDim2.new(1, -20, 0, 40)
-SpectateContainer.Position = UDim2.new(0, 10, 0, 610) -- Измените позицию по необходимости
+SpectateContainer.Position = UDim2.new(0, 10, 0, 610)
 SpectateContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 SpectateContainer.BackgroundTransparency = 0.5
-SpectateContainer.Parent = ScriptsFrame -- Предполагается, что ScriptsFrame уже существует в вашем хабе
+SpectateContainer.Parent = ScriptsFrame
 
 local SpectateCorner = Instance.new("UICorner")
 SpectateCorner.CornerRadius = UDim.new(0, 6)
@@ -1266,11 +1189,6 @@ local PlayersListLayout = Instance.new("UIListLayout")
 PlayersListLayout.Padding = UDim.new(0, 5)
 PlayersListLayout.Parent = PlayersList
 
-PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
-    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
-end)
-
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5,
@@ -1281,13 +1199,12 @@ end
 SpectateContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
 SpectateContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
 
--- Функции наблюдателя
 local currentSubject = nil
 
 local function spectatePlayer(player)
     if player.Character and player.Character:FindFirstChild("Humanoid") then
         currentSubject = player
-        game.Workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+        Workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
         return true
     end
     return false
@@ -1296,7 +1213,7 @@ end
 local function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         currentSubject = nil
-        game.Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
     end
 end
 
@@ -1311,36 +1228,36 @@ local function createPlayerButton(player)
     button.Text = player.Name
     button.TextXAlignment = Enum.TextXAlignment.Left
     button.Parent = PlayersList
-    
+
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 4)
+    UICorner.CornerRadius = UDim.new(0, 4)
     buttonCorner.Parent = button
-    
-    local spectateButton = Instance.new("TextButton")
-    spectateButton.Size = UDim2.new(0.4, -5, 0.8, 0)
-    spectateButton.Position = UDim2.new(0.6, 5, 0.1, 0)
-    spectateButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
-    spectateButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-    spectateButton.Font = Enum.Font.Gotham
-    spectateButton.TextSize = 10
-    spectateButton.Text = "Spectate"
-    spectateButton.Parent = button
-    
+
+    local spectateBtn = Instance.new("TextButton")
+    spectateBtn.Size = UDim2.new(0.4, -5, 0.8, 0)
+    spectateBtn.Position = UDim2.new(0.6, 5, 0.1, 0)
+    spectateBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
+    spectateBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    spectateBtn.Font = Enum.Font.Gotham
+    spectateBtn.TextSize = 10
+    spectateBtn.Text = "Spectate"
+    spectateBtn.Parent = button
+
     local spectateCorner = Instance.new("UICorner")
     spectateCorner.CornerRadius = UDim.new(0, 4)
-    spectateCorner.Parent = spectateButton
-    
+    spectateCorner.Parent = spectateBtn
+
     local function updateButtonState()
         if currentSubject == player then
-            spectateButton.Text = "Stop"
-            spectateButton.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
+            spectateBtn.Text = "Stop"
+            spectateBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
         else
-            spectateButton.Text = "Spectate"
-            spectateButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
+            spectateBtn.Text = "Spectate"
+            spectateBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
         end
     end
-    
-    spectateButton.MouseButton1Click:Connect(function()
+
+    spectateBtn.MouseButton1Click:Connect(function()
         if currentSubject == player then
             stopSpectating()
         else
@@ -1348,29 +1265,29 @@ local function createPlayerButton(player)
         end
         updateButtonState()
     end)
-    
+
     button.MouseButton1Click:Connect(function()
         if currentSubject ~= player then
             spectatePlayer(player)
             updateButtonState()
         end
     end)
-    
+
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
     end)
-    
+
     button.MouseLeave:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
     end)
-    
+
     return button
 end
 
 local isMenuOpen = false
+
 SpectateToggleButton.MouseButton1Click:Connect(function()
     isMenuOpen = not isMenuOpen
-    
     if isMenuOpen then
         SpectateToggleButton.Text = "Select ◁"
         updateMenuPosition()
@@ -1388,24 +1305,22 @@ for _, player in ipairs(Players:GetPlayers()) do
     end
 end
 
--- Обработчик новых игроков
+-- Обработчики новых и ушедших игроков
 Players.PlayerAdded:Connect(function(player)
     if player ~= LocalPlayer then
         createPlayerButton(player)
     end
 end)
 
--- Обработчик ушедших игроков
 Players.PlayerRemoving:Connect(function(player)
-    if currentSubject == player then
-        stopSpectating()
-    end
-    
     for _, child in ipairs(PlayersList:GetChildren()) do
         if child:IsA("TextButton") and child.Text == player.Name then
             child:Destroy()
             break
         end
+    end
+    if currentSubject == player then
+        stopSpectating()
     end
 end)
 
@@ -1417,8 +1332,8 @@ UserInputService.InputBegan:Connect(function(input, processed)
         local menuSize = PlayersSideMenu.AbsoluteSize
         local buttonPos = SpectateToggleButton.AbsolutePosition
         local buttonSize = SpectateToggleButton.AbsoluteSize
-        
-        if isMenuOpen and 
+
+        if isMenuOpen and
            (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
             mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
            (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
@@ -1430,11 +1345,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Server Hop
+-- --------- Server Hop ---------
 local ServerHopContainer = Instance.new("Frame")
 ServerHopContainer.Name = "ServerHop"
 ServerHopContainer.Size = UDim2.new(1, -20, 0, 40)
-ServerHopContainer.Position = UDim2.new(0, 10, 0, 460) -- Позиция ниже последнего элемента
+ServerHopContainer.Position = UDim2.new(0, 10, 0, 460)
 ServerHopContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 ServerHopContainer.BackgroundTransparency = 0.5
 ServerHopContainer.Parent = ScriptsFrame
@@ -1455,27 +1370,21 @@ ServerHopLabel.TextSize = 14
 ServerHopLabel.TextXAlignment = Enum.TextXAlignment.Left
 ServerHopLabel.Parent = ServerHopContainer
 
--- Кнопка с иконкой отпечатка
 local FingerprintButton = Instance.new("ImageButton")
 FingerprintButton.Name = "FingerprintButton"
 FingerprintButton.Size = UDim2.new(0, 30, 0, 30)
 FingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
 FingerprintButton.BackgroundTransparency = 1
-FingerprintButton.Image = "rbxassetid://132055134833572" -- 
+FingerprintButton.Image = "rbxassetid://132055134833572"
 FingerprintButton.Parent = ServerHopContainer
 
--- Функция Server Hop
 local function serverHop()
     local PlaceId = game.PlaceId
     local JobId = game.JobId
     local servers = {}
-    local HttpService = game:GetService("HttpService")
-    local TeleportService = game:GetService("TeleportService")
-    
     local success, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true"))
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true"))
     end)
-    
     if success and result and result.data then
         for i, v in next, result.data do
             if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= JobId then
@@ -1483,12 +1392,9 @@ local function serverHop()
             end
         end
     end
-
     if #servers > 0 then
         TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], Players.LocalPlayer)
     else
-        -- Уведомление (если у вас есть функция notify)
-        -- notify("Server Hop", "Couldn't find a server.")
         warn("Server Hop: Couldn't find a server.")
     end
 end
@@ -1497,7 +1403,6 @@ end
 FingerprintButton.MouseEnter:Connect(function()
     TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
 end)
-
 FingerprintButton.MouseLeave:Connect(function()
     TweenService:Create(FingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
 end)
@@ -1505,11 +1410,11 @@ end)
 -- Обработчик нажатия
 FingerprintButton.MouseButton1Click:Connect(serverHop)
 
--- Server Low
+-- --------- Server Low ---------
 local ServerLowContainer = Instance.new("Frame")
 ServerLowContainer.Name = "ServerLow"
 ServerLowContainer.Size = UDim2.new(1, -20, 0, 40)
-ServerLowContainer.Position = UDim2.new(0, 10, 0, 510) -- Позиция ниже Server Hop
+ServerLowContainer.Position = UDim2.new(0, 10, 0, 510)
 ServerLowContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 ServerLowContainer.BackgroundTransparency = 0.5
 ServerLowContainer.Parent = ScriptsFrame
@@ -1530,43 +1435,38 @@ ServerLowLabel.TextSize = 14
 ServerLowLabel.TextXAlignment = Enum.TextXAlignment.Left
 ServerLowLabel.Parent = ServerLowContainer
 
--- Кнопка с иконкой (используем тот же отпечаток)
 local LowFingerprintButton = Instance.new("ImageButton")
 LowFingerprintButton.Name = "LowFingerprintButton"
 LowFingerprintButton.Size = UDim2.new(0, 30, 0, 30)
 LowFingerprintButton.Position = UDim2.new(1, -35, 0.5, -15)
 LowFingerprintButton.BackgroundTransparency = 1
-LowFingerprintButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+LowFingerprintButton.Image = "rbxassetid://132055134833572"
 LowFingerprintButton.Parent = ServerLowContainer
 
--- Функция Server Low
 local function serverLow()
     local PlaceID = game.PlaceId
     local AllIDs = {}
     local foundAnything = ""
     local actualHour = os.date("!*t").hour
-    local TeleportService = game:GetService("TeleportService")
-    
     local function TPReturner()
         local Site
         if foundAnything == "" then
-            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100'))
+            Site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"))
         else
-            Site = game:GetService('HttpService'):JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..PlaceID..'/servers/Public?sortOrder=Asc&limit=100&cursor='..foundAnything))
+            Site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100&cursor="..foundAnything))
         end
-        
+
         local ID = ""
         if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
             foundAnything = Site.nextPageCursor
         end
-        
+
         local num = 0
-        for i,v in pairs(Site.data) do
+        for i, v in pairs(Site.data) do
             local Possible = true
             ID = tostring(v.id)
-            
             if tonumber(v.maxPlayers) > tonumber(v.playing) then
-                for _,Existing in pairs(AllIDs) do
+                for _, Existing in pairs(AllIDs) do
                     if num ~= 0 then
                         if ID == tostring(Existing) then
                             Possible = false
@@ -1579,23 +1479,19 @@ local function serverLow()
                     end
                     num = num + 1
                 end
-                
                 if Possible then
                     table.insert(AllIDs, ID)
                     task.wait()
-                    
                     pcall(function()
                         task.wait()
                         TeleportService:TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
                     end)
-                    
                     task.wait(4)
                 end
             end
         end
     end
-    
-    -- Запускаем процесс поиска
+    -- Запускаем цикл поиска
     local connection
     connection = RunService.Heartbeat:Connect(function()
         pcall(function()
@@ -1605,8 +1501,6 @@ local function serverLow()
             end
         end)
     end)
-    
-    -- Отключаем через 30 секунд если не нашли
     delay(30, function()
         if connection then
             connection:Disconnect()
@@ -1618,19 +1512,18 @@ end
 LowFingerprintButton.MouseEnter:Connect(function()
     TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
 end)
-
 LowFingerprintButton.MouseLeave:Connect(function()
     TweenService:Create(LowFingerprintButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
 end)
 
--- Обработчик нажатия
+-- Обработчик
 LowFingerprintButton.MouseButton1Click:Connect(serverLow)
 
--- Rejoin
+-- --------- Rejoin ---------
 local RejoinContainer = Instance.new("Frame")
-RejoinContainer.Name = "RejoinSettings"
+RejoinContainer.Name = "Rejoin"
 RejoinContainer.Size = UDim2.new(1, -20, 0, 40)
-RejoinContainer.Position = UDim2.new(0, 10, 0, 560) -- Позиция ниже Server Low
+RejoinContainer.Position = UDim2.new(0, 10, 0, 560)
 RejoinContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 RejoinContainer.BackgroundTransparency = 0.5
 RejoinContainer.Parent = ScriptsFrame
@@ -1651,44 +1544,37 @@ RejoinLabel.TextSize = 14
 RejoinLabel.TextXAlignment = Enum.TextXAlignment.Left
 RejoinLabel.Parent = RejoinContainer
 
--- Кнопка с иконкой (используем тот же отпечаток)
 local RejoinButton = Instance.new("ImageButton")
-RejoinButton.Name = "RejoinButton"
 RejoinButton.Size = UDim2.new(0, 30, 0, 30)
 RejoinButton.Position = UDim2.new(1, -35, 0.5, -15)
 RejoinButton.BackgroundTransparency = 1
-RejoinButton.Image = "rbxassetid://132055134833572" -- Ваш ID отпечатка
+RejoinButton.Image = "rbxassetid://132055134833572"
 RejoinButton.Parent = RejoinContainer
 
--- Функция Rejoin
 local function rejoin()
     local ts = game:GetService("TeleportService")
     local p = game:GetService("Players").LocalPlayer
-    
-    -- Анимация перед реджоином
+
+    -- Анимация
     TweenService:Create(RejoinButton, TweenInfo.new(0.3), {Rotation = 360}):Play()
-    
-    -- Задержка для анимации
+
+    -- Задержка для эффекта
     task.delay(0.3, function()
         ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
     end)
 end
 
--- Анимация при наведении
 RejoinButton.MouseEnter:Connect(function()
     TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32)}):Play()
 end)
-
 RejoinButton.MouseLeave:Connect(function()
     TweenService:Create(RejoinButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30)}):Play()
 end)
-
--- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport 
+-- --------- Teleport ---------
 local TeleportContainer = Instance.new("Frame")
-TeleportContainer.Name = "TeleportSettings"
+TeleportContainer.Name = "Teleport"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
 TeleportContainer.Position = UDim2.new(0, 10, 0, 610)
 TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
@@ -1717,7 +1603,7 @@ TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
 TeleportToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
 TeleportToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 TeleportToggleButton.Text = "Select ▷"
-TeleportToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportToggleButton.TextColor3 = Color.fromRGB(220, 220, 220)
 TeleportToggleButton.Font = Enum.Font.Gotham
 TeleportToggleButton.TextSize = 12
 TeleportToggleButton.Parent = TeleportContainer
@@ -1726,62 +1612,53 @@ local TeleportButtonCorner = Instance.new("UICorner")
 TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
 TeleportButtonCorner.Parent = TeleportToggleButton
 
-local PlayersSideMenu = Instance.new("Frame")
-PlayersSideMenu.Name = "PlayersSideMenu"
-PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
-PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-PlayersSideMenu.BorderSizePixel = 0
-PlayersSideMenu.Visible = false
-PlayersSideMenu.ClipsDescendants = true
-PlayersSideMenu.Parent = ScreenGui
+local PlayersSideMenu_TP = Instance.new("Frame")
+PlayersSideMenu_TP.Name = "PlayersSideMenu_TP"
+PlayersSideMenu_TP.Size = UDim2.new(0, 150, 0, 0)
+PlayersSideMenu_TP.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
+PlayersSideMenu_TP.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+PlayersSideMenu_TP.BorderSizePixel = 0
+PlayersSideMenu_TP.Visible = false
+PlayersSideMenu_TP.ClipsDescendants = true
+PlayersSideMenu_TP.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = PlayersSideMenu
+local UIStrokeTP = Instance.new("UIStroke")
+UIStrokeTP.Color = Color3.fromRGB(80, 80, 80)
+UIStrokeTP.Thickness = 1
+UIStrokeTP.Parent = PlayersSideMenu_TP
 
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(80, 80, 80)
-UIStroke.Thickness = 1
-UIStroke.Parent = PlayersSideMenu
+local PlayersListTP = Instance.new("ScrollingFrame")
+PlayersListTP.Size = UDim2.new(1, -5, 1, -5)
+PlayersListTP.Position = UDim2.new(0, 5, 0, 5)
+PlayersListTP.BackgroundTransparency = 1
+PlayersListTP.ScrollBarThickness = 3
+PlayersListTP.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+PlayersListTP.Parent = PlayersSideMenu_TP
 
-local PlayersList = Instance.new("ScrollingFrame")
-PlayersList.Size = UDim2.new(1, -5, 1, -5)
-PlayersList.Position = UDim2.new(0, 5, 0, 5)
-PlayersList.BackgroundTransparency = 1
-PlayersList.ScrollBarThickness = 3
-PlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-PlayersList.Parent = PlayersSideMenu
+local PlayersListLayoutTP = Instance.new("UIListLayout")
+PlayersListLayoutTP.Padding = UDim.new(0, 5)
+PlayersListLayoutTP.Parent = PlayersListTP
 
-local PlayersListLayout = Instance.new("UIListLayout")
-PlayersListLayout.Padding = UDim.new(0, 5)
-PlayersListLayout.Parent = PlayersList
-
-PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
-    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
-end)
-
-local function updateMenuPosition()
-    PlayersSideMenu.Position = UDim2.new(
+local function updateTPMenuPosition()
+    PlayersSideMenu_TP.Position = UDim2.new(
         0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
         0, TeleportContainer.AbsolutePosition.Y - 135
     )
 end
 
-TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
-TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
+TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateTPMenuPosition)
+TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateTPMenuPosition)
 
 local function teleportToPlayer(player)
     if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+        local myChar = LocalPlayer.Character
+        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            myChar.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
         end
     end
 end
 
-local function createPlayerButton(player)
+local function createPlayerButtonTP(player)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -10, 0, 30)
     button.Position = UDim2.new(0, 5, 0, 0)
@@ -1791,57 +1668,61 @@ local function createPlayerButton(player)
     button.TextSize = 12
     button.Text = player.Name
     button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = PlayersList
-    
+    button.Parent = PlayersListTP
+
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 4)
     buttonCorner.Parent = button
-    
+
+    -- Перенос к выбранному игроку
     button.MouseButton1Click:Connect(function()
         teleportToPlayer(player)
-        PlayersSideMenu.Visible = false
+        PlayersSideMenu_TP.Visible = false
         TeleportToggleButton.Text = "Select ▷"
     end)
-    
+
+    -- Наведение
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
     end)
-    
+
     button.MouseLeave:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
     end)
-    
+
     return button
 end
 
-local isMenuOpen = false
+local isTPMenuOpen = false
+
 TeleportToggleButton.MouseButton1Click:Connect(function()
-    isMenuOpen = not isMenuOpen
-    
-    if isMenuOpen then
+    isTPMenuOpen = not isTPMenuOpen
+    if isTPMenuOpen then
         TeleportToggleButton.Text = "Select ◁"
-        updateMenuPosition()
-        PlayersSideMenu.Visible = true
+        updateTPMenuPosition()
+        PlayersSideMenu_TP.Visible = true
     else
         TeleportToggleButton.Text = "Select ▷"
-        PlayersSideMenu.Visible = false
+        PlayersSideMenu_TP.Visible = false
     end
 end)
 
+-- Добавляем игроков
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
-        createPlayerButton(player)
+        createPlayerButtonTP(player)
     end
 end
 
+-- Обработчики новых/ушедших игроков
 Players.PlayerAdded:Connect(function(player)
     if player ~= LocalPlayer then
-        createPlayerButton(player)
+        createPlayerButtonTP(player)
     end
 end)
 
 Players.PlayerRemoving:Connect(function(player)
-    for _, child in ipairs(PlayersList:GetChildren()) do
+    for _, child in ipairs(PlayersListTP:GetChildren()) do
         if child:IsA("TextButton") and child.Text == player.Name then
             child:Destroy()
             break
@@ -1849,356 +1730,41 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
+-- Клик вне меню чтобы закрыть
 UserInputService.InputBegan:Connect(function(input, processed)
     if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = UserInputService:GetMouseLocation()
-        local menuPos = PlayersSideMenu.AbsolutePosition
-        local menuSize = PlayersSideMenu.AbsoluteSize
+        local menuPos = PlayersSideMenu_TP.AbsolutePosition
+        local menuSize = PlayersSideMenu_TP.AbsoluteSize
         local buttonPos = TeleportToggleButton.AbsolutePosition
         local buttonSize = TeleportToggleButton.AbsoluteSize
-        
-        if isMenuOpen and 
+
+        if isTPMenuOpen and
            (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
             mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
            (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
             mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
-            isMenuOpen = false
-            PlayersSideMenu.Visible = false
+            isTPMenuOpen = false
+            PlayersSideMenu_TP.Visible = false
             TeleportToggleButton.Text = "Select ▷"
         end
     end
 end)
-            
-local GamesFrame = Instance.new("ScrollingFrame")
-GamesFrame.Size = UDim2.new(1, 0, 1, 0)
-GamesFrame.Position = UDim2.new(0, 0, 0, 0)
-GamesFrame.BackgroundTransparency = 1
-GamesFrame.ScrollBarThickness = 3
-GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-GamesFrame.Visible = false
-GamesFrame.Parent = ContentFrame
 
--- Muscle Legends
-local MuscleLegendsButton = Instance.new("TextButton")
-MuscleLegendsButton.Name = "MuscleLegendsButton"
-MuscleLegendsButton.Size = UDim2.new(1, -20, 0, 40)
-MuscleLegendsButton.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в GamesFrame
-MuscleLegendsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-MuscleLegendsButton.BackgroundTransparency = 0.5
-MuscleLegendsButton.Text = "Muscle Legends"
-MuscleLegendsButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-MuscleLegendsButton.Font = Enum.Font.GothamBold
-MuscleLegendsButton.TextSize = 14
-MuscleLegendsButton.Parent = GamesFrame
-
--- Скругление углов
-local MuscleLegendsCorner = Instance.new("UICorner")
-MuscleLegendsCorner.CornerRadius = UDim.new(0, 6)
-MuscleLegendsCorner.Parent = MuscleLegendsButton
-
--- Иконка игры (можно заменить на другую)
-local GameIcon = Instance.new("ImageLabel")
-GameIcon.Name = "GameIcon"
-GameIcon.Size = UDim2.new(0, 30, 0, 30)
-GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
-GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://94134138890928" -- Замените на нужный ID изображения
-GameIcon.Parent = MuscleLegendsButton
-
--- Анимация при наведении
-MuscleLegendsButton.MouseEnter:Connect(function()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
-end)
-
-MuscleLegendsButton.MouseLeave:Connect(function()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
-end)
-
--- Обработчик нажатия
-MuscleLegendsButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua"))()
-    
-    -- Анимация нажатия
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-end)
-
--- Создаем кнопку Legends Of Speed
-local LegendsOfSpeedButton = Instance.new("TextButton")
-LegendsOfSpeedButton.Name = "LegendsOfSpeedButton"
-LegendsOfSpeedButton.Size = UDim2.new(1, -20, 0, 40)
-LegendsOfSpeedButton.Position = UDim2.new(0, 10, 0, 60) -- Позиция под Muscle Legends (+50 по Y)
-LegendsOfSpeedButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-LegendsOfSpeedButton.BackgroundTransparency = 0.5
-LegendsOfSpeedButton.Text = "Legends Of Speed"
-LegendsOfSpeedButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-LegendsOfSpeedButton.Font = Enum.Font.GothamBold
-LegendsOfSpeedButton.TextSize = 14
-LegendsOfSpeedButton.Parent = GamesFrame
-
--- Скругление углов
-local LegendsOfSpeedCorner = Instance.new("UICorner")
-LegendsOfSpeedCorner.CornerRadius = UDim.new(0, 6)
-LegendsOfSpeedCorner.Parent = LegendsOfSpeedButton
-
--- Иконка игры (можно заменить на другую)
-local GameIcon = Instance.new("ImageLabel")
-GameIcon.Name = "GameIcon"
-GameIcon.Size = UDim2.new(0, 30, 0, 30)
-GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
-GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://120491143707914" -- Замените на нужный ID изображения
-GameIcon.Parent = LegendsOfSpeedButton
-
--- Анимация при наведении
-LegendsOfSpeedButton.MouseEnter:Connect(function()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
-end)
-
-LegendsOfSpeedButton.MouseLeave:Connect(function()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
-end)
-
--- Обработчик нажатия
-LegendsOfSpeedButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/LegendsOfSpeed.lua"))()
-    
-    -- Анимация нажатия
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-end)
-
--- WalkFling (в разделе Троллинг)
-local WalkFlingContainer = Instance.new("Frame")
-WalkFlingContainer.Name = "WalkFlingSettings"
-WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
-WalkFlingContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
-WalkFlingContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-WalkFlingContainer.BackgroundTransparency = 0.5
-WalkFlingContainer.Parent = TrollFrame
-
-local WalkFlingCorner = Instance.new("UICorner")
-WalkFlingCorner.CornerRadius = UDim.new(0, 6)
-WalkFlingCorner.Parent = WalkFlingContainer
-
-local WalkFlingLabel = Instance.new("TextLabel")
-WalkFlingLabel.Name = "Label"
-WalkFlingLabel.Size = UDim2.new(0, 120, 1, 0)
-WalkFlingLabel.Position = UDim2.new(0, 10, 0, 0)
-WalkFlingLabel.BackgroundTransparency = 1
-WalkFlingLabel.Text = "Walk Fling"
-WalkFlingLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingLabel.Font = Enum.Font.GothamBold
-WalkFlingLabel.TextSize = 14
-WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
-WalkFlingLabel.Parent = WalkFlingContainer
-
--- Контейнер для элементов управления
-local WalkFlingControlContainer = Instance.new("Frame")
-WalkFlingControlContainer.Size = UDim2.new(0, 150, 0, 25)
-WalkFlingControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
-WalkFlingControlContainer.BackgroundTransparency = 1
-WalkFlingControlContainer.Parent = WalkFlingContainer
-
--- Поле ввода для мощности
-local WalkFlingPowerInput = Instance.new("TextBox")
-WalkFlingPowerInput.Name = "PowerInput"
-WalkFlingPowerInput.Size = UDim2.new(0, 40, 1, 0)
-WalkFlingPowerInput.Position = UDim2.new(0, 0, 0, 0)
-WalkFlingPowerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-WalkFlingPowerInput.TextColor3 = Color3.new(1, 1, 1)
-WalkFlingPowerInput.Font = Enum.Font.Gotham
-WalkFlingPowerInput.TextSize = 14
-WalkFlingPowerInput.Text = "10000"
-WalkFlingPowerInput.Parent = WalkFlingControlContainer
-
--- Переключатель
-local WalkFlingToggleFrame = Instance.new("Frame")
-WalkFlingToggleFrame.Name = "ToggleFrame"
-WalkFlingToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-WalkFlingToggleFrame.Position = UDim2.new(0, 50, 0, 0)
-WalkFlingToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-WalkFlingToggleFrame.Parent = WalkFlingControlContainer
-
-local WalkFlingToggleCorner = Instance.new("UICorner")
-WalkFlingToggleCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingToggleCorner.Parent = WalkFlingToggleFrame
-
-local WalkFlingToggleButton = Instance.new("TextButton")
-WalkFlingToggleButton.Name = "ToggleButton"
-WalkFlingToggleButton.Size = UDim2.new(0, 21, 0, 21)
-WalkFlingToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-WalkFlingToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingToggleButton.Text = ""
-WalkFlingToggleButton.Parent = WalkFlingToggleFrame
-
-local WalkFlingButtonCorner = Instance.new("UICorner")
-WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingButtonCorner.Parent = WalkFlingToggleButton
-
--- Логика WalkFling (сохранена оригинальная функциональность)
-local walkFlingEnabled = false
-local walkFlingPower = 10000
-local walkFlingConnections = {}
-local noclipEnabled = false
-
-local function getRoot(character)
-    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
-end
-
-local function updateWalkFlingToggle()
-    local goal = {
-        Position = walkFlingEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
-    }
-    
-    WalkFlingToggleFrame.BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
-    local tween = TweenService:Create(WalkFlingToggleButton, TweenInfo.new(0.2), goal)
-    tween:Play()
-end
-
-local function enableNoclip()
-    noclipEnabled = true
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") and part.CanCollide then
-            part.CanCollide = false
-        end
-    end
-    
-    table.insert(walkFlingConnections, character.DescendantAdded:Connect(function(part)
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end))
-end
-
-local function disableNoclip()
-    noclipEnabled = false
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-        end
-    end
-end
-
-local function enableWalkFling()
-    walkFlingEnabled = true
-    updateWalkFlingToggle()
-    enableNoclip()
-    
-    -- Подключение для обработки смерти персонажа
-    table.insert(walkFlingConnections, LocalPlayer.CharacterAdded:Connect(function(character)
-        character:WaitForChild("Humanoid").Died:Connect(function()
-            disableWalkFling()
-        end)
-    end))
-    
-    -- Основной цикл WalkFling (сохранен оригинальный алгоритм)
-    table.insert(walkFlingConnections, RunService.Heartbeat:Connect(function()
-        if not walkFlingEnabled then return end
-        
-        local character = LocalPlayer.Character
-        local root = getRoot(character)
-        if not (character and root) then return end
-        
-        local vel = root.Velocity
-        root.Velocity = vel * walkFlingPower + Vector3.new(0, walkFlingPower, 0)
-        
-        -- Добавляем небольшой "толчок" вверх-вниз для эффекта
-        RunService.RenderStepped:Wait()
-        if character and root then
-            root.Velocity = vel
-        end
-        
-        RunService.Stepped:Wait()
-        if character and root then
-            root.Velocity = vel + Vector3.new(0, 0.1, 0)
-        end
-    end))
-end
-
-local function disableWalkFling()
-    walkFlingEnabled = false
-    updateWalkFlingToggle()
-    disableNoclip()
-    
-    for _, connection in ipairs(walkFlingConnections) do
-        connection:Disconnect()
-    end
-    walkFlingConnections = {}
-    
-    -- Возвращаем нормальную физику
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-    end
-end
-
-WalkFlingToggleButton.MouseButton1Click:Connect(function()
-    if walkFlingEnabled then
-        disableWalkFling()
-    else
-        enableWalkFling()
-    end
-end)
-
-WalkFlingPowerInput.FocusLost:Connect(function()
-    local num = tonumber(WalkFlingPowerInput.Text)
-    if num and num >= 1000 and num <= 50000 then
-        walkFlingPower = num
-    else
-        WalkFlingPowerInput.Text = tostring(walkFlingPower)
-    end
-end)
-
--- Обработчик смерти персонажа
-local function onCharacterAdded(character)
-    character:WaitForChild("Humanoid").Died:Connect(function()
-        if walkFlingEnabled then
-            disableWalkFling()
-        end
-    end)
-end
-
-LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-if LocalPlayer.Character then
-    onCharacterAdded(LocalPlayer.Character)
-end
-
--- Очистка при выходе
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == LocalPlayer then
-        disableWalkFling()
-    end
-end)
-
--- Инициализация
-updateWalkFlingToggle()
-
--- Функция переключения вкладок
+-- --------- Tab switching ---------
 local function switchTab(tab)
     ScriptsTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    
+
     ScriptsTab.TextColor3 = Color3.fromRGB(180, 180, 180)
     GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
     TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-    
+
     ScriptsFrame.Visible = false
     GamesFrame.Visible = false
     TrollFrame.Visible = false
-    
+
     if tab == "scripts" then
         ScriptsTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
         ScriptsTab.TextColor3 = Color3.fromRGB(220, 220, 220)
@@ -2209,7 +1775,7 @@ local function switchTab(tab)
         GamesTab.TextColor3 = Color3.fromRGB(220, 220, 220)
         TweenService:Create(ActiveTabIndicator, TweenInfo.new(0.2), {Position = UDim2.new(0.33, 0, 1, -2)}):Play()
         GamesFrame.Visible = true
-    else
+    else -- "troll"
         TrollTab.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
         TrollTab.TextColor3 = Color3.fromRGB(220, 220, 220)
         TweenService:Create(ActiveTabIndicator, TweenInfo.new(0.2), {Position = UDim2.new(0.66, 0, 1, -2)}):Play()
@@ -2217,12 +1783,11 @@ local function switchTab(tab)
     end
 end
 
--- Обработчики вкладок
 ScriptsTab.MouseButton1Click:Connect(function() switchTab("scripts") end)
 GamesTab.MouseButton1Click:Connect(function() switchTab("games") end)
 TrollTab.MouseButton1Click:Connect(function() switchTab("troll") end)
 
--- Функция минимизации
+-- --------- Minimize ---------
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -2239,14 +1804,14 @@ MinimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Функция закрытия
+-- --------- Close ---------
 CloseButton.MouseButton1Click:Connect(function()
     local MessageFrame = Instance.new("Frame")
     MessageFrame.Size = UDim2.new(0, 250, 0, 120)
     MessageFrame.Position = UDim2.new(0.5, -125, 0.5, -60)
     MessageFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     MessageFrame.Parent = ScreenGui
-    
+
     local MessageLabel = Instance.new("TextLabel")
     MessageLabel.Size = UDim2.new(1, -20, 0, 60)
     MessageLabel.Position = UDim2.new(0, 10, 0, 10)
@@ -2257,45 +1822,45 @@ CloseButton.MouseButton1Click:Connect(function()
     MessageLabel.TextSize = 14
     MessageLabel.TextWrapped = true
     MessageLabel.Parent = MessageFrame
-    
+
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
     YesButton.Text = "Да"
-    YesButton.TextColor3 = Color3.new(1, 1, 1)
+    YesButton.TextColor3 = Color3.fromRGB(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
     YesButton.TextSize = 14
     YesButton.Parent = MessageFrame
-    
+
     local NoButton = Instance.new("TextButton")
     NoButton.Size = UDim2.new(0, 100, 0, 30)
     NoButton.Position = UDim2.new(0.5, 5, 1, -40)
     NoButton.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
     NoButton.Text = "Нет"
-    NoButton.TextColor3 = Color3.new(1, 1, 1)
+    NoButton.TextColor3 = Color3.fromRGB(1, 1, 1)
     NoButton.Font = Enum.Font.GothamBold
     NoButton.TextSize = 14
     NoButton.Parent = MessageFrame
-    
+
     YesButton.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
         TinyImageGui:Destroy()
     end)
-    
+
     NoButton.MouseButton1Click:Connect(function()
         MessageFrame:Destroy()
     end)
 end)
 
--- Функция для кнопки с картинкой
+-- --------- Кнопка с картинкой ---------
 local hubVisible = true
 imageFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         hubVisible = not hubVisible
         ScreenGui.Enabled = hubVisible
-        
-        -- Анимация для обратной связи
+
+        -- Анимация
         if hubVisible then
             TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
         else
@@ -2304,5 +1869,5 @@ imageFrame.InputBegan:Connect(function(input)
     end
 end)
 
--- Инициализация
+-- Инициализация вкладки
 switchTab("scripts")
