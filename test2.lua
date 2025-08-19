@@ -161,15 +161,109 @@ ScriptsTab.Font = Enum.Font.GothamBold
 ScriptsTab.TextSize = 12
 ScriptsTab.Parent = TabBar
 
-local GamesTab = Instance.new("TextButton")
-GamesTab.Size = UDim2.new(0.33, 0, 1, 0)
-GamesTab.Position = UDim2.new(0.33, 0, 0, 0)
-GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-GamesTab.Text = "ИГРЫ"
-GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-GamesTab.Font = Enum.Font.GothamBold
-GamesTab.TextSize = 12
-GamesTab.Parent = TabBar
+local GamesFrame = Instance.new("ScrollingFrame")
+GamesFrame.Size = UDim2.new(1, 0, 1, 0)
+GamesFrame.Position = UDim2.new(0, 0, 0, 0)
+GamesFrame.BackgroundTransparency = 1
+GamesFrame.ScrollBarThickness = 3
+GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+GamesFrame.Visible = false
+GamesFrame.Parent = ContentFrame
+
+-- Muscle Legends
+local MuscleLegendsButton = Instance.new("TextButton")
+MuscleLegendsButton.Name = "MuscleLegendsButton"
+MuscleLegendsButton.Size = UDim2.new(1, -20, 0, 40)
+MuscleLegendsButton.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в GamesFrame
+MuscleLegendsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MuscleLegendsButton.BackgroundTransparency = 0.5
+MuscleLegendsButton.Text = "Muscle Legends"
+MuscleLegendsButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+MuscleLegendsButton.Font = Enum.Font.GothamBold
+MuscleLegendsButton.TextSize = 14
+MuscleLegendsButton.Parent = GamesFrame
+
+-- Скругление углов
+local MuscleLegendsCorner = Instance.new("UICorner")
+MuscleLegendsCorner.CornerRadius = UDim.new(0, 6)
+MuscleLegendsCorner.Parent = MuscleLegendsButton
+
+-- Иконка игры (можно заменить на другую)
+local GameIcon = Instance.new("ImageLabel")
+GameIcon.Name = "GameIcon"
+GameIcon.Size = UDim2.new(0, 30, 0, 30)
+GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
+GameIcon.BackgroundTransparency = 1
+GameIcon.Image = "rbxassetid://106205042814945" -- Замените на нужный ID изображения
+GameIcon.Parent = MuscleLegendsButton
+
+-- Анимация при наведении
+MuscleLegendsButton.MouseEnter:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
+end)
+
+MuscleLegendsButton.MouseLeave:Connect(function()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
+end)
+
+-- Обработчик нажатия
+MuscleLegendsButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua"))()
+    
+    -- Анимация нажатия
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+end)
+
+-- Создаем кнопку Legends Of Speed
+local LegendsOfSpeedButton = Instance.new("TextButton")
+LegendsOfSpeedButton.Name = "LegendsOfSpeedButton"
+LegendsOfSpeedButton.Size = UDim2.new(1, -20, 0, 40)
+LegendsOfSpeedButton.Position = UDim2.new(0, 10, 0, 60) -- Позиция под Muscle Legends (+50 по Y)
+LegendsOfSpeedButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+LegendsOfSpeedButton.BackgroundTransparency = 0.5
+LegendsOfSpeedButton.Text = "Legends Of Speed"
+LegendsOfSpeedButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+LegendsOfSpeedButton.Font = Enum.Font.GothamBold
+LegendsOfSpeedButton.TextSize = 14
+LegendsOfSpeedButton.Parent = GamesFrame
+
+-- Скругление углов
+local LegendsOfSpeedCorner = Instance.new("UICorner")
+LegendsOfSpeedCorner.CornerRadius = UDim.new(0, 6)
+LegendsOfSpeedCorner.Parent = LegendsOfSpeedButton
+
+-- Иконка игры (можно заменить на другую)
+local GameIcon = Instance.new("ImageLabel")
+GameIcon.Name = "GameIcon"
+GameIcon.Size = UDim2.new(0, 30, 0, 30)
+GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
+GameIcon.BackgroundTransparency = 1
+GameIcon.Image = "rbxassetid://76137063436801" -- Замените на нужный ID изображения
+GameIcon.Parent = LegendsOfSpeedButton
+
+-- Анимация при наведении
+LegendsOfSpeedButton.MouseEnter:Connect(function()
+    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
+end)
+
+LegendsOfSpeedButton.MouseLeave:Connect(function()
+    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
+end)
+
+-- Обработчик нажатия
+LegendsOfSpeedButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/LegendsOfSpeed.lua"))()
+    
+    -- Анимация нажатия
+    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
+end)
+
 
 local TrollTab = Instance.new("TextButton")
 TrollTab.Size = UDim2.new(0.34, 0, 1, 0)
@@ -223,101 +317,6 @@ GamesFrame.ScrollBarThickness = 3
 GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 GamesFrame.Visible = false
 GamesFrame.Parent = ContentFrame
-
--- Muscle Legends
-local MuscleLegendsButton = Instance.new("TextButton")
-MuscleLegendsButton.Name = "MuscleLegendsButton"
-MuscleLegendsButton.Size = UDim2.new(1, -20, 0, 40)
-MuscleLegendsButton.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в GamesFrame
-MuscleLegendsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-MuscleLegendsButton.BackgroundTransparency = 0.5
-MuscleLegendsButton.Text = "Muscle Legends"
-MuscleLegendsButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-MuscleLegendsButton.Font = Enum.Font.GothamBold
-MuscleLegendsButton.TextSize = 14
-MuscleLegendsButton.Parent = GamesFrame
-
--- Скругление углов
-local MuscleLegendsCorner = Instance.new("UICorner")
-MuscleLegendsCorner.CornerRadius = UDim.new(0, 6)
-MuscleLegendsCorner.Parent = MuscleLegendsButton
-
--- Иконка игры (можно заменить на другую)
-local GameIcon = Instance.new("ImageLabel")
-GameIcon.Name = "GameIcon"
-GameIcon.Size = UDim2.new(0, 30, 0, 30)
-GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
-GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
-GameIcon.Parent = MuscleLegendsButton
-
--- Анимация при наведении
-MuscleLegendsButton.MouseEnter:Connect(function()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
-end)
-
-MuscleLegendsButton.MouseLeave:Connect(function()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
-end)
-
--- Обработчик нажатия
-MuscleLegendsButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/MuscleLegends.lua"))()
-    
-    -- Анимация нажатия
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
-    TweenService:Create(MuscleLegendsButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-end)
-
--- Создаем кнопку Legends Of Speed
-local LegendsOfSpeedButton = Instance.new("TextButton")
-LegendsOfSpeedButton.Name = "LegendsOfSpeedButton"
-LegendsOfSpeedButton.Size = UDim2.new(1, -20, 0, 40)
-LegendsOfSpeedButton.Position = UDim2.new(0, 10, 0, 60) -- Позиция под Muscle Legends (+50 по Y)
-LegendsOfSpeedButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-LegendsOfSpeedButton.BackgroundTransparency = 0.5
-LegendsOfSpeedButton.Text = "Legends Of Speed"
-LegendsOfSpeedButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-LegendsOfSpeedButton.Font = Enum.Font.GothamBold
-LegendsOfSpeedButton.TextSize = 14
-LegendsOfSpeedButton.Parent = GamesFrame
-
--- Скругление углов
-local LegendsOfSpeedCorner = Instance.new("UICorner")
-LegendsOfSpeedCorner.CornerRadius = UDim.new(0, 6)
-LegendsOfSpeedCorner.Parent = LegendsOfSpeedButton
-
--- Иконка игры (можно заменить на другую)
-local GameIcon = Instance.new("ImageLabel")
-GameIcon.Name = "GameIcon"
-GameIcon.Size = UDim2.new(0, 30, 0, 30)
-GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
-GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://138413936384363" -- Замените на нужный ID изображения
-GameIcon.Parent = LegendsOfSpeedButton
-
--- Анимация при наведении
-LegendsOfSpeedButton.MouseEnter:Connect(function()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 4, 0.5, -16)}):Play()
-end)
-
-LegendsOfSpeedButton.MouseLeave:Connect(function()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-    TweenService:Create(GameIcon, TweenInfo.new(0.2), {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 5, 0.5, -15)}):Play()
-end)
-
--- Обработчик нажатия
-LegendsOfSpeedButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/LegendsOfSpeed.lua"))()
-    
-    -- Анимация нажатия
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
-    TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
-end)
-
 
 local TrollFrame = Instance.new("ScrollingFrame")
 TrollFrame.Size = UDim2.new(1, 0, 1, 0)
