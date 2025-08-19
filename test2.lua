@@ -161,6 +161,60 @@ ScriptsTab.Font = Enum.Font.GothamBold
 ScriptsTab.TextSize = 12
 ScriptsTab.Parent = TabBar
 
+local GamesTab = Instance.new("TextButton")
+GamesTab.Size = UDim2.new(0.33, 0, 1, 0)
+GamesTab.Position = UDim2.new(0.33, 0, 0, 0)
+GamesTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+GamesTab.Text = "ИГРЫ"
+GamesTab.TextColor3 = Color3.fromRGB(180, 180, 180)
+GamesTab.Font = Enum.Font.GothamBold
+GamesTab.TextSize = 12
+GamesTab.Parent = TabBar
+
+local TrollTab = Instance.new("TextButton")
+TrollTab.Size = UDim2.new(0.34, 0, 1, 0)
+TrollTab.Position = UDim2.new(0.66, 0, 0, 0)
+TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+TrollTab.Text = "ТРОЛЛИНГ"
+TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
+TrollTab.Font = Enum.Font.GothamBold
+TrollTab.TextSize = 12
+TrollTab.Parent = TabBar
+
+-- Индикатор вкладки (оранжевый)
+local ActiveTabIndicator = Instance.new("Frame")
+ActiveTabIndicator.Size = UDim2.new(0.33, 0, 0, 2)
+ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
+ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
+ActiveTabIndicator.Parent = TabBar
+
+-- Контент
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -20, 1, -70)
+ContentFrame.Position = UDim2.new(0, 10, 0, 65)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ClipsDescendants = true
+ContentFrame.Parent = MainFrame
+
+-- Фреймы для контента
+local ScriptsFrame = Instance.new("ScrollingFrame")
+ScriptsFrame.Size = UDim2.new(1, 0, 1, 0)
+ScriptsFrame.Position = UDim2.new(0, 0, 0, 0)
+ScriptsFrame.BackgroundTransparency = 1
+ScriptsFrame.ScrollBarThickness = 3
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+ScriptsFrame.Visible = true
+ScriptsFrame.Parent = ContentFrame
+
+-- Добавляем UIListLayout для автоматического расположения элементов
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Padding = UDim.new(0, 10)
+ListLayout.Parent = ScriptsFrame
+
+-- Настраиваем ScrollingFrame
+ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
+            
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -263,60 +317,6 @@ LegendsOfSpeedButton.MouseButton1Click:Connect(function()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
 end)
-
-
-local TrollTab = Instance.new("TextButton")
-TrollTab.Size = UDim2.new(0.34, 0, 1, 0)
-TrollTab.Position = UDim2.new(0.66, 0, 0, 0)
-TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-TrollTab.Text = "ТРОЛЛИНГ"
-TrollTab.TextColor3 = Color3.fromRGB(180, 180, 180)
-TrollTab.Font = Enum.Font.GothamBold
-TrollTab.TextSize = 12
-TrollTab.Parent = TabBar
-
--- Индикатор вкладки (оранжевый)
-local ActiveTabIndicator = Instance.new("Frame")
-ActiveTabIndicator.Size = UDim2.new(0.33, 0, 0, 2)
-ActiveTabIndicator.Position = UDim2.new(0, 0, 1, -2)
-ActiveTabIndicator.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
-ActiveTabIndicator.Parent = TabBar
-
--- Контент
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, -20, 1, -70)
-ContentFrame.Position = UDim2.new(0, 10, 0, 65)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.ClipsDescendants = true
-ContentFrame.Parent = MainFrame
-
--- Фреймы для контента
-local ScriptsFrame = Instance.new("ScrollingFrame")
-ScriptsFrame.Size = UDim2.new(1, 0, 1, 0)
-ScriptsFrame.Position = UDim2.new(0, 0, 0, 0)
-ScriptsFrame.BackgroundTransparency = 1
-ScriptsFrame.ScrollBarThickness = 3
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-ScriptsFrame.Visible = true
-ScriptsFrame.Parent = ContentFrame
-
--- Добавляем UIListLayout для автоматического расположения элементов
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0, 10)
-ListLayout.Parent = ScriptsFrame
-
--- Настраиваем ScrollingFrame
-ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
-            
-local GamesFrame = Instance.new("ScrollingFrame")
-GamesFrame.Size = UDim2.new(1, 0, 1, 0)
-GamesFrame.Position = UDim2.new(0, 0, 0, 0)
-GamesFrame.BackgroundTransparency = 1
-GamesFrame.ScrollBarThickness = 3
-GamesFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-GamesFrame.Visible = false
-GamesFrame.Parent = ContentFrame
 
 local TrollFrame = Instance.new("ScrollingFrame")
 TrollFrame.Size = UDim2.new(1, 0, 1, 0)
