@@ -441,7 +441,7 @@ local function enableBackRide()
             local targetRoot = getRoot(currentBackTarget.Character)
             local myRoot = getRoot(LocalPlayer.Character)
             
-            myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0.5, -0.8) * CFrame.Angles(0, math.rad(180), 0)
+            myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0.5, 0.8)
         else
             disableBackRide()
         end
