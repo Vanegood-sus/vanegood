@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService") -- ДОБАВЬ ЭТУ СТРОКУ
+local LocalPlayer = Players.LocalPlayer -- ДОБАВЬ ЭТУ СТРОКУ
 
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
