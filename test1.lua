@@ -1904,7 +1904,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://94134138890928" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://" -- Замените на нужный ID изображения
 GameIcon.Parent = MuscleLegendsButton
 
 -- Анимация при наведении
@@ -1951,7 +1951,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://120491143707914" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://" -- Замените на нужный ID изображения
 GameIcon.Parent = LegendsOfSpeedButton
 
 -- Анимация при наведении
