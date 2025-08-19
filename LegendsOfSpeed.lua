@@ -5,11 +5,6 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Удаляем старый хаб если есть
-if CoreGui:FindFirstChild("VanegoodHub") then
-    CoreGui.VanegoodHub:Destroy()
-end
-
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
