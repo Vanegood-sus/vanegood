@@ -6,11 +6,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService") 
 local LocalPlayer = Players.LocalPlayer 
 
--- Удаляем старый хаб если есть
-if CoreGui:FindFirstChild("VanegoodHub") then
-    CoreGui.VanegoodHub:Destroy()
-end
-
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
@@ -218,7 +213,7 @@ ListLayout.Parent = ScriptsFrame
 
 -- Настраиваем ScrollingFrame
 ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  
 
 -- Anti-AFK 
 local AntiAfkContainer = Instance.new("Frame")
@@ -1978,15 +1973,6 @@ LegendsOfSpeedButton.MouseButton1Click:Connect(function()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
 end)
-
-local TrollFrame = Instance.new("ScrollingFrame")
-TrollFrame.Size = UDim2.new(1, 0, 1, 0)
-TrollFrame.Position = UDim2.new(0, 0, 0, 0)
-TrollFrame.BackgroundTransparency = 1
-TrollFrame.ScrollBarThickness = 3
-TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-TrollFrame.Visible = false
-TrollFrame.Parent = ContentFrame
 
 -- WalkFling (в разделе Троллинг)
 local WalkFlingContainer = Instance.new("Frame")
