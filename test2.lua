@@ -471,7 +471,7 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
--- HeadSit 
+-- HeadSit (в разделе Троллинг)
 local HeadSitContainer = Instance.new("Frame")
 HeadSitContainer.Name = "HeadSitSettings"
 HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
