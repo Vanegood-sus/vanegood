@@ -1,8 +1,8 @@
+-- Vanegood Test Hub
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
 
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -444,253 +444,189 @@ end)
 -- Инициализация
 updateWalkFlingToggle()
 
--- Head Sit функция для твоего хаба
-local function CreateHeadSitFeature()
-    -- Переменные для Head Sit
-    local headSitConnection = nil
-    local currentHeadSitTarget = nil
-    local isHeadSitMenuOpen = false
-    
-    -- Контейнер Head Sit
-    local HeadSitContainer = Instance.new("Frame")
-    HeadSitContainer.Name = "HeadSitSettings"
-    HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
-    HeadSitContainer.Position = UDim2.new(0, 10, 0, 60)
-    HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    HeadSitContainer.BackgroundTransparency = 0.5
-    HeadSitContainer.Parent = TrollFrame
+-- HeadSit (в разделе Троллинг)
+local HeadSitContainer = Instance.new("Frame")
+HeadSitContainer.Name = "HeadSitSettings"
+HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
+HeadSitContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
+HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HeadSitContainer.BackgroundTransparency = 0.5
+HeadSitContainer.Parent = TrollFrame
 
-    local HeadSitCorner = Instance.new("UICorner")
-    HeadSitCorner.CornerRadius = UDim.new(0, 6)
-    HeadSitCorner.Parent = HeadSitContainer
+local HeadSitCorner = Instance.new("UICorner")
+HeadSitCorner.CornerRadius = UDim.new(0, 6)
+HeadSitCorner.Parent = HeadSitContainer
 
-    local HeadSitLabel = Instance.new("TextLabel")
-    HeadSitLabel.Name = "Label"
-    HeadSitLabel.Size = UDim2.new(0, 120, 1, 0)
-    HeadSitLabel.Position = UDim2.new(0, 10, 0, 0)
-    HeadSitLabel.BackgroundTransparency = 1
-    HeadSitLabel.Text = "Head Sit"
-    HeadSitLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-    HeadSitLabel.Font = Enum.Font.GothamBold
-    HeadSitLabel.TextSize = 14
-    HeadSitLabel.TextXAlignment = Enum.TextXAlignment.Left
-    HeadSitLabel.Parent = HeadSitContainer
+local HeadSitLabel = Instance.new("TextLabel")
+HeadSitLabel.Name = "Label"
+HeadSitLabel.Size = UDim2.new(0, 120, 1, 0)
+HeadSitLabel.Position = UDim2.new(0, 10, 0, 0)
+HeadSitLabel.BackgroundTransparency = 1
+HeadSitLabel.Text = "Head Sit"
+HeadSitLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitLabel.Font = Enum.Font.GothamBold
+HeadSitLabel.TextSize = 14
+HeadSitLabel.TextXAlignment = Enum.TextXAlignment.Left
+HeadSitLabel.Parent = HeadSitContainer
 
-    local HeadSitToggleButton = Instance.new("TextButton")
-    HeadSitToggleButton.Name = "HeadSitToggle"
-    HeadSitToggleButton.Size = UDim2.new(0, 120, 0, 25)
-    HeadSitToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
-    HeadSitToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    HeadSitToggleButton.Text = "Select ▷"
-    HeadSitToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-    HeadSitToggleButton.Font = Enum.Font.Gotham
-    HeadSitToggleButton.TextSize = 12
-    HeadSitToggleButton.Parent = HeadSitContainer
+-- Контейнер для элементов управления
+local HeadSitControlContainer = Instance.new("Frame")
+HeadSitControlContainer.Size = UDim2.new(0, 150, 0, 25)
+HeadSitControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+HeadSitControlContainer.BackgroundTransparency = 1
+HeadSitControlContainer.Parent = HeadSitContainer
 
-    local HeadSitButtonCorner = Instance.new("UICorner")
-    HeadSitButtonCorner.CornerRadius = UDim.new(0, 4)
-    HeadSitButtonCorner.Parent = HeadSitToggleButton
+-- Выбор игрока
+local HeadSitPlayerInput = Instance.new("TextBox")
+HeadSitPlayerInput.Name = "PlayerInput"
+HeadSitPlayerInput.Size = UDim2.new(0, 80, 1, 0)
+HeadSitPlayerInput.Position = UDim2.new(0, 0, 0, 0)
+HeadSitPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+HeadSitPlayerInput.TextColor3 = Color3.new(1, 1, 1)
+HeadSitPlayerInput.Font = Enum.Font.Gotham
+HeadSitPlayerInput.TextSize = 12
+HeadSitPlayerInput.PlaceholderText = "Имя игрока"
+HeadSitPlayerInput.Text = ""
+HeadSitPlayerInput.Parent = HeadSitControlContainer
 
-    -- Меню игроков
-    local HeadSitPlayersMenu = Instance.new("Frame")
-    HeadSitPlayersMenu.Name = "HeadSitPlayersMenu"
-    HeadSitPlayersMenu.Size = UDim2.new(0, 150, 0, 0)
-    HeadSitPlayersMenu.Position = UDim2.new(0, 0, 0, 0)
-    HeadSitPlayersMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    HeadSitPlayersMenu.BorderSizePixel = 0
-    HeadSitPlayersMenu.Visible = false
-    HeadSitPlayersMenu.ClipsDescendants = true
-    HeadSitPlayersMenu.Parent = ScreenGui
+-- Переключатель
+local HeadSitToggleFrame = Instance.new("Frame")
+HeadSitToggleFrame.Name = "ToggleFrame"
+HeadSitToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+HeadSitToggleFrame.Position = UDim2.new(0, 90, 0, 0)
+HeadSitToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+HeadSitToggleFrame.Parent = HeadSitControlContainer
 
-    local HeadSitUICorner = Instance.new("UICorner")
-    HeadSitUICorner.CornerRadius = UDim.new(0, 6)
-    HeadSitUICorner.Parent = HeadSitPlayersMenu
+local HeadSitToggleCorner = Instance.new("UICorner")
+HeadSitToggleCorner.CornerRadius = UDim.new(1, 0)
+HeadSitToggleCorner.Parent = HeadSitToggleFrame
 
-    local HeadSitUIStroke = Instance.new("UIStroke")
-    HeadSitUIStroke.Color = Color3.fromRGB(80, 80, 80)
-    HeadSitUIStroke.Thickness = 1
-    HeadSitUIStroke.Parent = HeadSitPlayersMenu
+local HeadSitToggleButton = Instance.new("TextButton")
+HeadSitToggleButton.Name = "ToggleButton"
+HeadSitToggleButton.Size = UDim2.new(0, 21, 0, 21)
+HeadSitToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+HeadSitToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+HeadSitToggleButton.Text = ""
+HeadSitToggleButton.Parent = HeadSitToggleFrame
 
-    local HeadSitPlayersList = Instance.new("ScrollingFrame")
-    HeadSitPlayersList.Size = UDim2.new(1, -5, 1, -5)
-    HeadSitPlayersList.Position = UDim2.new(0, 5, 0, 5)
-    HeadSitPlayersList.BackgroundTransparency = 1
-    HeadSitPlayersList.ScrollBarThickness = 3
-    HeadSitPlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-    HeadSitPlayersList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    HeadSitPlayersList.Parent = HeadSitPlayersMenu
+local HeadSitButtonCorner = Instance.new("UICorner")
+HeadSitButtonCorner.CornerRadius = UDim.new(1, 0)
+HeadSitButtonCorner.Parent = HeadSitToggleButton
 
-    local HeadSitPlayersListLayout = Instance.new("UIListLayout")
-    HeadSitPlayersListLayout.Padding = UDim.new(0, 5)
-    HeadSitPlayersListLayout.Parent = HeadSitPlayersList
+-- Логика HeadSit
+local headSitEnabled = false
+local headSitConnection = nil
 
-    -- Функции
-    local function getRoot(character)
-        return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
-    end
-
-    local function updateHeadSitMenuPosition()
-        local containerPos = HeadSitContainer.AbsolutePosition
-        local containerSize = HeadSitContainer.AbsoluteSize
-        
-        HeadSitPlayersMenu.Position = UDim2.new(
-            0, containerPos.X + containerSize.X + 5,
-            0, containerPos.Y - 50
-        )
-    end
-
-    local function startHeadSit(player)
-        if headSitConnection then
-            headSitConnection:Disconnect()
-            headSitConnection = nil
-        end
-        
-        currentHeadSitTarget = player
-        local localPlayer = Players.LocalPlayer
-        
-        headSitConnection = RunService.Heartbeat:Connect(function()
-            if not localPlayer.Character or not player.Character then
-                if headSitConnection then
-                    headSitConnection:Disconnect()
-                    headSitConnection = nil
-                end
-                return
-            end
-            
-            local targetRoot = getRoot(player.Character)
-            local localRoot = getRoot(localPlayer.Character)
-            local localHumanoid = localPlayer.Character:FindFirstChildOfClass("Humanoid")
-            
-            if targetRoot and localRoot and localHumanoid then
-                localHumanoid.Sit = true
-                localRoot.CFrame = targetRoot.CFrame * CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
-            else
-                if headSitConnection then
-                    headSitConnection:Disconnect()
-                    headSitConnection = nil
-                end
-            end
-        end)
-        
-        HeadSitToggleButton.Text = player.Name .. " ◁"
-        HeadSitPlayersMenu.Visible = false
-        isHeadSitMenuOpen = false
-    end
-
-    local function stopHeadSit()
-        if headSitConnection then
-            headSitConnection:Disconnect()
-            headSitConnection = nil
-        end
-        
-        currentHeadSitTarget = nil
-        HeadSitToggleButton.Text = "Select ▷"
-        
-        local localPlayer = Players.LocalPlayer
-        if localPlayer.Character then
-            local humanoid = localPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.Sit = false
-            end
-        end
-    end
-
-    local function createHeadSitPlayerButton(player)
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(1, -10, 0, 30)
-        button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-        button.TextColor3 = Color3.fromRGB(220, 220, 220)
-        button.Font = Enum.Font.Gotham
-        button.TextSize = 12
-        button.Text = player.Name
-        button.TextXAlignment = Enum.TextXAlignment.Left
-        button.Parent = HeadSitPlayersList
-        
-        local buttonCorner = Instance.new("UICorner")
-        buttonCorner.CornerRadius = UDim.new(0, 4)
-        buttonCorner.Parent = button
-        
-        button.MouseButton1Click:Connect(function()
-            startHeadSit(player)
-        end)
-        
-        button.MouseEnter:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
-        end)
-        
-        button.MouseLeave:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
-        end)
-    end
-
-    -- Обработчики
-    HeadSitToggleButton.MouseButton1Click:Connect(function()
-        if headSitConnection then
-            stopHeadSit()
-        else
-            isHeadSitMenuOpen = not isHeadSitMenuOpen
-            
-            if isHeadSitMenuOpen then
-                HeadSitToggleButton.Text = "Select ◁"
-                updateHeadSitMenuPosition()
-                HeadSitPlayersMenu.Visible = true
-            else
-                HeadSitToggleButton.Text = "Select ▷"
-                HeadSitPlayersMenu.Visible = false
-            end
-        end
-    end)
-
-    -- Создаем кнопки игроков
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            createHeadSitPlayerButton(player)
-        end
-    end
-
-    Players.PlayerAdded:Connect(function(player)
-        if player ~= Players.LocalPlayer then
-            createHeadSitPlayerButton(player)
-        end
-    end)
-
-    Players.PlayerRemoving:Connect(function(player)
-        for _, child in ipairs(HeadSitPlayersList:GetChildren()) do
-            if child:IsA("TextButton") and child.Text == player.Name then
-                child:Destroy()
-                break
-            end
-        end
-        
-        if currentHeadSitTarget == player then
-            stopHeadSit()
-        end
-    end)
-
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if isHeadSitMenuOpen and HeadSitPlayersMenu.Visible then
-                local mousePos = UserInputService:GetMouseLocation()
-                local menuPos = HeadSitPlayersMenu.AbsolutePosition
-                local menuSize = HeadSitPlayersMenu.AbsoluteSize
-                
-                if mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
-                   mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y then
-                    isHeadSitMenuOpen = false
-                    HeadSitPlayersMenu.Visible = false
-                    HeadSitToggleButton.Text = "Select ▷"
-                end
-            end
-        end
-    end)
-
-    -- Обновление позиции
-    HeadSitContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateHeadSitMenuPosition)
-    HeadSitContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateHeadSitMenuPosition)
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
 end
 
--- Просто вызови эту функцию в своем хабе:
-CreateHeadSitFeature()
+local function updateHeadSitToggle()
+    local goal = {
+        Position = headSitEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    HeadSitToggleFrame.BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(HeadSitToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function enableHeadSit()
+    local targetName = HeadSitPlayerInput.Text
+    if targetName == "" then
+        HeadSitPlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
+    
+    local players = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if string.find(string.lower(player.Name), string.lower(targetName)) then
+            table.insert(players, player)
+        end
+    end
+    
+    if #players == 0 then
+        HeadSitPlayerInput.Text = ""
+        HeadSitPlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
+    
+    headSitEnabled = true
+    updateHeadSitToggle()
+    
+    local speaker = LocalPlayer
+    local target = players[1]
+    
+    -- Заставляем персонажа сесть
+    if speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid") then
+        speaker.Character:FindFirstChildOfClass("Humanoid").Sit = true
+    end
+    
+    -- Создаем соединение для сидения на голове
+    headSitConnection = RunService.Heartbeat:Connect(function()
+        if not headSitEnabled then return end
+        
+        if Players:FindFirstChild(target.Name) and target.Character ~= nil and 
+           getRoot(target.Character) and speaker.Character and getRoot(speaker.Character) and 
+           speaker.Character:FindFirstChildOfClass("Humanoid") and 
+           speaker.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+            
+            getRoot(speaker.Character).CFrame = getRoot(target.Character).CFrame * 
+                CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
+        else
+            disableHeadSit()
+        end
+    end)
+end
+
+local function disableHeadSit()
+    headSitEnabled = false
+    updateHeadSitToggle()
+    
+    if headSitConnection then
+        headSitConnection:Disconnect()
+        headSitConnection = nil
+    end
+    
+    -- Встаем
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
+    end
+end
+
+HeadSitToggleButton.MouseButton1Click:Connect(function()
+    if headSitEnabled then
+        disableHeadSit()
+    else
+        enableHeadSit()
+    end
+end)
+
+-- Обработчик смерти персонажа
+local function onCharacterAdded(character)
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if headSitEnabled then
+            disableHeadSit()
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+    onCharacterAdded(LocalPlayer.Character)
+end
+
+-- Очистка при выходе
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        disableHeadSit()
+    end
+end)
+
+-- Инициализация
+updateHeadSitToggle()
 
 -- Функция переключения вкладок
 local function switchTab(tab)
