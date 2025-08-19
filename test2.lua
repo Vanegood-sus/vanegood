@@ -213,7 +213,151 @@ ListLayout.Parent = ScriptsFrame
 
 -- Настраиваем ScrollingFrame
 ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  
+
+-- Teleport с поиском игроков
+local TeleportContainer = Instance.new("Frame")
+TeleportContainer.Name = "TeleportSettings"
+TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
+TeleportContainer.Position = UDim2.new(0, 10, 0, 10) 
+TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+TeleportContainer.BackgroundTransparency = 0.5
+TeleportContainer.Parent = ScriptsFrame
+
+local TeleportCorner = Instance.new("UICorner")
+TeleportCorner.CornerRadius = UDim.new(0, 6)
+TeleportCorner.Parent = TeleportContainer
+
+local TeleportLabel = Instance.new("TextLabel")
+TeleportLabel.Name = "Label"
+TeleportLabel.Size = UDim2.new(0, 120, 1, 0)
+TeleportLabel.Position = UDim2.new(0, 10, 0, 0)
+TeleportLabel.BackgroundTransparency = 1
+TeleportLabel.Text = "Teleport"
+TeleportLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportLabel.Font = Enum.Font.GothamBold
+TeleportLabel.TextSize = 14
+TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
+TeleportLabel.Parent = TeleportContainer
+
+-- Контейнер для элементов управления
+local TeleportControlContainer = Instance.new("Frame")
+TeleportControlContainer.Size = UDim2.new(0, 150, 0, 25)
+TeleportControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+TeleportControlContainer.BackgroundTransparency = 1
+TeleportControlContainer.Parent = TeleportContainer
+
+-- Поле ввода для поиска игрока
+local TeleportPlayerInput = Instance.new("TextBox")
+TeleportPlayerInput.Name = "PlayerInput"
+TeleportPlayerInput.Size = UDim2.new(0, 80, 1, 0)
+TeleportPlayerInput.Position = UDim2.new(0, 0, 0, 0)
+TeleportPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+TeleportPlayerInput.TextColor3 = Color3.new(1, 1, 1)
+TeleportPlayerInput.Font = Enum.Font.Gotham
+TeleportPlayerInput.TextSize = 12
+TeleportPlayerInput.PlaceholderText = "Имя/часть"
+TeleportPlayerInput.Text = ""
+TeleportPlayerInput.Parent = TeleportControlContainer
+
+-- Кнопка телепорта
+local TeleportButton = Instance.new("TextButton")
+TeleportButton.Name = "TeleportButton"
+TeleportButton.Size = UDim2.new(0, 60, 0, 25)
+TeleportButton.Position = UDim2.new(0, 90, 0, 0)
+TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
+TeleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportButton.Font = Enum.Font.GothamBold
+TeleportButton.TextSize = 12
+TeleportButton.Text = "TP"
+TeleportButton.Parent = TeleportControlContainer
+
+local TeleportButtonCorner = Instance.new("UICorner")
+TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
+TeleportButtonCorner.Parent = TeleportButton
+
+-- Функция для поиска игрока
+local function findPlayerForTeleport(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            if nameLower == searchLower or displayLower == searchLower then
+                return player -- Точное совпадение
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    if #matches > 0 then
+        return matches[1] -- Первый найденный
+    end
+    
+    return nil
+end
+
+-- Функция телепортации
+local function teleportToPlayer()
+    local searchText = TeleportPlayerInput.Text
+    if searchText == "" then
+        TeleportPlayerInput.PlaceholderText = "Введите имя!"
+        return
+    end
+    
+    local target = findPlayerForTeleport(searchText)
+    if not target then
+        TeleportPlayerInput.Text = ""
+        TeleportPlayerInput.PlaceholderText = "Игрок не найден!"
+        return
+    end
+    
+    -- Проверяем что у целевого игрока есть персонаж и корневая часть
+    if not target.Character or not getRoot(target.Character) then
+        TeleportPlayerInput.Text = ""
+        TeleportPlayerInput.PlaceholderText = "Нет персонажа!"
+        return
+    end
+    
+    -- Телепортируемся
+    local targetRoot = getRoot(target.Character)
+    local myRoot = getRoot(LocalPlayer.Character)
+    
+    if targetRoot and myRoot then
+        myRoot.CFrame = targetRoot.CFrame
+        TeleportPlayerInput.PlaceholderText = "Телепорт: " .. target.Name
+    else
+        TeleportPlayerInput.PlaceholderText = "Ошибка телепорта!"
+    end
+end
+
+-- Обработчик клика по кнопке
+TeleportButton.MouseButton1Click:Connect(function()
+    teleportToPlayer()
+end)
+
+-- Автотелепорт при нажатии Enter
+TeleportPlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        teleportToPlayer()
+    end
+end)
+
+-- Анимация кнопки при наведении
+TeleportButton.MouseEnter:Connect(function()
+    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 185, 70)}):Play()
+end)
+
+TeleportButton.MouseLeave:Connect(function()
+    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+end)
             
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
