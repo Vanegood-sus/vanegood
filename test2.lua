@@ -233,292 +233,79 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
--- WalkFling (в разделе Троллинг)
-local WalkFlingContainer = Instance.new("Frame")
-WalkFlingContainer.Name = "WalkFlingSettings"
-WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
-WalkFlingContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
-WalkFlingContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-WalkFlingContainer.BackgroundTransparency = 0.5
-WalkFlingContainer.Parent = TrollFrame
+-- Back Ride (сидение на спине) в разделе Троллинг
+local BackRideContainer = Instance.new("Frame")
+BackRideContainer.Name = "BackRideSettings"
+BackRideContainer.Size = UDim2.new(1, -20, 0, 40)
+BackRideContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в TrollFrame
+BackRideContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+BackRideContainer.BackgroundTransparency = 0.5
+BackRideContainer.Parent = TrollFrame
 
-local WalkFlingCorner = Instance.new("UICorner")
-WalkFlingCorner.CornerRadius = UDim.new(0, 6)
-WalkFlingCorner.Parent = WalkFlingContainer
+local BackRideCorner = Instance.new("UICorner")
+BackRideCorner.CornerRadius = UDim.new(0, 6)
+BackRideCorner.Parent = BackRideContainer
 
-local WalkFlingLabel = Instance.new("TextLabel")
-WalkFlingLabel.Name = "Label"
-WalkFlingLabel.Size = UDim2.new(0, 120, 1, 0)
-WalkFlingLabel.Position = UDim2.new(0, 10, 0, 0)
-WalkFlingLabel.BackgroundTransparency = 1
-WalkFlingLabel.Text = "Walk Fling"
-WalkFlingLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingLabel.Font = Enum.Font.GothamBold
-WalkFlingLabel.TextSize = 14
-WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
-WalkFlingLabel.Parent = WalkFlingContainer
-
--- Контейнер для элементов управления
-local WalkFlingControlContainer = Instance.new("Frame")
-WalkFlingControlContainer.Size = UDim2.new(0, 150, 0, 25)
-WalkFlingControlContainer.Position = UDim2.new(1, -110, 0.5, -12)
-WalkFlingControlContainer.BackgroundTransparency = 1
-WalkFlingControlContainer.Parent = WalkFlingContainer
-
--- Поле ввода для мощности
-local WalkFlingPowerInput = Instance.new("TextBox")
-WalkFlingPowerInput.Name = "PowerInput"
-WalkFlingPowerInput.Size = UDim2.new(0, 40, 1, 0)
-WalkFlingPowerInput.Position = UDim2.new(0, 0, 0, 0)
-WalkFlingPowerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-WalkFlingPowerInput.TextColor3 = Color3.new(1, 1, 1)
-WalkFlingPowerInput.Font = Enum.Font.Gotham
-WalkFlingPowerInput.TextSize = 14
-WalkFlingPowerInput.Text = "10000"
-WalkFlingPowerInput.Parent = WalkFlingControlContainer
-
--- Переключатель
-local WalkFlingToggleFrame = Instance.new("Frame")
-WalkFlingToggleFrame.Name = "ToggleFrame"
-WalkFlingToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-WalkFlingToggleFrame.Position = UDim2.new(0, 50, 0, 0)
-WalkFlingToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-WalkFlingToggleFrame.Parent = WalkFlingControlContainer
-
-local WalkFlingToggleCorner = Instance.new("UICorner")
-WalkFlingToggleCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingToggleCorner.Parent = WalkFlingToggleFrame
-
-local WalkFlingToggleButton = Instance.new("TextButton")
-WalkFlingToggleButton.Name = "ToggleButton"
-WalkFlingToggleButton.Size = UDim2.new(0, 21, 0, 21)
-WalkFlingToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-WalkFlingToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-WalkFlingToggleButton.Text = ""
-WalkFlingToggleButton.Parent = WalkFlingToggleFrame
-
-local WalkFlingButtonCorner = Instance.new("UICorner")
-WalkFlingButtonCorner.CornerRadius = UDim.new(1, 0)
-WalkFlingButtonCorner.Parent = WalkFlingToggleButton
-
--- Логика WalkFling (сохранена оригинальная функциональность)
-local walkFlingEnabled = false
-local walkFlingPower = 10000
-local walkFlingConnections = {}
-local noclipEnabled = false
-
-local function getRoot(character)
-    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
-end
-
-local function updateWalkFlingToggle()
-    local goal = {
-        Position = walkFlingEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
-    }
-    
-    WalkFlingToggleFrame.BackgroundColor3 = walkFlingEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
-    local tween = TweenService:Create(WalkFlingToggleButton, TweenInfo.new(0.2), goal)
-    tween:Play()
-end
-
-local function enableNoclip()
-    noclipEnabled = true
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") and part.CanCollide then
-            part.CanCollide = false
-        end
-    end
-    
-    table.insert(walkFlingConnections, character.DescendantAdded:Connect(function(part)
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end))
-end
-
-local function disableNoclip()
-    noclipEnabled = false
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-        end
-    end
-end
-
-local function enableWalkFling()
-    walkFlingEnabled = true
-    updateWalkFlingToggle()
-    enableNoclip()
-    
-    -- Подключение для обработки смерти персонажа
-    table.insert(walkFlingConnections, LocalPlayer.CharacterAdded:Connect(function(character)
-        character:WaitForChild("Humanoid").Died:Connect(function()
-            disableWalkFling()
-        end)
-    end))
-    
-    -- Основной цикл WalkFling (сохранен оригинальный алгоритм)
-    table.insert(walkFlingConnections, RunService.Heartbeat:Connect(function()
-        if not walkFlingEnabled then return end
-        
-        local character = LocalPlayer.Character
-        local root = getRoot(character)
-        if not (character and root) then return end
-        
-        local vel = root.Velocity
-        root.Velocity = vel * walkFlingPower + Vector3.new(0, walkFlingPower, 0)
-        
-        -- Добавляем небольшой "толчок" вверх-вниз для эффекта
-        RunService.RenderStepped:Wait()
-        if character and root then
-            root.Velocity = vel
-        end
-        
-        RunService.Stepped:Wait()
-        if character and root then
-            root.Velocity = vel + Vector3.new(0, 0.1, 0)
-        end
-    end))
-end
-
-local function disableWalkFling()
-    walkFlingEnabled = false
-    updateWalkFlingToggle()
-    disableNoclip()
-    
-    for _, connection in ipairs(walkFlingConnections) do
-        connection:Disconnect()
-    end
-    walkFlingConnections = {}
-    
-    -- Возвращаем нормальную физику
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-    end
-end
-
-WalkFlingToggleButton.MouseButton1Click:Connect(function()
-    if walkFlingEnabled then
-        disableWalkFling()
-    else
-        enableWalkFling()
-    end
-end)
-
-WalkFlingPowerInput.FocusLost:Connect(function()
-    local num = tonumber(WalkFlingPowerInput.Text)
-    if num and num >= 1000 and num <= 50000 then
-        walkFlingPower = num
-    else
-        WalkFlingPowerInput.Text = tostring(walkFlingPower)
-    end
-end)
-
--- Обработчик смерти персонажа
-local function onCharacterAdded(character)
-    character:WaitForChild("Humanoid").Died:Connect(function()
-        if walkFlingEnabled then
-            disableWalkFling()
-        end
-    end)
-end
-
-LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-if LocalPlayer.Character then
-    onCharacterAdded(LocalPlayer.Character)
-end
-
--- Очистка при выходе
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == LocalPlayer then
-        disableWalkFling()
-    end
-end)
-
--- Инициализация
-updateWalkFlingToggle()
-
--- HeadSit (в разделе Троллинг)
-local HeadSitContainer = Instance.new("Frame")
-HeadSitContainer.Name = "HeadSitSettings"
-HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
-HeadSitContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
-HeadSitContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-HeadSitContainer.BackgroundTransparency = 0.5
-HeadSitContainer.Parent = TrollFrame
-
-local HeadSitCorner = Instance.new("UICorner")
-HeadSitCorner.CornerRadius = UDim.new(0, 6)
-HeadSitCorner.Parent = HeadSitContainer
-
-local HeadSitLabel = Instance.new("TextLabel")
-HeadSitLabel.Name = "Label"
-HeadSitLabel.Size = UDim2.new(0, 120, 1, 0)
-HeadSitLabel.Position = UDim2.new(0, 10, 0, 0)
-HeadSitLabel.BackgroundTransparency = 1
-HeadSitLabel.Text = "Head Sit"
-HeadSitLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-HeadSitLabel.Font = Enum.Font.GothamBold
-HeadSitLabel.TextSize = 14
-HeadSitLabel.TextXAlignment = Enum.TextXAlignment.Left
-HeadSitLabel.Parent = HeadSitContainer
+local BackRideLabel = Instance.new("TextLabel")
+BackRideLabel.Name = "Label"
+BackRideLabel.Size = UDim2.new(0, 120, 1, 0)
+BackRideLabel.Position = UDim2.new(0, 10, 0, 0)
+BackRideLabel.BackgroundTransparency = 1
+BackRideLabel.Text = "Back Ride"
+BackRideLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+BackRideLabel.Font = Enum.Font.GothamBold
+BackRideLabel.TextSize = 14
+BackRideLabel.TextXAlignment = Enum.TextXAlignment.Left
+BackRideLabel.Parent = BackRideContainer
 
 -- Контейнер для элементов управления
-local HeadSitControlContainer = Instance.new("Frame")
-HeadSitControlContainer.Size = UDim2.new(0, 150, 0, 25)
-HeadSitControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
-HeadSitControlContainer.BackgroundTransparency = 1
-HeadSitControlContainer.Parent = HeadSitContainer
+local BackRideControlContainer = Instance.new("Frame")
+BackRideControlContainer.Size = UDim2.new(0, 150, 0, 25)
+BackRideControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
+BackRideControlContainer.BackgroundTransparency = 1
+BackRideControlContainer.Parent = BackRideContainer
 
 -- Выбор игрока
-local HeadSitPlayerInput = Instance.new("TextBox")
-HeadSitPlayerInput.Name = "PlayerInput"
-HeadSitPlayerInput.Size = UDim2.new(0, 80, 1, 0)
-HeadSitPlayerInput.Position = UDim2.new(0, 0, 0, 0)
-HeadSitPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-HeadSitPlayerInput.TextColor3 = Color3.new(1, 1, 1)
-HeadSitPlayerInput.Font = Enum.Font.Gotham
-HeadSitPlayerInput.TextSize = 12
-HeadSitPlayerInput.PlaceholderText = "Имя/часть"
-HeadSitPlayerInput.Text = ""
-HeadSitPlayerInput.Parent = HeadSitControlContainer
+local BackRidePlayerInput = Instance.new("TextBox")
+BackRidePlayerInput.Name = "PlayerInput"
+BackRidePlayerInput.Size = UDim2.new(0, 80, 1, 0)
+BackRidePlayerInput.Position = UDim2.new(0, 0, 0, 0)
+BackRidePlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+BackRidePlayerInput.TextColor3 = Color3.new(1, 1, 1)
+BackRidePlayerInput.Font = Enum.Font.Gotham
+BackRidePlayerInput.TextSize = 12
+BackRidePlayerInput.PlaceholderText = "Имя/часть"
+BackRidePlayerInput.Text = ""
+BackRidePlayerInput.Parent = BackRideControlContainer
 
 -- Переключатель
-local HeadSitToggleFrame = Instance.new("Frame")
-HeadSitToggleFrame.Name = "ToggleFrame"
-HeadSitToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-HeadSitToggleFrame.Position = UDim2.new(0, 90, 0, 0)
-HeadSitToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-HeadSitToggleFrame.Parent = HeadSitControlContainer
+local BackRideToggleFrame = Instance.new("Frame")
+BackRideToggleFrame.Name = "ToggleFrame"
+BackRideToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+BackRideToggleFrame.Position = UDim2.new(0, 90, 0, 0)
+BackRideToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BackRideToggleFrame.Parent = BackRideControlContainer
 
-local HeadSitToggleCorner = Instance.new("UICorner")
-HeadSitToggleCorner.CornerRadius = UDim.new(1, 0)
-HeadSitToggleCorner.Parent = HeadSitToggleFrame
+local BackRideToggleCorner = Instance.new("UICorner")
+BackRideToggleCorner.CornerRadius = UDim.new(1, 0)
+BackRideToggleCorner.Parent = BackRideToggleFrame
 
-local HeadSitToggleButton = Instance.new("TextButton")
-HeadSitToggleButton.Name = "ToggleButton"
-HeadSitToggleButton.Size = UDim2.new(0, 21, 0, 21)
-HeadSitToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-HeadSitToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-HeadSitToggleButton.Text = ""
-HeadSitToggleButton.Parent = HeadSitToggleFrame
+local BackRideToggleButton = Instance.new("TextButton")
+BackRideToggleButton.Name = "ToggleButton"
+BackRideToggleButton.Size = UDim2.new(0, 21, 0, 21)
+BackRideToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+BackRideToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+BackRideToggleButton.Text = ""
+BackRideToggleButton.Parent = BackRideToggleFrame
 
-local HeadSitButtonCorner = Instance.new("UICorner")
-HeadSitButtonCorner.CornerRadius = UDim.new(1, 0)
-HeadSitButtonCorner.Parent = HeadSitToggleButton
+local BackRideButtonCorner = Instance.new("UICorner")
+BackRideButtonCorner.CornerRadius = UDim.new(1, 0)
+BackRideButtonCorner.Parent = BackRideToggleButton
 
--- Логика HeadSit
-local headSitEnabled = false
-local headSitConnection = nil
-local currentTarget = nil
+-- Логика Back Ride
+local backRideEnabled = false
+local backRideConnection = nil
+local currentBackTarget = nil
 
 local function findBestPlayerMatch(searchText)
     if searchText == "" then return nil end
@@ -527,96 +314,92 @@ local function findBestPlayerMatch(searchText)
     local players = Players:GetPlayers()
     local matches = {}
     
-    -- Ищем точные совпадения и частичные
     for _, player in ipairs(players) do
         if player ~= LocalPlayer then
             local nameLower = string.lower(player.Name)
             local displayLower = string.lower(player.DisplayName)
             
-            -- Проверяем разные варианты совпадений
             if nameLower == searchLower or displayLower == searchLower then
-                return player -- Точное совпадение
+                return player
             elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
                 table.insert(matches, player)
             end
         end
     end
     
-    -- Возвращаем лучший результат
     if #matches > 0 then
-        return matches[1] -- Первый найденный
+        return matches[1]
     end
     
     return nil
 end
 
-local function updateHeadSitToggle()
+local function updateBackRideToggle()
     local goal = {
-        Position = headSitEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
     }
     
-    HeadSitToggleFrame.BackgroundColor3 = headSitEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
     
-    local tween = TweenService:Create(HeadSitToggleButton, TweenInfo.new(0.2), goal)
+    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
     tween:Play()
 end
 
-local function enableHeadSit()
-    local searchText = HeadSitPlayerInput.Text
+local function enableBackRide()
+    local searchText = BackRidePlayerInput.Text
     if searchText == "" then
-        HeadSitPlayerInput.PlaceholderText = "Введите имя!"
+        BackRidePlayerInput.PlaceholderText = "Введите имя!"
         return
     end
     
     local target = findBestPlayerMatch(searchText)
     if not target then
-        HeadSitPlayerInput.Text = ""
-        HeadSitPlayerInput.PlaceholderText = "Игрок не найден!"
+        BackRidePlayerInput.Text = ""
+        BackRidePlayerInput.PlaceholderText = "Игрок не найден!"
         return
     end
     
-    currentTarget = target
-    headSitEnabled = true
-    updateHeadSitToggle()
+    currentBackTarget = target
+    backRideEnabled = true
+    updateBackRideToggle()
     
-    -- Обновляем плейсхолдер с именем найденного игрока
-    HeadSitPlayerInput.PlaceholderText = "Найден: " .. target.Name
+    BackRidePlayerInput.PlaceholderText = "Найден: " .. target.Name
     
     -- Заставляем персонажа сесть
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
     end
     
-    -- Создаем соединение для сидения на голове
-    headSitConnection = RunService.Heartbeat:Connect(function()
-        if not headSitEnabled or not currentTarget then return end
+    -- Создаем соединение для сидения на спине
+    backRideConnection = RunService.Heartbeat:Connect(function()
+        if not backRideEnabled or not currentBackTarget then return end
         
-        if Players:FindFirstChild(currentTarget.Name) and currentTarget.Character ~= nil and 
-           getRoot(currentTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
+        if Players:FindFirstChild(currentBackTarget.Name) and currentBackTarget.Character ~= nil and 
+           getRoot(currentBackTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
            LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
             
-            getRoot(LocalPlayer.Character).CFrame = getRoot(currentTarget.Character).CFrame * 
-                CFrame.Angles(0, math.rad(0), 0) * CFrame.new(0, 1.6, 0.4)
+            -- Сидение на спине (ниже и сзади)
+            getRoot(LocalPlayer.Character).CFrame = getRoot(currentBackTarget.Character).CFrame * 
+                CFrame.Angles(0, math.rad(180), 0) * CFrame.new(0, 0.5, -0.8)
         else
-            disableHeadSit()
+            disableBackRide()
         end
     end)
 end
 
-local function disableHeadSit()
-    headSitEnabled = false
-    currentTarget = nil
-    updateHeadSitToggle()
+local function disableBackRide()
+    backRideEnabled = false
+    currentBackTarget = nil
+    updateBackRideToggle()
     
-    if headSitConnection then
-        headSitConnection:Disconnect()
-        headSitConnection = nil
+    if backRideConnection then
+        backRideConnection:Disconnect()
+        backRideConnection = nil
     end
     
-    -- Восстанавливаем плейсхолдер
-    HeadSitPlayerInput.PlaceholderText = "Имя/часть"
+    BackRidePlayerInput.PlaceholderText = "Имя/часть"
     
     -- Встаем
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -624,26 +407,26 @@ local function disableHeadSit()
     end
 end
 
-HeadSitToggleButton.MouseButton1Click:Connect(function()
-    if headSitEnabled then
-        disableHeadSit()
+BackRideToggleButton.MouseButton1Click:Connect(function()
+    if backRideEnabled then
+        disableBackRide()
     else
-        enableHeadSit()
+        enableBackRide()
     end
 end)
 
 -- Автопоиск при нажатии Enter
-HeadSitPlayerInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed and not headSitEnabled then
-        enableHeadSit()
+BackRidePlayerInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and not backRideEnabled then
+        enableBackRide()
     end
 end)
 
 -- Обработчик смерти персонажа
 local function onCharacterAdded(character)
     character:WaitForChild("Humanoid").Died:Connect(function()
-        if headSitEnabled then
-            disableHeadSit()
+        if backRideEnabled then
+            disableBackRide()
         end
     end)
 end
@@ -653,17 +436,17 @@ if LocalPlayer.Character then
     onCharacterAdded(LocalPlayer.Character)
 end
 
--- Очистка при выходе
+-- Очистка при выходе целевого игрока
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
-        disableHeadSit()
-    elseif player == currentTarget then
-        disableHeadSit()
+        disableBackRide()
+    elseif player == currentBackTarget then
+        disableBackRide()
     end
 end)
 
 -- Инициализация
-updateHeadSitToggle()
+updateBackRideToggle()
 
 -- Функция переключения вкладок
 local function switchTab(tab)
