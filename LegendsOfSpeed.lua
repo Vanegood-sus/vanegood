@@ -393,7 +393,7 @@ AutoGemsToggle.Parent = AutoFarmContainer
 
 local AutoGemsLabel = Instance.new("TextLabel")
 AutoGemsLabel.Size = UDim2.new(0.7, 0, 1, 0)
-AutoGemsLabel.Text = "Авто сбор кристаллов (вызывает задержки)"
+AutoGemsLabel.Text = "Авто сбор кристаллов (вызывает задержку)"
 AutoGemsLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 AutoGemsLabel.Font = Enum.Font.Gotham
 AutoGemsLabel.TextSize = 14
