@@ -302,6 +302,50 @@ local BackRideButtonCorner = Instance.new("UICorner")
 BackRideButtonCorner.CornerRadius = UDim.new(1, 0)
 BackRideButtonCorner.Parent = BackRideToggleButton
 
+-- ДОБАВЬ ЭТИ ФУНКЦИИ ПЕРЕД ЛОГИКОЙ Back Ride:
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+end
+
+local function updateBackRideToggle()
+    local goal = {
+        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+end
+
+local function findBestPlayerMatch(searchText)
+    if searchText == "" then return nil end
+    
+    local searchLower = string.lower(searchText)
+    local players = Players:GetPlayers()
+    local matches = {}
+    
+    for _, player in ipairs(players) do
+        if player ~= LocalPlayer then
+            local nameLower = string.lower(player.Name)
+            local displayLower = string.lower(player.DisplayName)
+            
+            if nameLower == searchLower or displayLower == searchLower then
+                return player
+            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
+                table.insert(matches, player)
+            end
+        end
+    end
+    
+    if #matches > 0 then
+        return matches[1]
+    end
+    
+    return nil
+end
+
 -- Логика Back Ride
 local backRideEnabled = false
 local backRideConnection = nil
@@ -346,6 +390,8 @@ local function updateBackRideToggle()
     tween:Play()
 end
 
+--еще тут изменил как ты и говорил,верно?
+
 local function enableBackRide()
     local searchText = BackRidePlayerInput.Text
     if searchText == "" then
@@ -360,6 +406,13 @@ local function enableBackRide()
         return
     end
     
+    -- Проверяем что у целевого игрока есть персонаж и корневая часть
+    if not target.Character or not getRoot(target.Character) then
+        BackRidePlayerInput.Text = ""
+        BackRidePlayerInput.PlaceholderText = "Нет персонажа!"
+        return
+    end
+    
     currentBackTarget = target
     backRideEnabled = true
     updateBackRideToggle()
@@ -369,20 +422,26 @@ local function enableBackRide()
     -- Заставляем персонажа сесть
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = true
+        
+        -- Немного ждем прежде чем начать телепортацию
+        wait(0.2)
     end
     
     -- Создаем соединение для сидения на спине
     backRideConnection = RunService.Heartbeat:Connect(function()
         if not backRideEnabled or not currentBackTarget then return end
         
-        if Players:FindFirstChild(currentBackTarget.Name) and currentBackTarget.Character ~= nil and 
-           getRoot(currentBackTarget.Character) and LocalPlayer.Character and getRoot(LocalPlayer.Character) and 
-           LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
+        -- Проверяем что оба игрока и их корневые части существуют
+        if Players:FindFirstChild(currentBackTarget.Name) and currentBackTarget.Character and 
+           getRoot(currentBackTarget.Character) and LocalPlayer.Character and 
+           getRoot(LocalPlayer.Character) and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
             
-            -- Сидение на спине (ниже и сзади)
-            getRoot(LocalPlayer.Character).CFrame = getRoot(currentBackTarget.Character).CFrame * 
-                CFrame.Angles(0, math.rad(180), 0) * CFrame.new(0, 0.5, -0.8)
+            -- Телепортируемся на спину целевого игрока
+            local targetRoot = getRoot(currentBackTarget.Character)
+            local myRoot = getRoot(LocalPlayer.Character)
+            
+            myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0.5, -0.8) * CFrame.Angles(0, math.rad(180), 0)
         else
             disableBackRide()
         end
