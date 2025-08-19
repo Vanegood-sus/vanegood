@@ -1693,11 +1693,11 @@ end)
 -- Обработчик нажатия
 RejoinButton.MouseButton1Click:Connect(rejoin)
 
--- Teleport с поиском игроков
+-- Teleport 
 local TeleportContainer = Instance.new("Frame")
 TeleportContainer.Name = "TeleportSettings"
 TeleportContainer.Size = UDim2.new(1, -20, 0, 40)
-TeleportContainer.Position = UDim2.new(0, 10, 0, 10) -- Первая позиция в ScriptsFrame
+TeleportContainer.Position = UDim2.new(0, 10, 0, 610)
 TeleportContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TeleportContainer.BackgroundTransparency = 0.5
 TeleportContainer.Parent = ScriptsFrame
@@ -1718,123 +1718,162 @@ TeleportLabel.TextSize = 14
 TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
 TeleportLabel.Parent = TeleportContainer
 
--- Контейнер для элементов управления
-local TeleportControlContainer = Instance.new("Frame")
-TeleportControlContainer.Size = UDim2.new(0, 150, 0, 25)
-TeleportControlContainer.Position = UDim2.new(1, -160, 0.5, -12)
-TeleportControlContainer.BackgroundTransparency = 1
-TeleportControlContainer.Parent = TeleportContainer
-
--- Поле ввода для поиска игрока
-local TeleportPlayerInput = Instance.new("TextBox")
-TeleportPlayerInput.Name = "PlayerInput"
-TeleportPlayerInput.Size = UDim2.new(0, 80, 1, 0)
-TeleportPlayerInput.Position = UDim2.new(0, 0, 0, 0)
-TeleportPlayerInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-TeleportPlayerInput.TextColor3 = Color3.new(1, 1, 1)
-TeleportPlayerInput.Font = Enum.Font.Gotham
-TeleportPlayerInput.TextSize = 12
-TeleportPlayerInput.PlaceholderText = "Имя/часть"
-TeleportPlayerInput.Text = ""
-TeleportPlayerInput.Parent = TeleportControlContainer
-
--- Кнопка телепорта
-local TeleportButton = Instance.new("TextButton")
-TeleportButton.Name = "TeleportButton"
-TeleportButton.Size = UDim2.new(0, 60, 0, 25)
-TeleportButton.Position = UDim2.new(0, 90, 0, 0)
-TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
-TeleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-TeleportButton.Font = Enum.Font.GothamBold
-TeleportButton.TextSize = 12
-TeleportButton.Text = "TP"
-TeleportButton.Parent = TeleportControlContainer
+local TeleportToggleButton = Instance.new("TextButton")
+TeleportToggleButton.Name = "TeleportToggle"
+TeleportToggleButton.Size = UDim2.new(0, 120, 0, 25)
+TeleportToggleButton.Position = UDim2.new(1, -130, 0.5, -12)
+TeleportToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+TeleportToggleButton.Text = "Select ▷"
+TeleportToggleButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+TeleportToggleButton.Font = Enum.Font.Gotham
+TeleportToggleButton.TextSize = 12
+TeleportToggleButton.Parent = TeleportContainer
 
 local TeleportButtonCorner = Instance.new("UICorner")
 TeleportButtonCorner.CornerRadius = UDim.new(0, 4)
-TeleportButtonCorner.Parent = TeleportButton
+TeleportButtonCorner.Parent = TeleportToggleButton
 
--- Функция для поиска игрока
-local function findPlayerForTeleport(searchText)
-    if searchText == "" then return nil end
-    
-    local searchLower = string.lower(searchText)
-    local players = Players:GetPlayers()
-    local matches = {}
-    
-    for _, player in ipairs(players) do
-        if player ~= LocalPlayer then
-            local nameLower = string.lower(player.Name)
-            local displayLower = string.lower(player.DisplayName)
-            
-            if nameLower == searchLower or displayLower == searchLower then
-                return player -- Точное совпадение
-            elseif string.find(nameLower, searchLower) or string.find(displayLower, searchLower) then
-                table.insert(matches, player)
-            end
+local PlayersSideMenu = Instance.new("Frame")
+PlayersSideMenu.Name = "PlayersSideMenu"
+PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
+PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
+PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+PlayersSideMenu.BorderSizePixel = 0
+PlayersSideMenu.Visible = false
+PlayersSideMenu.ClipsDescendants = true
+PlayersSideMenu.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = PlayersSideMenu
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1
+UIStroke.Parent = PlayersSideMenu
+
+local PlayersList = Instance.new("ScrollingFrame")
+PlayersList.Size = UDim2.new(1, -5, 1, -5)
+PlayersList.Position = UDim2.new(0, 5, 0, 5)
+PlayersList.BackgroundTransparency = 1
+PlayersList.ScrollBarThickness = 3
+PlayersList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+PlayersList.Parent = PlayersSideMenu
+
+local PlayersListLayout = Instance.new("UIListLayout")
+PlayersListLayout.Padding = UDim.new(0, 5)
+PlayersListLayout.Parent = PlayersList
+
+PlayersListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PlayersList.CanvasSize = UDim2.new(0, 0, 0, PlayersListLayout.AbsoluteContentSize.Y)
+    PlayersSideMenu.Size = UDim2.new(0, 150, 0, math.min(PlayersListLayout.AbsoluteContentSize.Y + 10, 300))
+end)
+
+local function updateMenuPosition()
+    PlayersSideMenu.Position = UDim2.new(
+        0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
+        0, TeleportContainer.AbsolutePosition.Y - 135
+    )
+end
+
+TeleportContainer:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateMenuPosition)
+TeleportContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateMenuPosition)
+
+local function teleportToPlayer(player)
+    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
         end
     end
-    
-    if #matches > 0 then
-        return matches[1] -- Первый найденный
-    end
-    
-    return nil
 end
 
--- Функция телепортации
-local function teleportToPlayer()
-    local searchText = TeleportPlayerInput.Text
-    if searchText == "" then
-        TeleportPlayerInput.PlaceholderText = "Введите имя!"
-        return
-    end
+local function createPlayerButton(player)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Position = UDim2.new(0, 5, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+    button.TextColor3 = Color3.fromRGB(220, 220, 220)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 12
+    button.Text = player.Name
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = PlayersList
     
-    local target = findPlayerForTeleport(searchText)
-    if not target then
-        TeleportPlayerInput.Text = ""
-        TeleportPlayerInput.PlaceholderText = "Игрок не найден!"
-        return
-    end
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
     
-    -- Проверяем что у целевого игрока есть персонаж и корневая часть
-    if not target.Character or not getRoot(target.Character) then
-        TeleportPlayerInput.Text = ""
-        TeleportPlayerInput.PlaceholderText = "Нет персонажа!"
-        return
-    end
+    button.MouseButton1Click:Connect(function()
+        teleportToPlayer(player)
+        PlayersSideMenu.Visible = false
+        TeleportToggleButton.Text = "Select ▷"
+    end)
     
-    -- Телепортируемся
-    local targetRoot = getRoot(target.Character)
-    local myRoot = getRoot(LocalPlayer.Character)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 95)}):Play()
+    end)
     
-    if targetRoot and myRoot then
-        myRoot.CFrame = targetRoot.CFrame
-        TeleportPlayerInput.PlaceholderText = "Телепорт: " .. target.Name
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 75)}):Play()
+    end)
+    
+    return button
+end
+
+local isMenuOpen = false
+TeleportToggleButton.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    
+    if isMenuOpen then
+        TeleportToggleButton.Text = "Select ◁"
+        updateMenuPosition()
+        PlayersSideMenu.Visible = true
     else
-        TeleportPlayerInput.PlaceholderText = "Ошибка телепорта!"
+        TeleportToggleButton.Text = "Select ▷"
+        PlayersSideMenu.Visible = false
+    end
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        createPlayerButton(player)
     end
 end
 
--- Обработчик клика по кнопке
-TeleportButton.MouseButton1Click:Connect(function()
-    teleportToPlayer()
-end)
-
--- Автотелепорт при нажатии Enter
-TeleportPlayerInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        teleportToPlayer()
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        createPlayerButton(player)
     end
 end)
 
--- Анимация кнопки при наведении
-TeleportButton.MouseEnter:Connect(function()
-    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 185, 70)}):Play()
+Players.PlayerRemoving:Connect(function(player)
+    for _, child in ipairs(PlayersList:GetChildren()) do
+        if child:IsA("TextButton") and child.Text == player.Name then
+            child:Destroy()
+            break
+        end
+    end
 end)
 
-TeleportButton.MouseLeave:Connect(function()
-    TweenService:Create(TeleportButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = UserInputService:GetMouseLocation()
+        local menuPos = PlayersSideMenu.AbsolutePosition
+        local menuSize = PlayersSideMenu.AbsoluteSize
+        local buttonPos = TeleportToggleButton.AbsolutePosition
+        local buttonSize = TeleportToggleButton.AbsoluteSize
+        
+        if isMenuOpen and 
+           (mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+            mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y) and
+           (mousePos.X < buttonPos.X or mousePos.X > buttonPos.X + buttonSize.X or
+            mousePos.Y < buttonPos.Y or mousePos.Y > buttonPos.Y + buttonSize.Y) then
+            isMenuOpen = false
+            PlayersSideMenu.Visible = false
+            TeleportToggleButton.Text = "Select ▷"
+        end
+    end
 end)
             
 local GamesFrame = Instance.new("ScrollingFrame")
@@ -2162,7 +2201,7 @@ end)
 -- Инициализация
 updateWalkFlingToggle()
 
--- HeadSit (в разделе Троллинг)
+-- HeadSit 
 local HeadSitContainer = Instance.new("Frame")
 HeadSitContainer.Name = "HeadSitSettings"
 HeadSitContainer.Size = UDim2.new(1, -20, 0, 40)
