@@ -2530,4 +2530,4 @@ imageFrame.InputBegan:Connect(function(input)
 end)
 
 -- Инициализация
-switchTab("scripts"
+switchTab("scripts")
