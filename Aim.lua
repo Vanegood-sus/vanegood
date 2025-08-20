@@ -1243,7 +1243,7 @@ SpectateButtonCorner.Parent = SpectateToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y - 180)
+PlayersSideMenu.Position = UDim2.new(0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5, 0, SpectateContainer.AbsolutePosition.Y - 110)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1279,7 +1279,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, SpectateContainer.AbsolutePosition.X + SpectateContainer.AbsoluteSize.X + 5,
-        0, SpectateContainer.AbsolutePosition.Y - 180
+        0, SpectateContainer.AbsolutePosition.Y - 110
     )
 end
 
@@ -1734,7 +1734,7 @@ TeleportButtonCorner.Parent = TeleportToggleButton
 local PlayersSideMenu = Instance.new("Frame")
 PlayersSideMenu.Name = "PlayersSideMenu"
 PlayersSideMenu.Size = UDim2.new(0, 150, 0, 0)
-PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 200)
+PlayersSideMenu.Position = UDim2.new(0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5, 0, TeleportContainer.AbsolutePosition.Y - 135)
 PlayersSideMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 PlayersSideMenu.BorderSizePixel = 0
 PlayersSideMenu.Visible = false
@@ -1770,7 +1770,7 @@ end)
 local function updateMenuPosition()
     PlayersSideMenu.Position = UDim2.new(
         0, TeleportContainer.AbsolutePosition.X + TeleportContainer.AbsoluteSize.X + 5,
-        0, TeleportContainer.AbsolutePosition.Y - 200
+        0, TeleportContainer.AbsolutePosition.Y - 135
     )
 end
 
@@ -2118,7 +2118,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://94134138890928" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
 GameIcon.Parent = MuscleLegendsButton
 
 -- Анимация при наведении
@@ -2165,7 +2165,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://120491143707914" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
 GameIcon.Parent = LegendsOfSpeedButton
 
 -- Анимация при наведении
@@ -2197,7 +2197,7 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
--- WalkFling 
+-- WalkFling (в разделе Троллинг)
 local WalkFlingContainer = Instance.new("Frame")
 WalkFlingContainer.Name = "WalkFlingSettings"
 WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
@@ -2530,4 +2530,4 @@ imageFrame.InputBegan:Connect(function(input)
 end)
 
 -- Инициализация
-switchTab("scripts")
+switchTab("scripts"
