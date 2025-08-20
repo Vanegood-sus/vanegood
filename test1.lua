@@ -1878,7 +1878,7 @@ end)
 local MusicContainer = Instance.new("Frame")
 MusicContainer.Name = "MusicPlayer"
 MusicContainer.Size = UDim2.new(1, -20, 0, 40)
-MusicContainer.Position = UDim2.new(0, 10, 0, 560)  -- Под телепортом
+MusicContainer.Position = UDim2.new(0, 10, 0, 660)  
 MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 MusicContainer.BackgroundTransparency = 0.5
 MusicContainer.Parent = ScriptsFrame
