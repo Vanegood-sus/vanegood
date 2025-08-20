@@ -1986,7 +1986,7 @@ TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 TrollFrame.Visible = false
 TrollFrame.Parent = ContentFrame
 
--- WalkFling (в разделе Троллинг)
+-- WalkFling 
 local WalkFlingContainer = Instance.new("Frame")
 WalkFlingContainer.Name = "WalkFlingSettings"
 WalkFlingContainer.Size = UDim2.new(1, -20, 0, 40)
@@ -2203,7 +2203,7 @@ updateWalkFlingToggle()
 local BackRideContainer = Instance.new("Frame")
 BackRideContainer.Name = "BackRideSettings"
 BackRideContainer.Size = UDim2.new(1, -20, 0, 40)
-BackRideContainer.Position = UDim2.new(0, 10, 0, 60) -- Первая позиция в TrollFrame (было 110, меняем на 10)
+BackRideContainer.Position = UDim2.new(0, 10, 0, 60) -- Позиция после WalkFling
 BackRideContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 BackRideContainer.BackgroundTransparency = 0.5
 BackRideContainer.Parent = TrollFrame
@@ -2268,9 +2268,21 @@ local BackRideButtonCorner = Instance.new("UICorner")
 BackRideButtonCorner.CornerRadius = UDim.new(1, 0)
 BackRideButtonCorner.Parent = BackRideToggleButton
 
--- Вспомогательные функции
+-- Функции для Back Ride
 local function getRoot(character)
     return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+end
+
+local function updateBackRideToggle()
+    local goal = {
+        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
+    
+    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
 end
 
 local function findBestPlayerMatch(searchText)
@@ -2304,36 +2316,6 @@ end
 local backRideEnabled = false
 local backRideConnection = nil
 local currentBackTarget = nil
-
-local function updateBackRideToggle()
-    local goal = {
-        Position = backRideEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
-    }
-    
-    BackRideToggleFrame.BackgroundColor3 = backRideEnabled and Color3.fromRGB(0, 60, 30) or Color3.fromRGB(50, 50, 60)
-    
-    local tween = TweenService:Create(BackRideToggleButton, TweenInfo.new(0.2), goal)
-    tween:Play()
-end
-
-local function disableBackRide()
-    backRideEnabled = false
-    currentBackTarget = nil
-    updateBackRideToggle()
-    
-    if backRideConnection then
-        backRideConnection:Disconnect()
-        backRideConnection = nil
-    end
-    
-    BackRidePlayerInput.PlaceholderText = "Имя/часть"
-    
-    -- Встаем
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
-    end
-end
 
 local function enableBackRide()
     local searchText = BackRidePlayerInput.Text
@@ -2380,16 +2362,34 @@ local function enableBackRide()
            getRoot(LocalPlayer.Character) and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and 
            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
             
-            -- Телепортируемся ЗА СПИНУ целевого игрока (исправлено: убрано CFrame.Angles и изменено смещение)
+            -- Телепортируемся на спину целевого игрока (ИЗМЕНЕНО: сзади, а не спереди)
             local targetRoot = getRoot(currentBackTarget.Character)
             local myRoot = getRoot(LocalPlayer.Character)
             
-            -- Правильное позиционирование за спиной: targetRoot.CFrame * CFrame.new(0, 0.3, -0.8)
-            myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0.3, -0.8)
+            -- Измененная формула для позиционирования сзади
+            myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0.3, -1.2) * CFrame.Angles(0, math.rad(180), 0)
         else
             disableBackRide()
         end
     end)
+end
+
+local function disableBackRide()
+    backRideEnabled = false
+    currentBackTarget = nil
+    updateBackRideToggle()
+    
+    if backRideConnection then
+        backRideConnection:Disconnect()
+        backRideConnection = nil
+    end
+    
+    BackRidePlayerInput.PlaceholderText = "Имя/часть"
+    
+    -- Встаем
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit = false
+    end
 end
 
 BackRideToggleButton.MouseButton1Click:Connect(function()
@@ -2423,7 +2423,9 @@ end
 
 -- Очистка при выходе целевого игрока
 game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == currentBackTarget then
+    if player == LocalPlayer then
+        disableBackRide()
+    elseif player == currentBackTarget then
         disableBackRide()
     end
 end)
