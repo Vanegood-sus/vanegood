@@ -1,13 +1,8 @@
--- Vanegood Hub 
+-- Vanegood Hub
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-
--- Удаляем старый хаб если есть
-if CoreGui:FindFirstChild("VanegoodHub") then
-    CoreGui.VanegoodHub:Destroy()
-end
 
 -- Создаем GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -216,7 +211,7 @@ ListLayout.Parent = ScriptsFrame
 
 -- Настраиваем ScrollingFrame
 ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  
 
 -- Anti-AFK 
 local AntiAfkContainer = Instance.new("Frame")
@@ -1874,11 +1869,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Music Player
+-- Создаем контейнер для музыки
 local MusicContainer = Instance.new("Frame")
 MusicContainer.Name = "MusicSettings"
-MusicContainer.Size = UDim2.new(1, -20, 0, 100)
-MusicContainer.Position = UDim2.new(0, 10, 0, 660)
+MusicContainer.Size = UDim2.new(1, -20, 0, 70)
+MusicContainer.Position = UDim2.new(0, 10, 0, 660) -- рядом с TeleportContainer, снизу
 MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 MusicContainer.BackgroundTransparency = 0.5
 MusicContainer.Parent = ScriptsFrame
@@ -1887,203 +1882,86 @@ local MusicCorner = Instance.new("UICorner")
 MusicCorner.CornerRadius = UDim.new(0, 6)
 MusicCorner.Parent = MusicContainer
 
+-- Метка
 local MusicLabel = Instance.new("TextLabel")
 MusicLabel.Name = "Label"
-MusicLabel.Size = UDim2.new(0, 120, 0, 20)
-MusicLabel.Position = UDim2.new(0, 10, 0, 10)
+MusicLabel.Size = UDim2.new(0, 120, 1, 0)
+MusicLabel.Position = UDim2.new(0, 10, 0, 0)
 MusicLabel.BackgroundTransparency = 1
-MusicLabel.Text = "Music Player"
+MusicLabel.Text = "Музыка (ID):"
 MusicLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 MusicLabel.Font = Enum.Font.GothamBold
 MusicLabel.TextSize = 14
 MusicLabel.TextXAlignment = Enum.TextXAlignment.Left
 MusicLabel.Parent = MusicContainer
 
--- Поле для ввода ID музыки
-local MusicIdBox = Instance.new("TextBox")
-MusicIdBox.Name = "MusicIdInput"
-MusicIdBox.Size = UDim2.new(0, 200, 0, 25)
-MusicIdBox.Position = UDim2.new(0, 10, 0, 40)
-MusicIdBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-MusicIdBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-MusicIdBox.Font = Enum.Font.Gotham
-MusicIdBox.TextSize = 12
-MusicIdBox.PlaceholderText = "Введите ID музыки..."
-MusicIdBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-MusicIdBox.Text = ""
-MusicIdBox.Parent = MusicContainer
+-- Поле ввода для ID музыки
+local MusicInput = Instance.new("TextBox")
+MusicInput.Size = UDim2.new(0, 150, 0, 25)
+MusicInput.Position = UDim2.new(0, 140, 0, 10)
+MusicInput.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+MusicInput.TextColor3 = Color3.fromRGB(220, 220, 220)
+MusicInput.Font = Enum.Font.Gotham
+MusicInput.TextSize = 14
+MusicInput.PlaceholderText = "Введи ID аудио"
+MusicInput.ClearTextOnFocus = false
+MusicInput.Parent = MusicContainer
 
-local MusicIdBoxCorner = Instance.new("UICorner")
-MusicIdBoxCorner.CornerRadius = UDim.new(0, 4)
-MusicIdBoxCorner.Parent = MusicIdBox
+-- Переключатель (ползунок)
+local ToggleFrame = Instance.new("Frame")
+ToggleFrame.Name = "ToggleFrame"
+ToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+ToggleFrame.Position = UDim2.new(1, -60, 0.5, -12)
+ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+ToggleFrame.Parent = MusicContainer
 
--- Кнопка воспроизведения
-local PlayButton = Instance.new("TextButton")
-PlayButton.Name = "PlayMusic"
-PlayButton.Size = UDim2.new(0, 80, 0, 25)
-PlayButton.Position = UDim2.new(0, 220, 0, 40)
-PlayButton.BackgroundColor3 = Color3.fromRGB(60, 180, 80)
-PlayButton.Text = "Play"
-PlayButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-PlayButton.Font = Enum.Font.GothamBold
-PlayButton.TextSize = 12
-PlayButton.Parent = MusicContainer
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+ToggleCorner.Parent = ToggleFrame
 
-local PlayButtonCorner = Instance.new("UICorner")
-PlayButtonCorner.CornerRadius = UDim.new(0, 4)
-PlayButtonCorner.Parent = PlayButton
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(0, 21, 0, 21)
+ToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+ToggleButton.Text = ""
+ToggleButton.Parent = ToggleFrame
 
--- Кнопка остановки
-local StopButton = Instance.new("TextButton")
-StopButton.Name = "StopMusic"
-StopButton.Size = UDim2.new(0, 80, 0, 25)
-StopButton.Position = UDim2.new(0, 310, 0, 40)
-StopButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-StopButton.Text = "Stop"
-StopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopButton.Font = Enum.Font.GothamBold
-StopButton.TextSize = 12
-StopButton.Parent = MusicContainer
+local ToggleButtonCorner = Instance.new("UICorner")
+ToggleButtonCorner.CornerRadius = UDim.new(1, 0)
+ToggleButtonCorner.Parent = ToggleButton
 
-local StopButtonCorner = Instance.new("UICorner")
-StopButtonCorner.CornerRadius = UDim.new(0, 4)
-StopButtonCorner.Parent = StopButton
+-- Локальный звук
+local Sound = Instance.new("Sound")
+Sound.Parent = LocalPlayer:WaitForChild("PlayerGui") -- Локально для игрока
+Sound.Looped = true
+Sound.Volume = 0.5
 
--- Ползунок громкости
-local VolumeLabel = Instance.new("TextLabel")
-VolumeLabel.Name = "VolumeLabel"
-VolumeLabel.Size = UDim2.new(0, 80, 0, 20)
-VolumeLabel.Position = UDim2.new(0, 10, 0, 75)
-VolumeLabel.BackgroundTransparency = 1
-VolumeLabel.Text = "Громкость:"
-VolumeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-VolumeLabel.Font = Enum.Font.Gotham
-VolumeLabel.TextSize = 12
-VolumeLabel.TextXAlignment = Enum.TextXAlignment.Left
-VolumeLabel.Parent = MusicContainer
+local isPlaying = false
 
-local VolumeSlider = Instance.new("Frame")
-VolumeSlider.Name = "VolumeSlider"
-VolumeSlider.Size = UDim2.new(0, 200, 0, 5)
-VolumeSlider.Position = UDim2.new(0, 95, 0, 82)
-VolumeSlider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-VolumeSlider.Parent = MusicContainer
-
-local VolumeSliderCorner = Instance.new("UICorner")
-VolumeSliderCorner.CornerRadius = UDim.new(1, 0)
-VolumeSliderCorner.Parent = VolumeSlider
-
-local VolumeFill = Instance.new("Frame")
-VolumeFill.Name = "VolumeFill"
-VolumeFill.Size = UDim2.new(0.7, 0, 1, 0) -- Начальная громкость 70%
-VolumeFill.Position = UDim2.new(0, 0, 0, 0)
-VolumeFill.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
-VolumeFill.Parent = VolumeSlider
-
-local VolumeFillCorner = Instance.new("UICorner")
-VolumeFillCorner.CornerRadius = UDim.new(1, 0)
-VolumeFillCorner.Parent = VolumeFill
-
-local VolumeHandle = Instance.new("TextButton")
-VolumeHandle.Name = "VolumeHandle"
-VolumeHandle.Size = UDim2.new(0, 15, 0, 15)
-VolumeHandle.Position = UDim2.new(0.7, -7, 0.5, -7)
-VolumeHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-VolumeHandle.Text = ""
-VolumeHandle.Parent = VolumeSlider
-
-local VolumeHandleCorner = Instance.new("UICorner")
-VolumeHandleCorner.CornerRadius = UDim.new(1, 0)
-VolumeHandleCorner.Parent = VolumeHandle
-
--- Переменные для музыки
-local currentSound = nil
-local isDraggingVolume = false
-local volume = 0.7
-
--- Функция воспроизведения музыки
-local function playMusic()
-    local musicId = MusicIdBox.Text:gsub("%D", "") -- Оставляем только цифры
-    
-    if musicId == "" then
-        return
-    end
-    
-    -- Останавливаем предыдущую музыку
-    if currentSound then
-        currentSound:Stop()
-        currentSound:Destroy()
-    end
-    
-    -- Создаем новый звук
-    currentSound = Instance.new("Sound")
-    currentSound.SoundId = "rbxassetid://" .. musicId
-    currentSound.Volume = volume
-    currentSound.Looped = true
-    currentSound.Parent = workspace
-    currentSound:Play()
-end
-
--- Функция остановки музыки
-local function stopMusic()
-    if currentSound then
-        currentSound:Stop()
-        currentSound:Destroy()
-        currentSound = nil
-    end
-end
-
--- Обработчики кнопок
-PlayButton.MouseButton1Click:Connect(playMusic)
-StopButton.MouseButton1Click:Connect(stopMusic)
-
--- Функции для ползунка громкости
-VolumeHandle.MouseButton1Down:Connect(function()
-    isDraggingVolume = true
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDraggingVolume = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if isDraggingVolume and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = UserInputService:GetMouseLocation()
-        local sliderPos = VolumeSlider.AbsolutePosition
-        local sliderSize = VolumeSlider.AbsoluteSize.X
-        
-        local relativeX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize)
-        volume = relativeX / sliderSize
-        
-        -- Обновляем визуал
-        VolumeFill.Size = UDim2.new(volume, 0, 1, 0)
-        VolumeHandle.Position = UDim2.new(volume, -7, 0.5, -7)
-        
-        -- Обновляем громкость
-        if currentSound then
-            currentSound.Volume = volume
+local function toggleMusic()
+    if isPlaying then
+        Sound:Stop()
+        isPlaying = false
+        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -10)}):Play()
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+    else
+        local audioId = MusicInput.Text
+        if audioId ~= "" and tonumber(audioId) then
+            Sound.SoundId = "rbxassetid://"..audioId
+            Sound:Play()
+            isPlaying = true
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10)}):Play()
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
+        else
+            -- Можно вывести предупреждение, что введен неправильный ID
+            print("Введен некорректный ID аудио")
         end
     end
-end)
+end
 
--- Анимации кнопок
-PlayButton.MouseEnter:Connect(function()
-    TweenService:Create(PlayButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 200, 100)}):Play()
-end)
+ToggleButton.MouseButton1Click:Connect(toggleMusic)
 
-PlayButton.MouseLeave:Connect(function()
-    TweenService:Create(PlayButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 180, 80)}):Play()
-end)
-
-StopButton.MouseEnter:Connect(function()
-    TweenService:Create(StopButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 80, 80)}):Play()
-end)
-
-StopButton.MouseLeave:Connect(function()
-    TweenService:Create(StopButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 60, 60)}):Play()
-end)
             
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -2118,7 +1996,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://94134138890928" -- Замените на нужный ID изображения
 GameIcon.Parent = MuscleLegendsButton
 
 -- Анимация при наведении
@@ -2165,7 +2043,7 @@ GameIcon.Name = "GameIcon"
 GameIcon.Size = UDim2.new(0, 30, 0, 30)
 GameIcon.Position = UDim2.new(0, 5, 0.5, -15)
 GameIcon.BackgroundTransparency = 1
-GameIcon.Image = "rbxassetid://132055134833572" -- Замените на нужный ID изображения
+GameIcon.Image = "rbxassetid://120491143707914" -- Замените на нужный ID изображения
 GameIcon.Parent = LegendsOfSpeedButton
 
 -- Анимация при наведении
@@ -2187,15 +2065,6 @@ LegendsOfSpeedButton.MouseButton1Click:Connect(function()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 165, 50)}):Play()
     TweenService:Create(LegendsOfSpeedButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play()
 end)
-
-local TrollFrame = Instance.new("ScrollingFrame")
-TrollFrame.Size = UDim2.new(1, 0, 1, 0)
-TrollFrame.Position = UDim2.new(0, 0, 0, 0)
-TrollFrame.BackgroundTransparency = 1
-TrollFrame.ScrollBarThickness = 3
-TrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-TrollFrame.Visible = false
-TrollFrame.Parent = ContentFrame
 
 -- WalkFling (в разделе Троллинг)
 local WalkFlingContainer = Instance.new("Frame")
