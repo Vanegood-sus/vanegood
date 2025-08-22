@@ -1,5 +1,6 @@
 -- Vanegood Hub 
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
