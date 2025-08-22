@@ -1869,11 +1869,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Music Player под TeleportContainer
+-- Music 
 local MusicContainer = Instance.new("Frame")
 MusicContainer.Name = "MusicPlayer"
-MusicContainer.Size = UDim2.new(1, -20, 0, 80)  -- Ширина по ширине ScriptsFrame с отступами
-MusicContainer.Position = UDim2.new(0, 10, 0, 660) -- Позиция чуть ниже TeleportContainer (610 + 40 + 10)
+MusicContainer.Size = UDim2.new(1, -20, 0, 80)
+MusicContainer.Position = UDim2.new(0, 10, 0, 660)
 MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 MusicContainer.BackgroundTransparency = 0.5
 MusicContainer.Parent = ScriptsFrame
@@ -1882,7 +1882,7 @@ local MusicCorner = Instance.new("UICorner")
 MusicCorner.CornerRadius = UDim.new(0, 6)
 MusicCorner.Parent = MusicContainer
 
--- Текст "Music"
+-- Label "Music"
 local MusicLabel = Instance.new("TextLabel")
 MusicLabel.Name = "Label"
 MusicLabel.Size = UDim2.new(0, 120, 0, 30)
@@ -1895,7 +1895,7 @@ MusicLabel.TextSize = 14
 MusicLabel.TextXAlignment = Enum.TextXAlignment.Left
 MusicLabel.Parent = MusicContainer
 
--- Переключатель музыки (toggle)
+-- Toggle switch
 local MusicToggleFrame = Instance.new("Frame")
 MusicToggleFrame.Name = "ToggleFrame"
 MusicToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -1919,7 +1919,7 @@ local MusicButtonCorner = Instance.new("UICorner")
 MusicButtonCorner.CornerRadius = UDim.new(1, 0)
 MusicButtonCorner.Parent = MusicToggleButton
 
--- Поле ввода ID музыки
+-- TextBox для ID музыки
 local MusicInputFrame = Instance.new("Frame")
 MusicInputFrame.Size = UDim2.new(1, -20, 0, 30)
 MusicInputFrame.Position = UDim2.new(0, 10, 0, 40)
@@ -1944,7 +1944,7 @@ MusicTextBox.Parent = MusicInputFrame
 -- Логика музыки
 local musicEnabled = false
 local sound = Instance.new("Sound")
-sound.Parent = game:GetService("SoundService")
+sound.Parent = SoundService
 sound.Looped = true
 sound.Volume = 0.5
 
@@ -1987,6 +1987,7 @@ MusicTextBox.FocusLost:Connect(function(enterPressed)
 end)
 
 updateMusicToggle()  -- Инициализация переключателя
+
 
             
 local GamesFrame = Instance.new("ScrollingFrame")
