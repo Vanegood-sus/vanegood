@@ -175,7 +175,7 @@ GamesTab.TextSize = 12
 GamesTab.Parent = TabBar
 
 local TrollTab = Instance.new("TextButton")
-TollTab.Size = UDim2.new(0.34, 0, 1, 0)
+TrollTab.Size = UDim2.new(0.34, 0, 1, 0)
 TrollTab.Position = UDim2.new(0.66, 0, 0, 0)
 TrollTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 TrollTab.Text = "ТРОЛЛИНГ"
@@ -216,12 +216,12 @@ ListLayout.Parent = ScriptsFrame
 
 -- Настраиваем ScrollingFrame
 ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
 
 -- Music Player (добавить в начало ScriptsFrame)
 local MusicContainer = Instance.new("Frame")
 MusicContainer.Name = "MusicPlayer"
-MusicContainer.Size = UDim2.new(1, -20, 0, 80)
+MusicContainer.Size = UDim2.new(1, -20, 0, 80)  -- Увеличиваем высоту для поля ввода
 MusicContainer.Position = UDim2.new(0, 10, 0, 10)
 MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 MusicContainer.BackgroundTransparency = 0.5
@@ -335,9 +335,8 @@ MusicTextBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
-updateMusicToggle()
+updateMusicToggle()  -- Инициализация переключателя
 
-local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
 GamesFrame.BackgroundTransparency = 1
@@ -431,7 +430,7 @@ CloseButton.MouseButton1Click:Connect(function()
     local YesButton = Instance.new("TextButton")
     YesButton.Size = UDim2.new(0, 100, 0, 30)
     YesButton.Position = UDim2.new(0.5, -105, 1, -40)
-    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50)
+    YesButton.BackgroundColor3 = Color3.fromRGB(255, 165, 50) -- Оранжевая
     YesButton.Text = "Да"
     YesButton.TextColor3 = Color3.new(1, 1, 1)
     YesButton.Font = Enum.Font.GothamBold
