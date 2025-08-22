@@ -3,25 +3,28 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
 
 -- Удаляем старый хаб если есть
 if CoreGui:FindFirstChild("VanegoodHub") then
     CoreGui.VanegoodHub:Destroy()
 end
+if CoreGui:FindFirstChild("TinyDraggableImage") then
+    CoreGui.TinyDraggableImage:Destroy()
+end
 
--- Создаем GUI
+-- Создаем основной ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanegoodHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Создаем кнопку с фоткой
+-- Создаем кнопку с изображением (draggable)
 local TinyImageGui = Instance.new("ScreenGui")
 TinyImageGui.Name = "TinyDraggableImage"
 TinyImageGui.Parent = CoreGui
 TinyImageGui.ResetOnSpawn = false
 
--- Размеры изображения
 local imageSize = 75
 local imageFrame = Instance.new("Frame")
 imageFrame.Name = "TinyRoundedImage"
@@ -43,7 +46,7 @@ image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
 image.Parent = imageFrame
 
--- Перетаскивание
+-- Перетаскивание кнопки
 local touchStartPos, frameStartPos
 local isDragging = false
 
@@ -52,12 +55,11 @@ imageFrame.InputBegan:Connect(function(input)
         isDragging = true
         touchStartPos = input.Position
         frameStartPos = imageFrame.Position
-    end
-end)
-
-imageFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDragging = false
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                isDragging = false
+            end
+        end)
     end
 end)
 
@@ -199,40 +201,40 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.ClipsDescendants = true
 ContentFrame.Parent = MainFrame
 
--- Фреймы для контента
+-- Скроллинг фреймы для вкладок
 local ScriptsFrame = Instance.new("ScrollingFrame")
 ScriptsFrame.Size = UDim2.new(1, 0, 1, 0)
 ScriptsFrame.Position = UDim2.new(0, 0, 0, 0)
 ScriptsFrame.BackgroundTransparency = 1
 ScriptsFrame.ScrollBarThickness = 3
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- оранжевый
 ScriptsFrame.Visible = true
+ScriptsFrame.CanvasSize = UDim2.new(0,0,2,0)
 ScriptsFrame.Parent = ContentFrame
 
--- Добавляем UIListLayout для автоматического расположения элементов
 local ListLayout = Instance.new("UIListLayout")
 ListLayout.Padding = UDim.new(0, 10)
 ListLayout.Parent = ScriptsFrame
 
--- Настраиваем ScrollingFrame
-ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
+local function updateCanvasSize()
+    ScriptsFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 20)
+end
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize)
 
--- Music Player (добавить в начало ScriptsFrame)
+-- Music Player (в начале ScriptsFrame)
 local MusicContainer = Instance.new("Frame")
 MusicContainer.Name = "MusicPlayer"
-MusicContainer.Size = UDim2.new(1, -20, 0, 80)  -- Увеличиваем высоту для поля ввода
+MusicContainer.Size = UDim2.new(1, -20, 0, 80)
 MusicContainer.Position = UDim2.new(0, 10, 0, 10)
 MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 MusicContainer.BackgroundTransparency = 0.5
 MusicContainer.Parent = ScriptsFrame
 
--- Скругление углов
 local MusicCorner = Instance.new("UICorner")
 MusicCorner.CornerRadius = UDim.new(0, 6)
 MusicCorner.Parent = MusicContainer
 
--- Текст "Music"
+-- Label "Music"
 local MusicLabel = Instance.new("TextLabel")
 MusicLabel.Name = "Label"
 MusicLabel.Size = UDim2.new(0, 120, 0, 30)
@@ -245,7 +247,7 @@ MusicLabel.TextSize = 14
 MusicLabel.TextXAlignment = Enum.TextXAlignment.Left
 MusicLabel.Parent = MusicContainer
 
--- Переключатель музыки
+-- Toggle switch
 local MusicToggleFrame = Instance.new("Frame")
 MusicToggleFrame.Name = "ToggleFrame"
 MusicToggleFrame.Size = UDim2.new(0, 50, 0, 25)
@@ -269,7 +271,7 @@ local MusicButtonCorner = Instance.new("UICorner")
 MusicButtonCorner.CornerRadius = UDim.new(1, 0)
 MusicButtonCorner.Parent = MusicToggleButton
 
--- Поле для ввода ID музыки
+-- TextBox для ID музыки
 local MusicInputFrame = Instance.new("Frame")
 MusicInputFrame.Size = UDim2.new(1, -20, 0, 30)
 MusicInputFrame.Position = UDim2.new(0, 10, 0, 40)
@@ -294,7 +296,7 @@ MusicTextBox.Parent = MusicInputFrame
 -- Логика музыки
 local musicEnabled = false
 local sound = Instance.new("Sound")
-sound.Parent = game:GetService("SoundService")
+sound.Parent = SoundService
 sound.Looped = true
 sound.Volume = 0.5
 
@@ -308,7 +310,9 @@ local function updateMusicToggle()
     tween:Play()
     
     if musicEnabled then
-        sound:Play()
+        if sound.SoundId ~= "" then
+            sound:Play()
+        end
     else
         sound:Stop()
     end
@@ -319,7 +323,6 @@ MusicToggleButton.MouseButton1Click:Connect(function()
     updateMusicToggle()
 end)
 
--- Функция установки музыки по ID
 MusicTextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local musicId = tonumber(MusicTextBox.Text)
@@ -337,6 +340,8 @@ end)
 
 updateMusicToggle()  -- Инициализация переключателя
 
+-- Создаем фреймы для вкладок Игры и Троллинг
+local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
 GamesFrame.Position = UDim2.new(0, 0, 0, 0)
 GamesFrame.BackgroundTransparency = 1
@@ -386,12 +391,11 @@ local function switchTab(tab)
     end
 end
 
--- Обработчики вкладок
 ScriptsTab.MouseButton1Click:Connect(function() switchTab("scripts") end)
 GamesTab.MouseButton1Click:Connect(function() switchTab("games") end)
 TrollTab.MouseButton1Click:Connect(function() switchTab("troll") end)
 
--- Функция минимизации
+-- Минимизация окна
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -404,11 +408,11 @@ MinimizeButton.MouseButton1Click:Connect(function()
         MainFrame.Size = UDim2.new(0, 500, 0, 350)
         ContentFrame.Visible = true
         TabBar.Visible = true
-        MinimizeButton.Text = "-"
+        MinimizeButton.Text = "—"
     end
 end)
 
--- Функция закрытия
+-- Закрытие с подтверждениями
 CloseButton.MouseButton1Click:Connect(function()
     local MessageFrame = Instance.new("Frame")
     MessageFrame.Size = UDim2.new(0, 250, 0, 120)
@@ -457,14 +461,13 @@ CloseButton.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Функция для кнопки с картинкой
+-- Логика показа/скрытия основного окна по нажатию на иконку
 local hubVisible = true
 imageFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         hubVisible = not hubVisible
         ScreenGui.Enabled = hubVisible
         
-        -- Анимация для обратной связи
         if hubVisible then
             TweenService:Create(image, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
         else
@@ -473,5 +476,5 @@ imageFrame.InputBegan:Connect(function(input)
     end
 end)
 
--- Инициализация
+-- Инициализация вкладки "СКРИПТЫ"
 switchTab("scripts")
