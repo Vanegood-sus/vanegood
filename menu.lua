@@ -1,6 +1,5 @@
 -- Vanegood Hub 
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
@@ -34,7 +33,7 @@ uiCorner.Parent = imageFrame
 
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
-image.Image = "rbxassetid://76683502612505"
+image.Image = "rbxassetid://111084287166716"
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
@@ -215,11 +214,130 @@ ListLayout.Parent = ScriptsFrame
 ScriptsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 ScriptsFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 165, 50)  -- Оранжевый цвет как в вашем стиле
 
+-- Music Player 
+local MusicContainer = Instance.new("Frame")
+MusicContainer.Name = "MusicPlayer"
+MusicContainer.Size = UDim2.new(1, -20, 0, 80)
+MusicContainer.Position = UDim2.new(0, 10, 0, 10)
+MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MusicContainer.BackgroundTransparency = 0.5
+MusicContainer.Parent = ScriptsFrame
+
+local MusicCorner = Instance.new("UICorner")
+MusicCorner.CornerRadius = UDim.new(0, 6)
+MusicCorner.Parent = MusicContainer
+
+-- Label "Music"
+local MusicLabel = Instance.new("TextLabel")
+MusicLabel.Name = "Label"
+MusicLabel.Size = UDim2.new(0, 120, 0, 30)
+MusicLabel.Position = UDim2.new(0, 10, 0, 5)
+MusicLabel.BackgroundTransparency = 1
+MusicLabel.Text = "Music"
+MusicLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+MusicLabel.Font = Enum.Font.GothamBold
+MusicLabel.TextSize = 14
+MusicLabel.TextXAlignment = Enum.TextXAlignment.Left
+MusicLabel.Parent = MusicContainer
+
+-- Toggle switch
+local MusicToggleFrame = Instance.new("Frame")
+MusicToggleFrame.Name = "ToggleFrame"
+MusicToggleFrame.Size = UDim2.new(0, 50, 0, 25)
+MusicToggleFrame.Position = UDim2.new(1, -60, 0, 10)
+MusicToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+MusicToggleFrame.Parent = MusicContainer
+
+local MusicToggleCorner = Instance.new("UICorner")
+MusicToggleCorner.CornerRadius = UDim.new(1, 0)
+MusicToggleCorner.Parent = MusicToggleFrame
+
+local MusicToggleButton = Instance.new("TextButton")
+MusicToggleButton.Name = "ToggleButton"
+MusicToggleButton.Size = UDim2.new(0, 21, 0, 21)
+MusicToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
+MusicToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+MusicToggleButton.Text = ""
+MusicToggleButton.Parent = MusicToggleFrame
+
+local MusicButtonCorner = Instance.new("UICorner")
+MusicButtonCorner.CornerRadius = UDim.new(1, 0)
+MusicButtonCorner.Parent = MusicToggleButton
+
+-- TextBox для ID музыки
+local MusicInputFrame = Instance.new("Frame")
+MusicInputFrame.Size = UDim2.new(1, -20, 0, 30)
+MusicInputFrame.Position = UDim2.new(0, 10, 0, 40)
+MusicInputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+MusicInputFrame.Parent = MusicContainer
+
+local MusicInputCorner = Instance.new("UICorner")
+MusicInputCorner.CornerRadius = UDim.new(0, 4)
+MusicInputCorner.Parent = MusicInputFrame
+
+local MusicTextBox = Instance.new("TextBox")
+MusicTextBox.Size = UDim2.new(1, -10, 1, -6)
+MusicTextBox.Position = UDim2.new(0, 5, 0, 3)
+MusicTextBox.BackgroundTransparency = 1
+MusicTextBox.Text = "Введите ID музыки"
+MusicTextBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+MusicTextBox.Font = Enum.Font.Gotham
+MusicTextBox.TextSize = 12
+MusicTextBox.PlaceholderText = "Введите ID музыки"
+MusicTextBox.Parent = MusicInputFrame
+
+-- Логика музыки
+local musicEnabled = false
+local sound = Instance.new("Sound")
+sound.Parent = SoundService
+sound.Looped = true
+sound.Volume = 0.5
+
+local function updateMusicToggle()
+    local goal = { 
+        Position = musicEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
+        BackgroundColor3 = musicEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
+    }
+    
+    local tween = TweenService:Create(MusicToggleButton, TweenInfo.new(0.2), goal)
+    tween:Play()
+    
+    if musicEnabled then
+        if sound.SoundId ~= "" then
+            sound:Play()
+        end
+    else
+        sound:Stop()
+    end
+end
+
+MusicToggleButton.MouseButton1Click:Connect(function()
+    musicEnabled = not musicEnabled
+    updateMusicToggle()
+end)
+
+MusicTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local musicId = tonumber(MusicTextBox.Text)
+        if musicId then
+            sound.SoundId = "rbxassetid://" .. musicId
+            if musicEnabled then
+                sound:Stop()
+                sound:Play()
+            end
+        else
+            MusicTextBox.Text = "Ошибка: введите число"
+        end
+    end
+end)
+
+updateMusicToggle()  -- Инициализация переключателя
+
 -- Anti-AFK 
 local AntiAfkContainer = Instance.new("Frame")
 AntiAfkContainer.Name = "AntiAfk"
 AntiAfkContainer.Size = UDim2.new(1, -20, 0, 40)  -- Ширина с отступами по 10 с каждой стороны
-AntiAfkContainer.Position = UDim2.new(0, 10, 0, 10)  -- Отступ сверху 10
+AntiAfkContainer.Position = UDim2.new(0, 10, 0, 60)  -- Отступ сверху 10
 AntiAfkContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 AntiAfkContainer.BackgroundTransparency = 0.5
 AntiAfkContainer.Parent = ScriptsFrame
@@ -313,7 +431,7 @@ local updateInterval = 0.2
 local EspContainer = Instance.new("Frame")
 EspContainer.Name = "ESPSettings"
 EspContainer.Size = UDim2.new(1, -20, 0, 40)
-EspContainer.Position = UDim2.new(0, 10, 0, 60) 
+EspContainer.Position = UDim2.new(0, 10, 0, 110) 
 EspContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 EspContainer.BackgroundTransparency = 0.5
 EspContainer.Parent = ScriptsFrame
@@ -544,7 +662,7 @@ _G.Disabled = false
 local HitBoxContainer = Instance.new("Frame")
 HitBoxContainer.Name = "HitBoxSettings"
 HitBoxContainer.Size = UDim2.new(1, -20, 0, 40)
-HitBoxContainer.Position = UDim2.new(0, 10, 0, 110) 
+HitBoxContainer.Position = UDim2.new(0, 10, 0, 160) 
 HitBoxContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 HitBoxContainer.BackgroundTransparency = 0.5
 HitBoxContainer.Parent = ScriptsFrame
@@ -692,7 +810,7 @@ updateHitBoxToggle()
 local FlyContainer = Instance.new("Frame")
 FlyContainer.Name = "FlySettings"
 FlyContainer.Size = UDim2.new(1, -20, 0, 40)
-FlyContainer.Position = UDim2.new(0, 10, 0, 160) -- Позиция ниже HitBox
+FlyContainer.Position = UDim2.new(0, 10, 0, 200) -- Позиция ниже HitBox
 FlyContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 FlyContainer.BackgroundTransparency = 0.5
 FlyContainer.Parent = ScriptsFrame
@@ -1870,127 +1988,6 @@ UserInputService.InputBegan:Connect(function(input, processed)
         end
     end
 end)
-
--- Music 
-local MusicContainer = Instance.new("Frame")
-MusicContainer.Name = "MusicPlayer"
-MusicContainer.Size = UDim2.new(1, -20, 0, 80)
-MusicContainer.Position = UDim2.new(0, 10, 0, 660)
-MusicContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-MusicContainer.BackgroundTransparency = 0.5
-MusicContainer.Parent = ScriptsFrame
-
-local MusicCorner = Instance.new("UICorner")
-MusicCorner.CornerRadius = UDim.new(0, 6)
-MusicCorner.Parent = MusicContainer
-
--- Label "Music"
-local MusicLabel = Instance.new("TextLabel")
-MusicLabel.Name = "Label"
-MusicLabel.Size = UDim2.new(0, 120, 0, 30)
-MusicLabel.Position = UDim2.new(0, 10, 0, 5)
-MusicLabel.BackgroundTransparency = 1
-MusicLabel.Text = "Music"
-MusicLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-MusicLabel.Font = Enum.Font.GothamBold
-MusicLabel.TextSize = 14
-MusicLabel.TextXAlignment = Enum.TextXAlignment.Left
-MusicLabel.Parent = MusicContainer
-
--- Toggle switch
-local MusicToggleFrame = Instance.new("Frame")
-MusicToggleFrame.Name = "ToggleFrame"
-MusicToggleFrame.Size = UDim2.new(0, 50, 0, 25)
-MusicToggleFrame.Position = UDim2.new(1, -60, 0, 10)
-MusicToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-MusicToggleFrame.Parent = MusicContainer
-
-local MusicToggleCorner = Instance.new("UICorner")
-MusicToggleCorner.CornerRadius = UDim.new(1, 0)
-MusicToggleCorner.Parent = MusicToggleFrame
-
-local MusicToggleButton = Instance.new("TextButton")
-MusicToggleButton.Name = "ToggleButton"
-MusicToggleButton.Size = UDim2.new(0, 21, 0, 21)
-MusicToggleButton.Position = UDim2.new(0, 2, 0.5, -10)
-MusicToggleButton.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-MusicToggleButton.Text = ""
-MusicToggleButton.Parent = MusicToggleFrame
-
-local MusicButtonCorner = Instance.new("UICorner")
-MusicButtonCorner.CornerRadius = UDim.new(1, 0)
-MusicButtonCorner.Parent = MusicToggleButton
-
--- TextBox для ID музыки
-local MusicInputFrame = Instance.new("Frame")
-MusicInputFrame.Size = UDim2.new(1, -20, 0, 30)
-MusicInputFrame.Position = UDim2.new(0, 10, 0, 40)
-MusicInputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-MusicInputFrame.Parent = MusicContainer
-
-local MusicInputCorner = Instance.new("UICorner")
-MusicInputCorner.CornerRadius = UDim.new(0, 4)
-MusicInputCorner.Parent = MusicInputFrame
-
-local MusicTextBox = Instance.new("TextBox")
-MusicTextBox.Size = UDim2.new(1, -10, 1, -6)
-MusicTextBox.Position = UDim2.new(0, 5, 0, 3)
-MusicTextBox.BackgroundTransparency = 1
-MusicTextBox.Text = "Введите ID музыки"
-MusicTextBox.TextColor3 = Color3.fromRGB(200, 200, 200)
-MusicTextBox.Font = Enum.Font.Gotham
-MusicTextBox.TextSize = 12
-MusicTextBox.PlaceholderText = "Введите ID музыки"
-MusicTextBox.Parent = MusicInputFrame
-
--- Логика музыки
-local musicEnabled = false
-local sound = Instance.new("Sound")
-sound.Parent = SoundService
-sound.Looped = true
-sound.Volume = 0.5
-
-local function updateMusicToggle()
-    local goal = { 
-        Position = musicEnabled and UDim2.new(1, -23, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),
-        BackgroundColor3 = musicEnabled and Color3.fromRGB(0, 230, 100) or Color3.fromRGB(220, 220, 220)
-    }
-    
-    local tween = TweenService:Create(MusicToggleButton, TweenInfo.new(0.2), goal)
-    tween:Play()
-    
-    if musicEnabled then
-        if sound.SoundId ~= "" then
-            sound:Play()
-        end
-    else
-        sound:Stop()
-    end
-end
-
-MusicToggleButton.MouseButton1Click:Connect(function()
-    musicEnabled = not musicEnabled
-    updateMusicToggle()
-end)
-
-MusicTextBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local musicId = tonumber(MusicTextBox.Text)
-        if musicId then
-            sound.SoundId = "rbxassetid://" .. musicId
-            if musicEnabled then
-                sound:Stop()
-                sound:Play()
-            end
-        else
-            MusicTextBox.Text = "Ошибка: введите число"
-        end
-    end
-end)
-
-updateMusicToggle()  -- Инициализация переключателя
-
-
             
 local GamesFrame = Instance.new("ScrollingFrame")
 GamesFrame.Size = UDim2.new(1, 0, 1, 0)
