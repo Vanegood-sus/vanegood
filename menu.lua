@@ -33,7 +33,7 @@ uiCorner.Parent = imageFrame
 
 local image = Instance.new("ImageLabel")
 image.Name = "Image"
-image.Image = "rbxassetid://111084287166716"
+image.Image = "rbxassetid://76683502612505"
 image.Size = UDim2.new(1, 0, 1, 0)
 image.BackgroundTransparency = 1
 image.BorderSizePixel = 0
