@@ -4,26 +4,28 @@ Shadow.__index = Shadow
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
 
--- Функция уведомления (Rayfield Style Notification)
+-- Уведомления (Rayfield Notify)
 function Shadow:Notify(config)
     config = config or {}
     local title = config.Title or "Shadow Hub"
-    local content = config.Content or "Приветственное сообщение!"
-    local duration = config.Duration or 5
+    local content = config.Content or "Уведомление"
+    local duration = config.Duration or 4
 
-    local parentTarget = (gethui and gethui()) or CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    local parentTarget = CoreGui:FindFirstChild("RobloxGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
     local NotifyGui = parentTarget:FindFirstChild("ShadowNotifyGui")
     
     if not NotifyGui then
         NotifyGui = Instance.new("ScreenGui")
         NotifyGui.Name = "ShadowNotifyGui"
+        NotifyGui.ResetOnSpawn = false
         NotifyGui.Parent = parentTarget
         
         local Holder = Instance.new("Frame")
         Holder.Name = "Holder"
-        Holder.Size = UDim2.new(0, 300, 1, -20)
-        Holder.Position = UDim2.new(1, -310, 0, 10)
+        Holder.Size = UDim2.new(0, 280, 1, -20)
+        Holder.Position = UDim2.new(1, -290, 0, 10)
         Holder.BackgroundTransparency = 1
         Holder.Parent = NotifyGui
 
@@ -33,14 +35,12 @@ function Shadow:Notify(config)
         Layout.Parent = Holder
     end
 
-    local Holder = NotifyGui.Holder
-
     local Card = Instance.new("Frame")
-    Card.Size = UDim2.new(1, 0, 0, 65)
-    Card.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+    Card.Size = UDim2.new(1, 0, 0, 60)
+    Card.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     Card.BorderSizePixel = 0
     Card.BackgroundTransparency = 1
-    Card.Parent = Holder
+    Card.Parent = NotifyGui.Holder
 
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 8)
@@ -53,11 +53,11 @@ function Shadow:Notify(config)
     Stroke.Parent = Card
 
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -20, 0, 25)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 6)
+    TitleLabel.Size = UDim2.new(1, -20, 0, 22)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
     TitleLabel.Text = title
     TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 14
+    TitleLabel.TextSize = 13
     TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.BackgroundTransparency = 1
@@ -65,11 +65,11 @@ function Shadow:Notify(config)
     TitleLabel.Parent = Card
 
     local ContentLabel = Instance.new("TextLabel")
-    ContentLabel.Size = UDim2.new(1, -24, 0, 30)
-    ContentLabel.Position = UDim2.new(0, 12, 0, 28)
+    ContentLabel.Size = UDim2.new(1, -20, 0, 28)
+    ContentLabel.Position = UDim2.new(0, 10, 0, 25)
     ContentLabel.Text = content
     ContentLabel.Font = Enum.Font.Gotham
-    ContentLabel.TextSize = 12
+    ContentLabel.TextSize = 11
     ContentLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
     ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
     ContentLabel.TextWrapped = true
@@ -77,21 +77,18 @@ function Shadow:Notify(config)
     ContentLabel.TextTransparency = 1
     ContentLabel.Parent = Card
 
-    -- Анимация появления
     TweenService:Create(Card, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
     TweenService:Create(Stroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
     TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
     TweenService:Create(ContentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
     task.delay(duration, function()
-        local tween = TweenService:Create(Card, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+        local tw = TweenService:Create(Card, TweenInfo.new(0.3), {BackgroundTransparency = 1})
         TweenService:Create(Stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
         TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
         TweenService:Create(ContentLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        tween:Play()
-        tween.Completed:Connect(function()
-            Card:Destroy()
-        end)
+        tw:Play()
+        tw.Completed:Connect(function() Card:Destroy() end)
     end)
 end
 
@@ -101,21 +98,21 @@ function Shadow:CreateWindow(config)
     local hubTitle = config.Name or "SHADOW HUB"
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
 
-    local parentTarget = (gethui and gethui()) or CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    local parentTarget = CoreGui:FindFirstChild("RobloxGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
     
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "ShadowUI"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = parentTarget
 
-    -- Главный контейнер (Исправлено округление - ClipsDescendants)
+    -- Главный Frame
     local Main = Instance.new("Frame")
     Main.Name = "MainFrame"
-    Main.Size = UDim2.new(0, 620, 0, 400)
-    Main.Position = UDim2.new(0.5, -310, 0.5, -200)
+    Main.Size = UDim2.new(0, 600, 0, 380)
+    Main.Position = UDim2.new(0.5, -300, 0.5, -190)
     Main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
     Main.BorderSizePixel = 0
-    Main.ClipsDescendants = true -- Убирает торчащие углы
+    Main.ClipsDescendants = true
     Main.Parent = ScreenGui
 
     local MainCorner = Instance.new("UICorner")
@@ -125,35 +122,34 @@ function Shadow:CreateWindow(config)
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(40, 40, 50)
     MainStroke.Thickness = 1
-    MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     MainStroke.Parent = Main
 
-    -- Верхняя панель (TopBar)
+    -- Шапка
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
-    TopBar.Size = UDim2.new(1, 0, 0, 40)
+    TopBar.Size = UDim2.new(1, 0, 0, 38)
     TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
     TopBar.BorderSizePixel = 0
     TopBar.Parent = Main
 
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -100, 1, 0)
-    TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+    TitleLabel.Size = UDim2.new(1, -80, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 12, 0, 0)
     TitleLabel.Text = hubTitle
     TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 14
+    TitleLabel.TextSize = 13
     TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Parent = TopBar
 
-    -- Кнопки "Свернуть" и "Закрыть"
+    -- Кнопка закрыть X
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+    CloseBtn.Position = UDim2.new(1, -34, 0, 4)
     CloseBtn.Text = "×"
     CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 20
+    CloseBtn.TextSize = 18
     CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 190)
     CloseBtn.BackgroundTransparency = 1
     CloseBtn.Parent = TopBar
@@ -162,68 +158,55 @@ function Shadow:CreateWindow(config)
         ScreenGui:Destroy()
     end)
 
+    -- Кнопка свернуть -
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-    MinimizeBtn.Position = UDim2.new(1, -65, 0, 5)
+    MinimizeBtn.Position = UDim2.new(1, -60, 0, 4)
     MinimizeBtn.Text = "─"
     MinimizeBtn.Font = Enum.Font.GothamBold
-    MinimizeBtn.TextSize = 14
+    MinimizeBtn.TextSize = 12
     MinimizeBtn.TextColor3 = Color3.fromRGB(180, 180, 190)
     MinimizeBtn.BackgroundTransparency = 1
     MinimizeBtn.Parent = TopBar
 
-    local isMinimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
-        isMinimized = not isMinimized
-        Main.Visible = not isMinimized
+        Main.Visible = not Main.Visible
     end)
 
-    -- Сворачивание/Открытие по клавише
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == toggleKey then
+    -- Назначенная клавиша открытия/закрытия
+    UserInputService.InputBegan:Connect(function(input, gpe)
+        if not gpe and input.KeyCode == toggleKey then
             Main.Visible = not Main.Visible
         end
     end)
 
-    -- Исправленная плавная система перетаскивания (Drag)
-    local dragging, dragInput, dragStart, startPos
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-
+    -- Перетаскивание
+    local dragging, dragStart, startPos
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = Main.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
         end
     end)
 
-    TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
+    TopBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
 
-    -- Сайдбар слева (Fluent Style)
+    -- Сайдбар Fluent
     local Sidebar = Instance.new("Frame")
-    Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 150, 1, -40)
-    Sidebar.Position = UDim2.new(0, 0, 0, 40)
+    Sidebar.Size = UDim2.new(0, 140, 1, -38)
+    Sidebar.Position = UDim2.new(0, 0, 0, 38)
     Sidebar.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = Main
@@ -235,55 +218,48 @@ function Shadow:CreateWindow(config)
     TabHolder.ScrollBarThickness = 0
     TabHolder.Parent = Sidebar
 
-    local TabListLayout = Instance.new("UIListLayout")
-    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.Padding = UDim.new(0, 4)
-    TabListLayout.Parent = TabHolder
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.Padding = UDim.new(0, 4)
+    TabLayout.Parent = TabHolder
 
-    -- Контейнер контента
     local ContentContainer = Instance.new("Frame")
-    ContentContainer.Name = "ContentContainer"
-    ContentContainer.Size = UDim2.new(1, -160, 1, -50)
-    ContentContainer.Position = UDim2.new(0, 155, 0, 45)
+    ContentContainer.Size = UDim2.new(1, -150, 1, -48)
+    ContentContainer.Position = UDim2.new(0, 145, 0, 43)
     ContentContainer.BackgroundTransparency = 1
     ContentContainer.Parent = Main
 
-    -- Приветствие при старте
+    -- Приветствие
     Shadow:Notify({
         Title = hubTitle,
-        Content = "Скрипт успешно загружен! Нажмите [" .. toggleKey.Name .. "] чтобы свернуть/открыть.",
+        Content = "Shadow Hub загружен! Кнопка скрытия: [" .. toggleKey.Name .. "]",
         Duration = 5
     })
 
     local Window = { Tabs = {} }
 
     function Window:CreateTab(tabName)
-        local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1, -10, 0, 34)
-        TabButton.Position = UDim2.new(0, 5, 0, 0)
-        TabButton.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-        TabButton.BackgroundTransparency = 1
-        TabButton.Text = "   " .. tabName
-        TabButton.Font = Enum.Font.GothamMedium
-        TabButton.TextSize = 13
-        TabButton.TextColor3 = Color3.fromRGB(140, 140, 150)
-        TabButton.TextXAlignment = Enum.TextXAlignment.Left
-        TabButton.Parent = TabHolder
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Size = UDim2.new(1, -8, 0, 32)
+        TabBtn.Position = UDim2.new(0, 4, 0, 0)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+        TabBtn.BackgroundTransparency = 1
+        TabBtn.Text = "   " .. tabName
+        TabBtn.Font = Enum.Font.GothamMedium
+        TabBtn.TextSize = 12
+        TabBtn.TextColor3 = Color3.fromRGB(140, 140, 150)
+        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+        TabBtn.Parent = TabHolder
 
-        local TabBtnCorner = Instance.new("UICorner")
-        TabBtnCorner.CornerRadius = UDim.new(0, 6)
-        TabBtnCorner.Parent = TabButton
+        local TabCorner = Instance.new("UICorner")
+        TabCorner.CornerRadius = UDim.new(0, 6)
+        TabCorner.Parent = TabBtn
 
         local Indicator = Instance.new("Frame")
         Indicator.Size = UDim2.new(0, 3, 0, 16)
         Indicator.Position = UDim2.new(0, 0, 0.5, -8)
         Indicator.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
         Indicator.Visible = false
-        Indicator.Parent = TabButton
-
-        local IndCorner = Instance.new("UICorner")
-        IndCorner.CornerRadius = UDim.new(0, 2)
-        IndCorner.Parent = Indicator
+        Indicator.Parent = TabBtn
 
         local Page = Instance.new("ScrollingFrame")
         Page.Size = UDim2.new(1, 0, 1, 0)
@@ -294,11 +270,10 @@ function Shadow:CreateWindow(config)
         Page.Parent = ContentContainer
 
         local PageLayout = Instance.new("UIListLayout")
-        PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
         PageLayout.Padding = UDim.new(0, 8)
         PageLayout.Parent = Page
 
-        TabButton.MouseButton1Click:Connect(function()
+        TabBtn.MouseButton1Click:Connect(function()
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
                 t.Button.BackgroundTransparency = 1
@@ -306,28 +281,26 @@ function Shadow:CreateWindow(config)
                 t.Indicator.Visible = false
             end
             Page.Visible = true
-            TabButton.BackgroundTransparency = 0
-            TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TabBtn.BackgroundTransparency = 0
+            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             Indicator.Visible = true
         end)
 
-        local Tab = { Page = Page, Button = TabButton, Indicator = Indicator }
+        local Tab = { Page = Page, Button = TabBtn, Indicator = Indicator }
         table.insert(Window.Tabs, Tab)
 
         if #Window.Tabs == 1 then
             Page.Visible = true
-            TabButton.BackgroundTransparency = 0
-            TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TabBtn.BackgroundTransparency = 0
+            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             Indicator.Visible = true
         end
 
-        -- ЭЛЕМЕНТЫ ВНУТРИ ВКЛАДОК:
-
-        -- 1. Кнопка (Button)
+        -- Кнопка
         function Tab:CreateButton(btnText, callback)
             callback = callback or function() end
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, -10, 0, 36)
+            Frame.Size = UDim2.new(1, -10, 0, 34)
             Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
             Frame.Parent = Page
 
@@ -345,7 +318,7 @@ function Shadow:CreateWindow(config)
             Btn.BackgroundTransparency = 1
             Btn.Text = btnText
             Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 13
+            Btn.TextSize = 12
             Btn.TextColor3 = Color3.fromRGB(220, 220, 230)
             Btn.Parent = Frame
 
@@ -356,13 +329,13 @@ function Shadow:CreateWindow(config)
             end)
         end
 
-        -- 2. Ползунок (Slider)
+        -- Слайдер
         function Tab:CreateSlider(text, min, max, default, callback)
             callback = callback or function() end
             default = math.clamp(default or min, min, max)
 
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, -10, 0, 48)
+            Frame.Size = UDim2.new(1, -10, 0, 46)
             Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
             Frame.Parent = Page
 
@@ -375,15 +348,15 @@ function Shadow:CreateWindow(config)
             Label.Position = UDim2.new(0, 10, 0, 4)
             Label.Text = text .. ": " .. tostring(default)
             Label.Font = Enum.Font.GothamMedium
-            Label.TextSize = 12
+            Label.TextSize = 11
             Label.TextColor3 = Color3.fromRGB(200, 200, 210)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.BackgroundTransparency = 1
             Label.Parent = Frame
 
             local SliderBack = Instance.new("Frame")
-            SliderBack.Size = UDim2.new(1, -20, 0, 6)
-            SliderBack.Position = UDim2.new(0, 10, 0, 30)
+            SliderBack.Size = UDim2.new(1, -20, 0, 5)
+            SliderBack.Position = UDim2.new(0, 10, 0, 28)
             SliderBack.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
             SliderBack.BorderSizePixel = 0
             SliderBack.Parent = Frame
@@ -398,10 +371,10 @@ function Shadow:CreateWindow(config)
 
             local function updateSlider(input)
                 local pos = math.clamp((input.Position.X - SliderBack.AbsolutePosition.X) / SliderBack.AbsoluteSize.X, 0, 1)
-                local value = math.floor(min + ((max - min) * pos))
+                local val = math.floor(min + ((max - min) * pos))
                 SliderFill.Size = UDim2.new(pos, 0, 1, 0)
-                Label.Text = text .. ": " .. tostring(value)
-                callback(value)
+                Label.Text = text .. ": " .. tostring(val)
+                callback(val)
             end
 
             SliderBack.InputBegan:Connect(function(input)
@@ -424,14 +397,14 @@ function Shadow:CreateWindow(config)
             end)
         end
 
-        -- 3. Выпадающее меню (Dropdown)
+        -- Дропдаун
         function Tab:CreateDropdown(text, options, default, callback)
             callback = callback or function() end
             options = options or {}
             local selected = default or options[1] or "None"
 
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, -10, 0, 38)
+            Frame.Size = UDim2.new(1, -10, 0, 36)
             Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
             Frame.ClipsDescendants = true
             Frame.Parent = Page
@@ -441,7 +414,7 @@ function Shadow:CreateWindow(config)
             Corner.Parent = Frame
 
             local DropBtn = Instance.new("TextButton")
-            DropBtn.Size = UDim2.new(1, 0, 0, 38)
+            DropBtn.Size = UDim2.new(1, 0, 0, 36)
             DropBtn.BackgroundTransparency = 1
             DropBtn.Text = "  " .. text .. ": " .. tostring(selected)
             DropBtn.Font = Enum.Font.GothamMedium
@@ -451,8 +424,8 @@ function Shadow:CreateWindow(config)
             DropBtn.Parent = Frame
 
             local OptionContainer = Instance.new("Frame")
-            OptionContainer.Size = UDim2.new(1, -10, 0, #options * 28)
-            OptionContainer.Position = UDim2.new(0, 5, 0, 38)
+            OptionContainer.Size = UDim2.new(1, -10, 0, #options * 26)
+            OptionContainer.Position = UDim2.new(0, 5, 0, 36)
             OptionContainer.BackgroundTransparency = 1
             OptionContainer.Parent = Frame
 
@@ -463,17 +436,17 @@ function Shadow:CreateWindow(config)
             local isOpen = false
             DropBtn.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
-                local targetSize = isOpen and UDim2.new(1, -10, 0, 42 + (#options * 28)) or UDim2.new(1, -10, 0, 38)
+                local targetSize = isOpen and UDim2.new(1, -10, 0, 38 + (#options * 26)) or UDim2.new(1, -10, 0, 36)
                 TweenService:Create(Frame, TweenInfo.new(0.2), {Size = targetSize}):Play()
             end)
 
             for _, opt in ipairs(options) do
                 local OptBtn = Instance.new("TextButton")
-                OptBtn.Size = UDim2.new(1, 0, 0, 26)
+                OptBtn.Size = UDim2.new(1, 0, 0, 24)
                 OptBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
                 OptBtn.Text = opt
                 OptBtn.Font = Enum.Font.Gotham
-                OptBtn.TextSize = 12
+                OptBtn.TextSize = 11
                 OptBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
                 OptBtn.Parent = OptionContainer
 
@@ -485,7 +458,7 @@ function Shadow:CreateWindow(config)
                     selected = opt
                     DropBtn.Text = "  " .. text .. ": " .. tostring(selected)
                     isOpen = false
-                    TweenService:Create(Frame, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, 38)}):Play()
+                    TweenService:Create(Frame, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, 36)}):Play()
                     callback(selected)
                 end)
             end
