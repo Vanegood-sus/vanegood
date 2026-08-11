@@ -94,6 +94,27 @@ local function addDropdown(tab, name, options, callback)
     end
 end
 
+local function addInput(tab, name, placeholder, callback)
+    if tab.CreateInput then
+        local ok = pcall(function()
+            tab:CreateInput({
+                Name = name,
+                PlaceholderText = placeholder,
+                Callback = callback
+            })
+        end)
+        if not ok then
+            pcall(function() tab:CreateInput(name, placeholder, callback) end)
+        end
+    elseif tab.CreateTextBox then
+        pcall(function() tab:CreateTextBox(name, placeholder, callback) end)
+    elseif tab.AddInput then
+        pcall(function() tab:AddInput(name, { Placeholder = placeholder, Callback = callback }) end)
+    elseif tab.AddTextBox then
+        pcall(function() tab:AddTextBox(name, { Placeholder = placeholder, Callback = callback }) end)
+    end
+end
+
 -- Create Tabs
 local MainTab = addTab(Window, "Меню")
 local FarmTab = addTab(Window, "Фарм")
@@ -250,94 +271,25 @@ addToggle(MainTab, "Автоматически вступать в бой", fals
     end
 end)
 
-local workoutPositions = {
-    ["Жим лежа"] = {
-        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
-        ["Портал Легенды"] = CFrame.new(4111.91748, 1020.46674, -3799.97217),
-        ["Портал Короля"] = CFrame.new(-8590.06152, 46.0167427, -6043.34717)
-    },
-    ["Жим с присяда"] = {
-        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
-        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
-        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
-    },
-    ["Становая тяга"] = {
-        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
-        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
-        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
-    },
-    ["Поднимать камень"] = {
-        ["Портал Ад"] = CFrame.new(-7176.19141, 45.394104, -1106.31421),
-        ["Портал Легенды"] = CFrame.new(4304.99023, 987.829956, -4124.2334),
-        ["Портал Короля"] = CFrame.new(-8940.12402, 13.1642084, -5699.13477)
-    }
-}
-local gymLocations = {"Портал Ад", "Портал Легенды", "Портал Короля"}
-local workoutTypes = {"Жим лежа", "Жим с присяда", "Становая тяга", "Поднимать камень"}
-
-local function teleportAndStartWorkout(wType, position)
-    if not position then return end
-    local char = player.Character or player.CharacterAdded:Wait()
-    local root = char:WaitForChild("HumanoidRootPart")
-    root.CFrame = position
-    
-    notify("Телепорт", "Телепортирован в зал для: " .. wType, 3)
-    
-    task.spawn(function()
-        while getgenv().workingGym do
-            pcall(function()
-                if wType == "Жим лежа" then
-                    ReplicatedStorage.rEvents.workoutEvent:FireServer("benchPress")
-                elseif wType == "Жим с присяда" then
-                    ReplicatedStorage.rEvents.workoutEvent:FireServer("squat")
-                elseif wType == "Становая тяга" then
-                    ReplicatedStorage.rEvents.workoutEvent:FireServer("deadlift")
-                elseif wType == "Поднимать камень" then
-                    ReplicatedStorage.rEvents.workoutEvent:FireServer("pullUp")
-                end
-            end)
-            task.wait(0.1)
-        end
-    end)
-end
-
-for _, wType in ipairs(workoutTypes) do
-    local sanitized = string.gsub(wType, " ", "")
-    _G["selected" .. sanitized .. "Gym"] = gymLocations[1]
-    
-    addDropdown(MainTab, wType .. " - Зал", gymLocations, function(val)
-        _G["selected" .. sanitized .. "Gym"] = val
-    end)
-    
-    addToggle(MainTab, "Качать: " .. wType, false, function(state)
-        getgenv().workingGym = state
-        if state then
-            local sGym = _G["selected" .. sanitized .. "Gym"] or gymLocations[1]
-            if workoutPositions[wType] and workoutPositions[wType][sGym] then
-                teleportAndStartWorkout(wType, workoutPositions[wType][sGym])
-            else
-                notify("Ошибка", "Координаты не найдены для " .. wType, 4)
-            end
-        end
-    end)
-end
-
+-- Улучшенный Анти-отброс через физику и Heartbeat
+local antiKnockConn = nil
 addToggle(MainTab, "Анти-отбрасывание", false, function(val)
-    local char = player.Character
-    if not char then return end
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if antiKnockConn then
+        antiKnockConn:Disconnect()
+        antiKnockConn = nil
+    end
     
     if val then
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "AntiKnockback"
-        bv.MaxForce = Vector3.new(100000, 0, 100000)
-        bv.Velocity = Vector3.new(0, 0, 0)
-        bv.P = 1250
-        bv.Parent = root
-    else
-        local existing = root:FindFirstChild("AntiKnockback")
-        if existing then existing:Destroy() end
+        antiKnockConn = RunService.Heartbeat:Connect(function()
+            local char = player.Character
+            if char then
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+                    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                end
+            end
+        end)
     end
 end)
 
@@ -360,10 +312,18 @@ addToggle(MainTab, "Стоять на месте (Freeze)", false, function(stat
     end
 end)
 
-addToggle(MainTab, "Скрывать рамки (Frames)", false, function(state)
-    for _, obj in pairs(ReplicatedStorage:GetChildren()) do
-        if obj.Name:match("Frame$") then
-            obj.Visible = not state
+-- Скрытие рамок UI
+addToggle(MainTab, "Скрывать рамки (GUI)", false, function(state)
+    local pGui = player:FindFirstChild("PlayerGui")
+    if pGui then
+        for _, gui in pairs(pGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name ~= "LibraryGui" and not gui.Name:match("vanegood") then
+                for _, obj in pairs(gui:GetDescendants()) do
+                    if obj:IsA("Frame") and obj.Name:lower():match("frame") then
+                        obj.Visible = not state
+                    end
+                end
+            end
         end
     end
 end)
@@ -422,14 +382,32 @@ createRockToggle("Легендарный камень", 1000000)
 createRockToggle("Королевский камень", 5000000)
 createRockToggle("Камень в Джунглях", 10000000)
 
-addToggle(FarmTab, "Бесконечные перерождения", false, function(state)
-    _G.infiniteRebirth = state
+local targetRebirthCount = 0
+addInput(FarmTab, "Лимит перерождений (число)", "Введи число...", function(text)
+    local num = tonumber(text)
+    if num then
+        targetRebirthCount = num
+        notify("Перерождения", "Цель установлена: " .. num, 2)
+    end
+end)
+
+addToggle(FarmTab, "Авто-перерождения (до лимита)", false, function(state)
+    _G.targetRebirth = state
     if state then
         task.spawn(function()
-            while _G.infiniteRebirth and task.wait(0.1) do
+            local done = 0
+            while _G.targetRebirth do
+                local curRebirths = player.leaderstats and player.leaderstats:FindFirstChild("Rebirths") and player.leaderstats.Rebirths.Value or 0
+                if targetRebirthCount > 0 and (done >= targetRebirthCount or curRebirths >= targetRebirthCount) then
+                    notify("Перерождения", "Целевое количество достигнуто!", 4)
+                    _G.targetRebirth = false
+                    break
+                end
                 pcall(function()
                     ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                    done = done + 1
                 end)
+                task.wait(0.2)
             end
         end)
     end
@@ -538,19 +516,19 @@ addToggle(FarmTab, "Быстрые предметы (0 delay)", false, function(
     end
 end)
 
-addToggle(FarmTab, "Анти-лаг (Boost FPS)", false, function(state)
-    if state then
-        game:GetService("Lighting").GlobalShadows = false
-        game:GetService("Lighting").FogEnd = 9e9
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("BasePart") and not (obj.Parent and obj.Parent:FindFirstChild("Humanoid")) then
-                obj.Material = Enum.Material.Plastic
-                obj.Reflectance = 0
-            elseif obj:IsA("Decal") or obj:IsA("Texture") then
-                obj:Destroy()
-            end
+-- Антилаг переведен на разовую кнопку
+addButton(FarmTab, "Включить Анти-лаг (Boost FPS)", function()
+    game:GetService("Lighting").GlobalShadows = false
+    game:GetService("Lighting").FogEnd = 9e9
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not (obj.Parent and obj.Parent:FindFirstChild("Humanoid")) then
+            obj.Material = Enum.Material.Plastic
+            obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
         end
     end
+    notify("Анти-лаг", "Текстуры упрощены", 3)
 end)
 
 -- =======================================================
@@ -559,6 +537,7 @@ end)
 
 local whitelistedTargets = {}
 local targetPlayerName = ""
+local targetKillLimit = 0
 
 local function killTargetChar(target)
     local char = player.Character
@@ -586,14 +565,29 @@ addDropdown(KillerTab, "Выбрать цель", getTargetList(), function(val)
     targetPlayerName = val
 end)
 
+addInput(KillerTab, "Лимит убийств (число)", "Введи число...", function(text)
+    local num = tonumber(text)
+    if num then
+        targetKillLimit = num
+        notify("Убийства", "Лимит установлен: " .. num, 2)
+    end
+end)
+
 addToggle(KillerTab, "Авто-убийство цели", false, function(state)
     _G.killTargetActive = state
     if state then
         task.spawn(function()
+            local kills = 0
             while _G.killTargetActive do
+                if targetKillLimit > 0 and kills >= targetKillLimit then
+                    notify("Убийства", "Лимит убийств достигнут!", 3)
+                    _G.killTargetActive = false
+                    break
+                end
                 local tPlayer = Players:FindFirstChild(targetPlayerName)
                 if tPlayer and tPlayer.Character and tPlayer.Character:FindFirstChild("Humanoid") and tPlayer.Character.Humanoid.Health > 0 then
                     killTargetChar(tPlayer)
+                    kills = kills + 1
                 end
                 task.wait(0.1)
             end
@@ -605,11 +599,19 @@ addToggle(KillerTab, "Убивать всех (Kill All)", false, function(state
     _G.killAllActive = state
     if state then
         task.spawn(function()
+            local totalKills = 0
             while _G.killAllActive do
+                if targetKillLimit > 0 and totalKills >= targetKillLimit then
+                    notify("Убийства", "Лимит убийств достигнут!", 3)
+                    _G.killAllActive = false
+                    break
+                end
                 for _, p in ipairs(Players:GetPlayers()) do
                     if not _G.killAllActive then break end
+                    if targetKillLimit > 0 and totalKills >= targetKillLimit then break end
                     if p ~= player and not whitelistedTargets[p.UserId] and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
                         killTargetChar(p)
+                        totalKills = totalKills + 1
                         task.wait(0.05)
                     end
                 end
