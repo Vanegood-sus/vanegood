@@ -115,9 +115,13 @@ local function addInput(tab, name, placeholder, callback)
     end
 end
 
--- Create Tabs
+-- Create Tabs (Драка выделена в отдельную вкладку, Баг-перерождения тоже)
 local MainTab = addTab(Window, "Меню")
 local FarmTab = addTab(Window, "Фарм")
+local RocksTab = addTab(Window, "Камни")
+local RebirthsTab = addTab(Window, "Перерождения")
+local GlitchListTab = addTab(Window, "Баг-рерождения")
+local BrawlTab = addTab(Window, "Драка")
 local KillerTab = addTab(Window, "Убийства")
 local PetsTab = addTab(Window, "Петы")
 local TeleportTab = addTab(Window, "Телепорт")
@@ -147,6 +151,26 @@ addToggle(MainTab, "Анти-АФК", true, function(state)
     end
 end)
 setupAntiAFK()
+
+-- Скрытие рамок UI
+addToggle(MainTab, "Скрывать рамки (GUI)", false, function(state)
+    local pGui = player:FindFirstChild("PlayerGui")
+    if pGui then
+        for _, gui in pairs(pGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name ~= "LibraryGui" and not gui.Name:match("vanegood") then
+                for _, obj in pairs(gui:GetDescendants()) do
+                    if obj:IsA("Frame") and obj.Name:lower():match("frame") then
+                        obj.Visible = not state
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- =======================================================
+-- ВКЛАДКА: ДРАКА (BRAWL)
+-- =======================================================
 
 local brawlWhitelist = {}
 
@@ -202,7 +226,7 @@ local function safeTouchInterest(targetPart, localPart)
     end)
 end
 
-addToggle(MainTab, "Авто выигрыш в бою", false, function(state)
+addToggle(BrawlTab, "Авто выигрыш в бою", false, function(state)
     getgenv().autoWinBrawl = state
     if state then
         task.spawn(function()
@@ -255,7 +279,7 @@ addToggle(MainTab, "Авто выигрыш в бою", false, function(state)
     end
 end)
 
-addToggle(MainTab, "Автоматически вступать в бой", false, function(state)
+addToggle(BrawlTab, "Автоматически вступать в бой", false, function(state)
     getgenv().autoJoinBrawl = state
     if state then
         task.spawn(function()
@@ -271,65 +295,79 @@ addToggle(MainTab, "Автоматически вступать в бой", fals
     end
 end)
 
--- Улучшенный Анти-отброс через физику и Heartbeat
-local antiKnockConn = nil
-addToggle(MainTab, "Анти-отбрасывание", false, function(val)
-    if antiKnockConn then
-        antiKnockConn:Disconnect()
-        antiKnockConn = nil
-    end
-    
-    if val then
-        antiKnockConn = RunService.Heartbeat:Connect(function()
-            local char = player.Character
-            if char then
-                local root = char:FindFirstChild("HumanoidRootPart")
-                if root then
-                    root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
-                    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end)
-    end
-end)
+-- =======================================================
+-- ВКЛАДКА: БАГ-ПЕРЕРОЖДЕНИЯ (ПОЛНЫЙ СПИСОК С ЧИСЛАМИ)
+-- =======================================================
 
-local posLockConn = nil
-addToggle(MainTab, "Стоять на месте (Freeze)", false, function(state)
-    if state then
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local lockedPos = player.Character.HumanoidRootPart.CFrame
-            posLockConn = RunService.Heartbeat:Connect(function()
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = lockedPos
-                end
-            end)
-        end
-    else
-        if posLockConn then
-            posLockConn:Disconnect()
-            posLockConn = nil
-        end
-    end
-end)
+local fullGlitchRebirthListInfo = {
+    "--- УСЛОВИЕ ---",
+    "Необходимые условия (легендарный пет): Unique pet",
+    "--- КОРОЛЕВСКИЙ КАМЕНЬ (KING ROCK) ---",
+    "80 (+ 5)", "280 (+ 10)", "580 (+ 15)", "980 (+ 20)", "1480 (+ 25)",
+    "2080 (+ 30)", "2780 (+ 35)", "3580 (+ 40)", "4480 (+ 45)", "5480 (+ 50)",
+    "6580 (+ 55)", "7780 (+ 60)", "9080 (+ 65)", "10480 (+ 70)", "11980 (+ 75)",
+    "13580 (+ 80)", "15280 (+ 85)", "17080 (+ 90)", "18980 (+ 95)",
+    "--- КАМЕНЬ ДЖУНГЛЕЙ (JUNGLE ROCK) ---",
+    "56 (+ 5) [add 15 exp]", "60 (+ 5) [add 1200 exp lvl 2]", "208 (+ 10) [add 45 exp]",
+    "440 (+ 15) [add 25 exp]", "748 (+ 20) [add 20 exp]", "1132 (+ 25) [add 30 exp]",
+    "1592 (+ 30) [add 55 exp]", "2132 (+ 35) [add 30 exp]", "2748 (+ 40) [add 20 exp]",
+    "3440 (+ 45) [add 25 exp]", "4208 (+ 50) [add 45 exp]", "5056 (+ 55) [add 15 exp]",
+    "5980 (+ 60)", "6980 (+ 65)", "8056 (+ 70) [add 15 exp]", "9208 (+ 75) [add 45 exp]",
+    "10440 (+ 80) [add 25 exp]", "11748 (+ 85) [add 20 exp]", "13132 (+ 90) [add 30 exp]",
+    "14580 (+ 95) [add 250 exp]", "14592 (+ 95) [add 55 exp]",
+    "--- ЛЕГЕНДАРНЫЙ КАМЕНЬ (LEGENDS ROCK) ---",
+    "480 (+ 5)", "1480 (+ 10)", "2980 (+ 15)", "4980 (+ 20)", "7480 (+ 25)",
+    "10480 (+ 30)", "13980 (+ 35)", "17980 (+ 40)", "22480 (+ 45)", "27480 (+ 50)",
+    "32980 (+ 55)", "38980 (+ 60)", "45480 (+ 65)", "52480 (+ 70)", "59980 (+ 75)",
+    "67980 (+ 80)", "76480 (+ 85)", "85480 (+ 90)", "94980 (+ 95)",
+    "--- АДСКИЙ КАМЕНЬ (INFERNO ROCK) ---",
+    "1084 (+ 5) [add 8 exp]", "3308 (+ 10) [add 6 exp]", "6644 (+ 15) [add 3 exp]",
+    "11084 (+ 20) [add 8 exp]", "16644 (+ 25) [add 3 exp]", "23308 (+ 30) [add 6 exp]",
+    "31084 (+ 35) [add 8 exp]", "39980 (+ 40)", "49980 (+ 45)", "61084 (+ 50) [add 8 exp]",
+    "73308 (+ 55) [add 6 exp]", "86644 (+ 60) [add 3 exp]", "101084 (+ 65) [add 8 exp]",
+    "116644 (+ 70) [add 3 exp]", "133308 (+ 75) [add 6 exp]", "151084 (+ 80) [add 8 exp]",
+    "169980 (+ 85)", "189980 (+ 90)", "210980 (+ 95) [add 125 exp]", "211084 (+ 95) [add 8 exp]",
+    "--- МИСТИЧЕСКИЙ КАМЕНЬ (MYTHICAL ROCK) ---",
+    "1644 (+ 5) [add 2 exp]", "4980 (+ 10)", "9980 (+ 15)", "16644 (+ 20) [add 2 exp]",
+    "24980 (+ 25)", "34980 (+ 30)", "46644 (+ 35) [add 2 exp]", "59980 (+ 40)",
+    "74980 (+ 45)", "91644 (+ 50) [add 2 exp]", "109980 (+ 55)", "129980 (+ 60)",
+    "151644 (+ 65) [add 2 exp]", "174980 (+ 70)", "199980 (+ 75)", "226644 (+ 80) [add 2 exp]",
+    "254980 (+ 85)", "284980 (+ 90)", "316480 (+ 95) [add 125 exp]", "316644 (+ 95) [add 2 exp]",
+    "--- ЛЕДЯНОЙ КАМЕНЬ (FROZEN ROCK) ---",
+    "3308 (+ 5) [add 2 exp]", "9980 (+ 10)", "19980 (+ 15)", "33308 (+ 20) [add 2 exp]",
+    "49980 (+ 25)", "69980 (+ 30)", "93308 (+ 35) [add 2 exp]", "119980 (+ 40)",
+    "149980 (+ 45)", "183308 (+ 50) [add 2 exp]", "219980 (+ 55)", "259980 (+ 60)",
+    "303308 (+ 65) [add 2 exp]", "349980 (+ 70)", "399980 (+ 75)", "453308 (+ 80) [add 2 exp]",
+    "509980 (+ 85)", "569980 (+ 90)", "632980 (+ 95) [add 125 exp]", "633308 (+ 95) [add 2 exp]",
+    "--- ЗОЛОТОЙ КАМЕНЬ (GOLDEN ROCK) ---",
+    "6230 (+ 5)", "18730 (+ 10)", "37480 (+ 15)", "62480 (+ 20)", "93730 (+ 25)",
+    "131230 (+ 30)", "174980 (+ 35)", "224980 (+ 40)", "281230 (+ 45)", "343730 (+ 50)",
+    "412480 (+ 55)", "487480 (+ 60)", "568730 (+ 65)", "656230 (+ 70)", "749980 (+ 75)",
+    "849980 (+ 80)", "956230 (+ 85)", "1068730 (+ 90) (миллионные баги)", "1187480 (+ 95)",
+    "--- БОЛЬШОЙ КАМЕНЬ (LARGE ROCK) ---",
+    "16620 (+ 5) [add 2 exp]", "49980 (+ 10)", "99980 (+ 15)", "166620 (+ 20) [add 2 exp]",
+    "249980 (+ 25)", "349980 (+ 30)", "466620 (+ 35) [add 2 exp]", "599980 (+ 40)",
+    "749980 (+ 45)", "916620 (+ 50) [add 2 exp]", "1099980 (+ 55)", "1299980 (+ 60)",
+    "1516620 (+ 65) [add 2 exp]", "1749980 (+ 70)", "1999980 (+ 75)", "2266620 (+ 80) [add 2 exp]",
+    "2549980 (+ 85)", "2849980 (+ 90)", "3164980 (+ 95) [add 125 exp]", "3166620 (+ 95) [add 2 exp]",
+    "--- PUNCHING ROCK ---",
+    "24980 (+ 5)", "74980 (+ 10)", "149980 (+ 15)", "249980 (+ 20)", "374980 (+ 25)",
+    "524980 (+ 30)", "699980 (+ 35)", "899980 (+ 40)", "1124980 (+ 45)", "1374980 (+ 50)",
+    "1649980 (+ 55)", "1949980 (+ 60)", "2274980 (+ 65)", "2624980 (+ 70)", "2999980 (+ 75)",
+    "3399980 (+ 80)", "3824980 (+ 85)", "4274980 (+ 90)", "4749980 (+ 95)",
+    "--- МАЛЕНЬКИЙ / КРОШЕЧНЫЙ КАМЕНЬ (TINY ROCK) ---",
+    "49980 (+ 5)", "149980 (+ 10)", "299980 (+ 15)", "499980 (+ 20)", "749980 (+ 25)",
+    "1049980 (+ 30)", "1399980 (+ 35)", "1799980 (+ 40)", "2249980 (+ 45)", "2749980 (+ 50)",
+    "3299980 (+ 55)", "3899980 (+ 60)", "4549980 (+ 65)", "5249980 (+ 70)", "5999980 (+ 75)",
+    "6799980 (+ 80)", "7649980 (+ 85)", "8549980 (+ 90)", "9499980 (+ 95) (Макс для Unique pets)"
+}
 
--- Скрытие рамок UI
-addToggle(MainTab, "Скрывать рамки (GUI)", false, function(state)
-    local pGui = player:FindFirstChild("PlayerGui")
-    if pGui then
-        for _, gui in pairs(pGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= "LibraryGui" and not gui.Name:match("vanegood") then
-                for _, obj in pairs(gui:GetDescendants()) do
-                    if obj:IsA("Frame") and obj.Name:lower():match("frame") then
-                        obj.Visible = not state
-                    end
-                end
-            end
-        end
-    end
+addDropdown(GlitchListTab, "Полный справочник чисел и багов", fullGlitchRebirthListInfo, function(val)
+    notify("Баг-рерождения", "Выбрано: " .. val, 4)
 end)
 
 -- =======================================================
--- ВКЛАДКА: ФАРМ
+-- ВКЛАДКА: КАМНИ (БИТЬ КАМЕНЬ)
 -- =======================================================
 
 local function hitTool()
@@ -345,7 +383,7 @@ local function hitTool()
 end
 
 local function createRockToggle(name, durReq)
-    addToggle(FarmTab, name .. " [" .. durReq .. "]", false, function(state)
+    addToggle(RocksTab, name .. " [" .. durReq .. "]", false, function(state)
         getgenv()["rockFarm_" .. durReq] = state
         if state then
             task.spawn(function()
@@ -382,36 +420,64 @@ createRockToggle("Легендарный камень", 1000000)
 createRockToggle("Королевский камень", 5000000)
 createRockToggle("Камень в Джунглях", 10000000)
 
-local targetRebirthCount = 0
-addInput(FarmTab, "Лимит перерождений (число)", "Введи число...", function(text)
-    local num = tonumber(text)
-    if num then
-        targetRebirthCount = num
-        notify("Перерождения", "Цель установлена: " .. num, 2)
+-- =======================================================
+-- ВКЛАДКА: ПЕРЕРОЖДЕНИЯ
+-- =======================================================
+
+local targetRebirthValue = 0
+
+addInput(RebirthsTab, "Сколько нужно перерождений?", "Введите число...", function(text)
+    local newValue = tonumber(text)
+    if newValue and newValue > 0 then
+        targetRebirthValue = newValue
+        notify("Перерождения", "Остановлю, когда будет " .. targetRebirthValue .. " перерождений", 3)
+    else
+        notify("Перерождения", "Введено неверное число", 3)
     end
 end)
 
-addToggle(FarmTab, "Авто-перерождения (до лимита)", false, function(state)
+addToggle(RebirthsTab, "Начать перерождаться по твоему количеству", false, function(bool)
+    _G.targetRebirthActive = bool
+    if bool then
+        task.spawn(function()
+            while _G.targetRebirthActive and task.wait(0.1) do
+                local currentRebirths = player.leaderstats and player.leaderstats:FindFirstChild("Rebirths") and player.leaderstats.Rebirths.Value or 0
+                if currentRebirths >= targetRebirthValue then
+                    _G.targetRebirthActive = false
+                    notify("Оуу", "Пошло дело, пошло! Цель достигнута.", 5)
+                    break
+                end
+                pcall(function()
+                    ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                end)
+            end
+        end)
+    end
+end)
+
+addToggle(RebirthsTab, "Авто-перерождения (до лимита/бесконечно)", false, function(state)
     _G.targetRebirth = state
     if state then
         task.spawn(function()
-            local done = 0
             while _G.targetRebirth do
                 local curRebirths = player.leaderstats and player.leaderstats:FindFirstChild("Rebirths") and player.leaderstats.Rebirths.Value or 0
-                if targetRebirthCount > 0 and (done >= targetRebirthCount or curRebirths >= targetRebirthCount) then
+                if targetRebirthValue > 0 and curRebirths >= targetRebirthValue then
                     notify("Перерождения", "Целевое количество достигнуто!", 4)
                     _G.targetRebirth = false
                     break
                 end
                 pcall(function()
                     ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-                    done = done + 1
                 end)
                 task.wait(0.2)
             end
         end)
     end
 end)
+
+-- =======================================================
+-- ВКЛАДКА: ФАРМ
+-- =======================================================
 
 addToggle(FarmTab, "Всегда рост 1", false, function(state)
     _G.lockSize1 = state
@@ -516,23 +582,8 @@ addToggle(FarmTab, "Быстрые предметы (0 delay)", false, function(
     end
 end)
 
--- Антилаг переведен на разовую кнопку
-addButton(FarmTab, "Включить Анти-лаг (Boost FPS)", function()
-    game:GetService("Lighting").GlobalShadows = false
-    game:GetService("Lighting").FogEnd = 9e9
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and not (obj.Parent and obj.Parent:FindFirstChild("Humanoid")) then
-            obj.Material = Enum.Material.Plastic
-            obj.Reflectance = 0
-        elseif obj:IsA("Decal") or obj:IsA("Texture") then
-            obj:Destroy()
-        end
-    end
-    notify("Анти-лаг", "Текстуры упрощены", 3)
-end)
-
 -- =======================================================
--- ВКЛАДКА: УБИЙСТВА
+-- ВКЛАДКА: УБИЙСТВА (КИЛЛЕР)
 -- =======================================================
 
 local whitelistedTargets = {}
@@ -573,7 +624,7 @@ addInput(KillerTab, "Лимит убийств (число)", "Введи чис
     end
 end)
 
-addToggle(KillerTab, "Авто-убийство цели", false, function(state)
+addToggle(KillerTab, "Авто-убийство цели (по лимиту)", false, function(state)
     _G.killTargetActive = state
     if state then
         task.spawn(function()
@@ -595,7 +646,7 @@ addToggle(KillerTab, "Авто-убийство цели", false, function(state
     end
 end)
 
-addToggle(KillerTab, "Убивать всех (Kill All)", false, function(state)
+addToggle(KillerTab, "Убивать всех (Kill All по лимиту)", false, function(state)
     _G.killAllActive = state
     if state then
         task.spawn(function()
@@ -702,7 +753,7 @@ addToggle(PetsTab, "Авто открытие аур", false, function(state)
 end)
 
 -- =======================================================
--- ВКЛАДКА: ТЕЛЕПОРТ
+-- ВКЛАДКА: ТЕЛЕПОРТ (С разделением на обычные и боевые локации)
 -- =======================================================
 
 local function tpTo(cf, msg)
@@ -712,6 +763,8 @@ local function tpTo(cf, msg)
     end
 end
 
+-- Обычные телепорты
+addButton(TeleportTab, "--- ОБЫЧНЫЕ ЛОКАЦИИ ---", function() end)
 addButton(TeleportTab, "Спавн", function() tpTo(CFrame.new(2, 8, 115), "Прямиком на спавн") end)
 addButton(TeleportTab, "Секретная арена", function() tpTo(CFrame.new(1947, 2, 6191), "Секретная арена") end)
 addButton(TeleportTab, "Маленький остров (0-1к)", function() tpTo(CFrame.new(-34, 7, 1903), "Маленький остров") end)
@@ -721,6 +774,9 @@ addButton(TeleportTab, "Адский портал", function() tpTo(CFrame.new(-
 addButton(TeleportTab, "Легендарный остров", function() tpTo(CFrame.new(4604, 991, -3887), "Легендарный остров") end)
 addButton(TeleportTab, "Портал Мускульного Короля", function() tpTo(CFrame.new(-8646, 17, -5738), "Мускульный Король") end)
 addButton(TeleportTab, "Джунгли", function() tpTo(CFrame.new(-8659, 6, 2384), "Джунгли") end)
+
+-- Боевые телепорты (ниже с разделением)
+addButton(TeleportTab, "--- БОЕВЫЕ АРЕНЫ И БОИ ---", function() end)
 addButton(TeleportTab, "Бой в лаве", function() tpTo(CFrame.new(4471, 119, -8836), "Арена Лавы") end)
 addButton(TeleportTab, "Бой в пустыне", function() tpTo(CFrame.new(960, 17, -7398), "Арена Пустыни") end)
 addButton(TeleportTab, "Бой на ринге", function() tpTo(CFrame.new(-1849, 20, -6335), "Боксерский ринг") end)
@@ -728,6 +784,39 @@ addButton(TeleportTab, "Бой на ринге", function() tpTo(CFrame.new(-184
 -- =======================================================
 -- ВКЛАДКА: ДРУГОЕ
 -- =======================================================
+
+local posLockConn = nil
+addToggle(MiscTab, "Стоять на месте (Freeze)", false, function(state)
+    if state then
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local lockedPos = player.Character.HumanoidRootPart.CFrame
+            posLockConn = RunService.Heartbeat:Connect(function()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = lockedPos
+                end
+            end)
+        end
+    else
+        if posLockConn then
+            posLockConn:Disconnect()
+            posLockConn = nil
+        end
+    end
+end)
+
+addButton(MiscTab, "Включить Анти-лаг (Boost FPS)", function()
+    game:GetService("Lighting").GlobalShadows = false
+    game:GetService("Lighting").FogEnd = 9e9
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not (obj.Parent and obj.Parent:FindFirstChild("Humanoid")) then
+            obj.Material = Enum.Material.Plastic
+            obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
+        end
+    end
+    notify("Анти-лаг", "Текстуры упрощены", 3)
+end)
 
 addToggle(MiscTab, "Авто-рулетка колеса", false, function(state)
     _G.spinWheel = state
