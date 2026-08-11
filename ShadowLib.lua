@@ -122,38 +122,38 @@ function Library:CreateWindow(config)
     Sidebar.BackgroundColor3 = Color3.fromRGB(13, 13, 17)
     Sidebar.BorderSizePixel = 0
     Sidebar.ScrollBarThickness = 0
-    Sidebar.CanvasPosition = Vector2.new(0, 0)
     Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
     Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Sidebar.ZIndex = 3
     Sidebar.Parent = MainFrame
 
     local TabListLayout = Instance.new("UIListLayout")
-    TabListLayout.Padding = UDim.new(0, 6)
+    TabListLayout.Padding = UDim.new(0, 8)
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     TabListLayout.Parent = Sidebar
 
     local SidebarPadding = Instance.new("UIPadding")
-    SidebarPadding.PaddingTop = UDim.new(0, 10)
-    SidebarPadding.PaddingLeft = UDim.new(0, 8)
-    SidebarPadding.PaddingRight = UDim.new(0, 8)
-    SidebarPadding.PaddingBottom = UDim.new(0, 10)
+    SidebarPadding.PaddingTop = UDim.new(0, 12)
+    SidebarPadding.PaddingLeft = UDim.new(0, 10)
+    SidebarPadding.PaddingRight = UDim.new(0, 10)
+    SidebarPadding.PaddingBottom = UDim.new(0, 12)
     SidebarPadding.Parent = Sidebar
 
+    -- Вертикальный разделитель (вынесен наружу, чтобы не мешать списку)
     local SidebarDivider = Instance.new("Frame")
-    SidebarDivider.Size = UDim2.new(0, 1, 1, 0)
-    SidebarDivider.Position = UDim2.new(1, -1, 0, 0)
+    SidebarDivider.Name = "SidebarDivider"
+    SidebarDivider.Size = UDim2.new(0, 1, 1, -42)
+    SidebarDivider.Position = UDim2.new(0, 160, 0, 42)
     SidebarDivider.BackgroundColor3 = Color3.fromRGB(30, 32, 38)
     SidebarDivider.BorderSizePixel = 0
     SidebarDivider.ZIndex = 4
-    SidebarDivider.Parent = Sidebar
+    SidebarDivider.Parent = MainFrame
 
     -- Контейнер контента
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
-    ContentContainer.Size = UDim2.new(1, -160, 1, -42)
-    ContentContainer.Position = UDim2.new(0, 160, 0, 42)
+    ContentContainer.Size = UDim2.new(1, -161, 1, -42)
+    ContentContainer.Position = UDim2.new(0, 161, 0, 42)
     ContentContainer.BackgroundTransparency = 1
     ContentContainer.ZIndex = 3
     ContentContainer.Parent = MainFrame
@@ -206,7 +206,7 @@ function Library:CreateWindow(config)
         local TabButton = Instance.new("TextButton")
         TabButton.Name = TabName .. "_TabBtn"
         TabButton.LayoutOrder = currentOrder
-        TabButton.Size = UDim2.new(1, 0, 0, 34)
+        TabButton.Size = UDim2.new(1, 0, 0, 36)
         TabButton.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
         TabButton.AutoButtonColor = false
         TabButton.Text = ""
@@ -220,8 +220,8 @@ function Library:CreateWindow(config)
         -- Иконка вкладки
         local IconImg = Instance.new("ImageLabel")
         IconImg.Name = "Icon"
-        IconImg.Size = UDim2.new(0, 16, 0, 16)
-        IconImg.Position = UDim2.new(0, 10, 0.5, -8)
+        IconImg.Size = UDim2.new(0, 18, 0, 18)
+        IconImg.Position = UDim2.new(0, 10, 0.5, -9)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = ResolveIcon(TabIcon)
         IconImg.ImageColor3 = Color3.fromRGB(140, 140, 155)
@@ -231,8 +231,8 @@ function Library:CreateWindow(config)
         -- Текст вкладки
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.Name = "Label"
-        TitleLbl.Size = UDim2.new(1, -38, 1, 0)
-        TitleLbl.Position = UDim2.new(0, 34, 0, 0)
+        TitleLbl.Size = UDim2.new(1, -40, 1, 0)
+        TitleLbl.Position = UDim2.new(0, 36, 0, 0)
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Font = Enum.Font.GothamMedium
         TitleLbl.Text = TabName
@@ -280,7 +280,6 @@ function Library:CreateWindow(config)
         TabPage.BorderSizePixel = 0
         TabPage.ScrollBarThickness = 3
         TabPage.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 85)
-        TabPage.CanvasPosition = Vector2.new(0, 0)
         TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.Visible = false
