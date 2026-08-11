@@ -115,7 +115,7 @@ local function addInput(tab, name, placeholder, callback)
     end
 end
 
--- Create Tabs (Драка выделена в отдельную вкладку, Баг-перерождения тоже)
+-- Create Tabs
 local MainTab = addTab(Window, "Меню")
 local FarmTab = addTab(Window, "Фарм")
 local RocksTab = addTab(Window, "Камни")
@@ -152,18 +152,11 @@ addToggle(MainTab, "Анти-АФК", true, function(state)
 end)
 setupAntiAFK()
 
--- Скрытие рамок UI
-addToggle(MainTab, "Скрывать рамки (GUI)", false, function(state)
-    local pGui = player:FindFirstChild("PlayerGui")
-    if pGui then
-        for _, gui in pairs(pGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= "LibraryGui" and not gui.Name:match("vanegood") then
-                for _, obj in pairs(gui:GetDescendants()) do
-                    if obj:IsA("Frame") and obj.Name:lower():match("frame") then
-                        obj.Visible = not state
-                    end
-                end
-            end
+-- Скрытие рамок UI 1 в 1 по запросу
+addToggle(MainTab, "Скрывать рамки (GUI)", false, function(bool)
+    for _, obj in pairs(ReplicatedStorage:GetChildren()) do
+        if obj.Name:match("Frame$") then
+            obj.Visible = not bool
         end
     end
 end)
@@ -753,7 +746,7 @@ addToggle(PetsTab, "Авто открытие аур", false, function(state)
 end)
 
 -- =======================================================
--- ВКЛАДКА: ТЕЛЕПОРТ (С разделением на обычные и боевые локации)
+-- ВКЛАДКА: ТЕЛЕПОРТ
 -- =======================================================
 
 local function tpTo(cf, msg)
@@ -763,7 +756,6 @@ local function tpTo(cf, msg)
     end
 end
 
--- Обычные телепорты
 addButton(TeleportTab, "--- ОБЫЧНЫЕ ЛОКАЦИИ ---", function() end)
 addButton(TeleportTab, "Спавн", function() tpTo(CFrame.new(2, 8, 115), "Прямиком на спавн") end)
 addButton(TeleportTab, "Секретная арена", function() tpTo(CFrame.new(1947, 2, 6191), "Секретная арена") end)
@@ -775,7 +767,6 @@ addButton(TeleportTab, "Легендарный остров", function() tpTo(CF
 addButton(TeleportTab, "Портал Мускульного Короля", function() tpTo(CFrame.new(-8646, 17, -5738), "Мускульный Король") end)
 addButton(TeleportTab, "Джунгли", function() tpTo(CFrame.new(-8659, 6, 2384), "Джунгли") end)
 
--- Боевые телепорты (ниже с разделением)
 addButton(TeleportTab, "--- БОЕВЫЕ АРЕНЫ И БОИ ---", function() end)
 addButton(TeleportTab, "Бой в лаве", function() tpTo(CFrame.new(4471, 119, -8836), "Арена Лавы") end)
 addButton(TeleportTab, "Бой в пустыне", function() tpTo(CFrame.new(960, 17, -7398), "Арена Пустыни") end)
@@ -834,7 +825,7 @@ end)
 addToggle(MiscTab, "Авто-сбор подарков", false, function(state)
     _G.claimGifts = state
     if state then
-        task.spawn(function()
+        task.spawn(function`()
             while _G.claimGifts and task.wait(1) do
                 pcall(function()
                     for i = 1, 8 do
