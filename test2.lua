@@ -142,7 +142,7 @@ function Library:CreateWindow(config)
     ControlsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ControlsLayout.Parent = ControlsHolder
 
-    -- Кнопка сворачивания (слева, LayoutOrder = 1)
+    -- Кнопка сворачивания
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Name = "Minimize"
     MinimizeBtn.LayoutOrder = 1
@@ -160,7 +160,7 @@ function Library:CreateWindow(config)
     MinCorner.CornerRadius = UDim.new(0, 6)
     MinCorner.Parent = MinimizeBtn
 
-    -- Кнопка закрытия (справа, LayoutOrder = 2)
+    -- Кнопка закрытия
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Name = "Close"
     CloseBtn.LayoutOrder = 2
@@ -316,7 +316,6 @@ function Library:CreateWindow(config)
         TabCorner.CornerRadius = UDim.new(0, 8)
         TabCorner.Parent = TabButton
 
-        -- Стрелка-указатель активной вкладки
         local ArrowIcon = Instance.new("ImageLabel")
         ArrowIcon.Name = "Arrow"
         ArrowIcon.Size = UDim2.new(0, 14, 0, 14)
@@ -494,7 +493,7 @@ function Library:CreateWindow(config)
             return BtnFrame
         end
 
-        -- Переключатель (Toggle)
+        -- Переключатель (Toggle) БЕЗ КАКИХ-ЛИБО ГАЛОЧЕК
         function TabElements:CreateToggle(toggleConfig)
             toggleConfig = toggleConfig or {}
             local toggleName = toggleConfig.Name or "Toggle"
