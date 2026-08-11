@@ -79,6 +79,7 @@ function Library:CreateWindow(config)
     MainFrame.Position = UDim2.new(0, 2, 0, 2)
     MainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
     MainFrame.BorderSizePixel = 0
+    MainFrame.ClipsDescendants = true
     MainFrame.Parent = OutlineFrame
 
     local MainCorner = Instance.new("UICorner")
@@ -121,21 +122,23 @@ function Library:CreateWindow(config)
     Sidebar.BackgroundColor3 = Color3.fromRGB(13, 13, 17)
     Sidebar.BorderSizePixel = 0
     Sidebar.ScrollBarThickness = 0
+    Sidebar.CanvasPosition = Vector2.new(0, 0)
     Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
     Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Sidebar.ZIndex = 3
     Sidebar.Parent = MainFrame
 
     local TabListLayout = Instance.new("UIListLayout")
-    TabListLayout.Padding = UDim.new(0, 8)
+    TabListLayout.Padding = UDim.new(0, 6)
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     TabListLayout.Parent = Sidebar
 
     local SidebarPadding = Instance.new("UIPadding")
-    SidebarPadding.PaddingTop = UDim.new(0, 12)
-    SidebarPadding.PaddingLeft = UDim.new(0, 10)
-    SidebarPadding.PaddingRight = UDim.new(0, 10)
-    SidebarPadding.PaddingBottom = UDim.new(0, 12)
+    SidebarPadding.PaddingTop = UDim.new(0, 10)
+    SidebarPadding.PaddingLeft = UDim.new(0, 8)
+    SidebarPadding.PaddingRight = UDim.new(0, 8)
+    SidebarPadding.PaddingBottom = UDim.new(0, 10)
     SidebarPadding.Parent = Sidebar
 
     local SidebarDivider = Instance.new("Frame")
@@ -192,14 +195,18 @@ function Library:CreateWindow(config)
     local Window = {}
     local Tabs = {}
     local activeTab = nil
+    local tabCount = 0
 
     function Window:CreateTab(tabConfig)
+        tabCount = tabCount + 1
+        local currentOrder = tabCount
         local TabName = tabConfig.Name or "Tab"
         local TabIcon = tabConfig.Icon or "menu"
 
         local TabButton = Instance.new("TextButton")
         TabButton.Name = TabName .. "_TabBtn"
-        TabButton.Size = UDim2.new(1, 0, 0, 36)
+        TabButton.LayoutOrder = currentOrder
+        TabButton.Size = UDim2.new(1, 0, 0, 34)
         TabButton.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
         TabButton.AutoButtonColor = false
         TabButton.Text = ""
@@ -213,8 +220,8 @@ function Library:CreateWindow(config)
         -- Иконка вкладки
         local IconImg = Instance.new("ImageLabel")
         IconImg.Name = "Icon"
-        IconImg.Size = UDim2.new(0, 18, 0, 18)
-        IconImg.Position = UDim2.new(0, 10, 0.5, -9)
+        IconImg.Size = UDim2.new(0, 16, 0, 16)
+        IconImg.Position = UDim2.new(0, 10, 0.5, -8)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = ResolveIcon(TabIcon)
         IconImg.ImageColor3 = Color3.fromRGB(140, 140, 155)
@@ -224,8 +231,8 @@ function Library:CreateWindow(config)
         -- Текст вкладки
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.Name = "Label"
-        TitleLbl.Size = UDim2.new(1, -40, 1, 0)
-        TitleLbl.Position = UDim2.new(0, 36, 0, 0)
+        TitleLbl.Size = UDim2.new(1, -38, 1, 0)
+        TitleLbl.Position = UDim2.new(0, 34, 0, 0)
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Font = Enum.Font.GothamMedium
         TitleLbl.Text = TabName
@@ -235,7 +242,7 @@ function Library:CreateWindow(config)
         TitleLbl.ZIndex = 5
         TitleLbl.Parent = TabButton
 
-        -- Неоновая полоска снизу выбранной вкладки (преобладает белый + капли серого)
+        -- Неоновая полоска снизу выбранной вкладки
         local BottomGlow = Instance.new("Frame")
         BottomGlow.Name = "BottomGlow"
         BottomGlow.Size = UDim2.new(0.85, 0, 0, 2)
@@ -273,6 +280,7 @@ function Library:CreateWindow(config)
         TabPage.BorderSizePixel = 0
         TabPage.ScrollBarThickness = 3
         TabPage.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 85)
+        TabPage.CanvasPosition = Vector2.new(0, 0)
         TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.Visible = false
