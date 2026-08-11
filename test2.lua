@@ -14,51 +14,6 @@ if parentObj:FindFirstChild("vanegood_UI") then
 end
 
 -- ==========================================
--- СИСТЕМА ИКОНОК (АВТОМАТИЧЕСКАЯ + FALLBACK)
--- ==========================================
-local DefaultIcons = {
-    ["settings"] = "rbxassetid://10734975486",
-    ["gear"]     = "rbxassetid://10734975486",
-    ["menu"]     = "rbxassetid://10723407389",
-    ["home"]     = "rbxassetid://10723407389",
-    ["main"]     = "rbxassetid://10723407389",
-    ["visuals"]  = "rbxassetid://10723415174",
-    ["esp"]      = "rbxassetid://10723415174",
-    ["player"]   = "rbxassetid://10747373176",
-    ["character"]= "rbxassetid://10747373176",
-    ["combat"]   = "rbxassetid://10734950309",
-    ["sword"]    = "rbxassetid://10734950309",
-    ["misc"]     = "rbxassetid://10734976528",
-    ["info"]     = "rbxassetid://10723415903",
-    ["fallback"] = "rbxassetid://10709791437" -- Дефолтная иконка-точка/квадрат если ничего не найдено
-}
-
-local function ResolveIcon(iconName)
-    if not iconName or iconName == "" then
-        return DefaultIcons["fallback"]
-    end
-    
-    -- Если передали ID напрямую
-    if tonumber(iconName) then
-        return "rbxassetid://" .. tostring(iconName)
-    end
-    if string.find(tostring(iconName), "rbxassetid://") or string.find(tostring(iconName), "rbxasset://") then
-        return iconName
-    end
-    
-    -- Поиск по ключевым словам
-    local lower = string.lower(tostring(iconName))
-    for key, id in pairs(DefaultIcons) do
-        if string.find(lower, key) then
-            return id
-        end
-    end
-    
-    -- Если название совсем уникальное
-    return DefaultIcons["fallback"]
-end
-
--- ==========================================
 -- ОСНОВНОЙ МОДУЛЬ БИБЛИОТЕКИ
 -- ==========================================
 local Library = {}
@@ -74,7 +29,41 @@ function Library:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Parent = parentObj
 
-    -- Неоновый контур (Вращающийся градиент)
+    -- 1. Свернутая плашка (по центру в самом верху экрана)
+    local MinimizedBar = Instance.new("TextButton")
+    MinimizedBar.Name = "MinimizedBar"
+    MinimizedBar.Size = UDim2.new(0, 180, 0, 30)
+    MinimizedBar.Position = UDim2.new(0.5, -90, 0, 10)
+    MinimizedBar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    MinimizedBar.BackgroundTransparency = 0.45
+    MinimizedBar.BorderSizePixel = 0
+    MinimizedBar.Text = ""
+    MinimizedBar.AutoButtonColor = false
+    MinimizedBar.Visible = false
+    MinimizedBar.ZIndex = 50
+    MinimizedBar.Parent = ScreenGui
+
+    local MinBarCorner = Instance.new("UICorner")
+    MinBarCorner.CornerRadius = UDim.new(0, 8)
+    MinBarCorner.Parent = MinimizedBar
+
+    local MinBarStroke = Instance.new("UIStroke")
+    MinBarStroke.Color = Color3.fromRGB(255, 255, 255)
+    MinBarStroke.Transparency = 0.75
+    MinBarStroke.Thickness = 1
+    MinBarStroke.Parent = MinimizedBar
+
+    local MinBarLabel = Instance.new("TextLabel")
+    MinBarLabel.Size = UDim2.new(1, 0, 1, 0)
+    MinBarLabel.BackgroundTransparency = 1
+    MinBarLabel.Font = Enum.Font.GothamMedium
+    MinBarLabel.Text = TitleText .. " (Открыть)"
+    MinBarLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+    MinBarLabel.TextSize = 12
+    MinBarLabel.ZIndex = 51
+    MinBarLabel.Parent = MinimizedBar
+
+    -- 2. Основное окно с вращающимся неоновым контуром
     local OutlineFrame = Instance.new("Frame")
     OutlineFrame.Name = "OutlineFrame"
     OutlineFrame.Size = UDim2.new(0, 620, 0, 420)
@@ -102,7 +91,6 @@ function Library:CreateWindow(config)
         MainGradient.Rotation = (MainGradient.Rotation + (rotSpeed * dt)) % 360
     end)
 
-    -- Главное тело меню
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(1, -4, 1, -4)
@@ -137,6 +125,86 @@ function Library:CreateWindow(config)
     Title.ZIndex = 6
     Title.Parent = Topbar
 
+    -- Контролы окна: Сворачивание и Полное закрытие
+    local ControlsHolder = Instance.new("Frame")
+    ControlsHolder.Name = "Controls"
+    ControlsHolder.Size = UDim2.new(0, 70, 1, 0)
+    ControlsHolder.Position = UDim2.new(1, -75, 0, 0)
+    ControlsHolder.BackgroundTransparency = 1
+    ControlsHolder.ZIndex = 6
+    ControlsHolder.Parent = Topbar
+
+    local ControlsLayout = Instance.new("UIListLayout")
+    ControlsLayout.FillDirection = Enum.FillDirection.Horizontal
+    ControlsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    ControlsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    ControlsLayout.Padding = UDim.new(0, 6)
+    ControlsLayout.Parent = ControlsHolder
+
+    local MinimizeBtn = Instance.new("TextButton")
+    MinimizeBtn.Name = "Minimize"
+    MinimizeBtn.Size = UDim2.new(0, 26, 0, 26)
+    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 34)
+    MinimizeBtn.AutoButtonColor = false
+    MinimizeBtn.Text = "—"
+    MinimizeBtn.Font = Enum.Font.GothamBold
+    MinimizeBtn.TextColor3 = Color3.fromRGB(160, 160, 175)
+    MinimizeBtn.TextSize = 12
+    MinimizeBtn.ZIndex = 7
+    MinimizeBtn.Parent = ControlsHolder
+
+    local MinCorner = Instance.new("UICorner")
+    MinCorner.CornerRadius = UDim.new(0, 6)
+    MinCorner.Parent = MinimizeBtn
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Name = "Close"
+    CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 34)
+    CloseBtn.AutoButtonColor = false
+    CloseBtn.Text = "✕"
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextColor3 = Color3.fromRGB(160, 160, 175)
+    CloseBtn.TextSize = 12
+    CloseBtn.ZIndex = 7
+    CloseBtn.Parent = ControlsHolder
+
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 6)
+    CloseCorner.Parent = CloseBtn
+
+    -- Анимации для кнопок управления
+    MinimizeBtn.MouseEnter:Connect(function()
+        TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(38, 42, 54), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+    MinimizeBtn.MouseLeave:Connect(function()
+        TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(25, 27, 34), TextColor3 = Color3.fromRGB(160, 160, 175)}):Play()
+    end)
+
+    CloseBtn.MouseEnter:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(180, 40, 40), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+    CloseBtn.MouseLeave:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(25, 27, 34), TextColor3 = Color3.fromRGB(160, 160, 175)}):Play()
+    end)
+
+    local lastFramePos = OutlineFrame.Position
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        lastFramePos = OutlineFrame.Position
+        OutlineFrame.Visible = false
+        MinimizedBar.Visible = true
+    end)
+
+    MinimizedBar.MouseButton1Click:Connect(function()
+        MinimizedBar.Visible = false
+        OutlineFrame.Position = lastFramePos
+        OutlineFrame.Visible = true
+    end)
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
     local TopbarDivider = Instance.new("Frame")
     TopbarDivider.Size = UDim2.new(1, 0, 0, 1)
     TopbarDivider.Position = UDim2.new(0, 0, 1, -1)
@@ -169,7 +237,6 @@ function Library:CreateWindow(config)
     SidebarPadding.PaddingBottom = UDim.new(0, 12)
     SidebarPadding.Parent = Sidebar
 
-    -- Разделитель бокового меню
     local SidebarDivider = Instance.new("Frame")
     SidebarDivider.Name = "SidebarDivider"
     SidebarDivider.Size = UDim2.new(0, 1, 1, -42)
@@ -179,7 +246,6 @@ function Library:CreateWindow(config)
     SidebarDivider.ZIndex = 4
     SidebarDivider.Parent = MainFrame
 
-    -- Контейнер для содержимого вкладок
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Size = UDim2.new(1, -161, 1, -42)
@@ -188,7 +254,7 @@ function Library:CreateWindow(config)
     ContentContainer.ZIndex = 3
     ContentContainer.Parent = MainFrame
 
-    -- Dragging (Перемещение окна)
+    -- Dragging окна
     local dragging, dragInput, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -229,13 +295,11 @@ function Library:CreateWindow(config)
 
     function Window:CreateTab(tabConfig)
         tabCount = tabCount + 1
-        local currentOrder = tabCount
-        local TabName = tabConfig.Name or ("Tab " .. tabCount)
-        local TabIcon = ResolveIcon(tabConfig.Icon or TabName)
+        local TabName = (type(tabConfig) == "table" and tabConfig.Name) or tabConfig or ("Tab " .. tabCount)
 
         local TabButton = Instance.new("TextButton")
         TabButton.Name = TabName .. "_TabBtn"
-        TabButton.LayoutOrder = currentOrder
+        TabButton.LayoutOrder = tabCount
         TabButton.Size = UDim2.new(1, 0, 0, 36)
         TabButton.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
         TabButton.AutoButtonColor = false
@@ -247,22 +311,23 @@ function Library:CreateWindow(config)
         TabCorner.CornerRadius = UDim.new(0, 8)
         TabCorner.Parent = TabButton
 
-        -- Иконка вкладки
-        local IconImg = Instance.new("ImageLabel")
-        IconImg.Name = "Icon"
-        IconImg.Size = UDim2.new(0, 18, 0, 18)
-        IconImg.Position = UDim2.new(0, 10, 0.5, -9)
-        IconImg.BackgroundTransparency = 1
-        IconImg.Image = TabIcon
-        IconImg.ImageColor3 = Color3.fromRGB(140, 140, 155)
-        IconImg.ZIndex = 5
-        IconImg.Parent = TabButton
+        -- Стрелка-указатель (появляется только у активной вкладки)
+        local ArrowIcon = Instance.new("ImageLabel")
+        ArrowIcon.Name = "Arrow"
+        ArrowIcon.Size = UDim2.new(0, 14, 0, 14)
+        ArrowIcon.Position = UDim2.new(0, 4, 0.5, -7)
+        ArrowIcon.BackgroundTransparency = 1
+        ArrowIcon.Image = "rbxassetid://10709790948"
+        ArrowIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        ArrowIcon.ImageTransparency = 1
+        ArrowIcon.ZIndex = 5
+        ArrowIcon.Parent = TabButton
 
-        -- Текст вкладки
+        -- Название вкладки
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.Name = "Label"
-        TitleLbl.Size = UDim2.new(1, -40, 1, 0)
-        TitleLbl.Position = UDim2.new(0, 36, 0, 0)
+        TitleLbl.Size = UDim2.new(1, -24, 1, 0)
+        TitleLbl.Position = UDim2.new(0, 12, 0, 0)
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Font = Enum.Font.GothamMedium
         TitleLbl.Text = TabName
@@ -330,28 +395,28 @@ function Library:CreateWindow(config)
 
         local function SetActive(state)
             if state then
-                TweenService:Create(TabButton, TweenInfo.new(0.25), {
-                    BackgroundColor3 = Color3.fromRGB(28, 31, 39)
-                }):Play()
+                TweenService:Create(TabButton, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(28, 31, 39)}):Play()
                 TweenService:Create(TitleLbl, TweenInfo.new(0.25), {
-                    TextColor3 = Color3.fromRGB(255, 255, 255)
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    Position = UDim2.new(0, 26, 0, 0)
                 }):Play()
-                TweenService:Create(IconImg, TweenInfo.new(0.25), {
-                    ImageColor3 = Color3.fromRGB(255, 255, 255)
+                TweenService:Create(ArrowIcon, TweenInfo.new(0.25), {
+                    ImageTransparency = 0,
+                    Position = UDim2.new(0, 8, 0.5, -7)
                 }):Play()
                 TweenService:Create(BottomGlow, TweenInfo.new(0.25), {
                     BackgroundTransparency = 0
                 }):Play()
                 TabPage.Visible = true
             else
-                TweenService:Create(TabButton, TweenInfo.new(0.25), {
-                    BackgroundColor3 = Color3.fromRGB(20, 22, 28)
-                }):Play()
+                TweenService:Create(TabButton, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(20, 22, 28)}):Play()
                 TweenService:Create(TitleLbl, TweenInfo.new(0.25), {
-                    TextColor3 = Color3.fromRGB(140, 140, 155)
+                    TextColor3 = Color3.fromRGB(140, 140, 155),
+                    Position = UDim2.new(0, 12, 0, 0)
                 }):Play()
-                TweenService:Create(IconImg, TweenInfo.new(0.25), {
-                    ImageColor3 = Color3.fromRGB(140, 140, 155)
+                TweenService:Create(ArrowIcon, TweenInfo.new(0.25), {
+                    ImageTransparency = 1,
+                    Position = UDim2.new(0, 4, 0.5, -7)
                 }):Play()
                 TweenService:Create(BottomGlow, TweenInfo.new(0.25), {
                     BackgroundTransparency = 1
@@ -381,12 +446,12 @@ function Library:CreateWindow(config)
         end
 
         -- ==========================================
-        -- МЕТОДЫ ЭЛЕМЕНТОВ ВНУТРИ ВКЛАДКИ
+        -- ЭЛЕМЕНТЫ ВНУТРИ ВКЛАДКИ
         -- ==========================================
-        local TabMethods = {}
+        local TabElements = {}
 
-        -- Создание кнопки
-        function TabMethods:CreateButton(btnConfig)
+        -- Кнопка (Button)
+        function TabElements:CreateButton(btnConfig)
             btnConfig = btnConfig or {}
             local btnName = btnConfig.Name or "Button"
             local callback = btnConfig.Callback or function() end
@@ -426,40 +491,99 @@ function Library:CreateWindow(config)
             return BtnFrame
         end
 
-        return TabMethods
+        -- Переключатель (Toggle)
+        function TabElements:CreateToggle(toggleConfig)
+            toggleConfig = toggleConfig or {}
+            local toggleName = toggleConfig.Name or "Toggle"
+            local state = toggleConfig.CurrentValue or toggleConfig.Default or false
+            local callback = toggleConfig.Callback or function() end
+
+            local ToggleFrame = Instance.new("TextButton")
+            ToggleFrame.Name = toggleName .. "_Toggle"
+            ToggleFrame.Size = UDim2.new(1, 0, 0, 36)
+            ToggleFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 30)
+            ToggleFrame.AutoButtonColor = false
+            ToggleFrame.Text = ""
+            ToggleFrame.ZIndex = 5
+            ToggleFrame.Parent = TabPage
+
+            local TglCorner = Instance.new("UICorner")
+            TglCorner.CornerRadius = UDim.new(0, 8)
+            TglCorner.Parent = ToggleFrame
+
+            local TglTitle = Instance.new("TextLabel")
+            TglTitle.Size = UDim2.new(1, -60, 1, 0)
+            TglTitle.Position = UDim2.new(0, 12, 0, 0)
+            TglTitle.BackgroundTransparency = 1
+            TglTitle.Font = Enum.Font.GothamMedium
+            TglTitle.Text = toggleName
+            TglTitle.TextColor3 = Color3.fromRGB(220, 220, 230)
+            TglTitle.TextSize = 13
+            TglTitle.TextXAlignment = Enum.TextXAlignment.Left
+            TglTitle.ZIndex = 6
+            TglTitle.Parent = ToggleFrame
+
+            -- Внешний контейнер свитча
+            local SwitchOuter = Instance.new("Frame")
+            SwitchOuter.Size = UDim2.new(0, 38, 0, 20)
+            SwitchOuter.Position = UDim2.new(1, -50, 0.5, -10)
+            SwitchOuter.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(35, 37, 45)
+            SwitchOuter.BorderSizePixel = 0
+            SwitchOuter.ZIndex = 6
+            SwitchOuter.Parent = ToggleFrame
+
+            local SwitchOuterCorner = Instance.new("UICorner")
+            SwitchOuterCorner.CornerRadius = UDim.new(1, 0)
+            SwitchOuterCorner.Parent = SwitchOuter
+
+            -- Кружок внутри свитча
+            local SwitchDot = Instance.new("Frame")
+            SwitchDot.Size = UDim2.new(0, 14, 0, 14)
+            SwitchDot.Position = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
+            SwitchDot.BackgroundColor3 = state and Color3.fromRGB(16, 16, 20) or Color3.fromRGB(120, 120, 135)
+            SwitchDot.BorderSizePixel = 0
+            SwitchDot.ZIndex = 7
+            SwitchDot.Parent = SwitchOuter
+
+            local SwitchDotCorner = Instance.new("UICorner")
+            SwitchDotCorner.CornerRadius = UDim.new(1, 0)
+            SwitchDotCorner.Parent = SwitchDot
+
+            local function UpdateToggle()
+                if state then
+                    TweenService:Create(SwitchOuter, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                    TweenService:Create(SwitchDot, TweenInfo.new(0.2), {
+                        Position = UDim2.new(1, -17, 0.5, -7),
+                        BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+                    }):Play()
+                else
+                    TweenService:Create(SwitchOuter, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 37, 45)}):Play()
+                    TweenService:Create(SwitchDot, TweenInfo.new(0.2), {
+                        Position = UDim2.new(0, 3, 0.5, -7),
+                        BackgroundColor3 = Color3.fromRGB(120, 120, 135)
+                    }):Play()
+                end
+                pcall(callback, state)
+            end
+
+            ToggleFrame.MouseButton1Click:Connect(function()
+                state = not state
+                UpdateToggle()
+            end)
+
+            local ToggleObject = {}
+            function ToggleObject:Set(val)
+                state = val
+                UpdateToggle()
+            end
+
+            return ToggleObject
+        end
+
+        return TabElements
     end
 
     return Window
 end
-
--- ==========================================
--- ПРИМЕР ИСПОЛЬЗОВАНИЯ БИБЛИОТЕКИ
--- ==========================================
-local Window = Library:CreateWindow({
-    Name = "vanegood"
-})
-
--- Иконка подставится автоматически из слова "Меню"
-local MainTab = Window:CreateTab({
-    Name = "Меню"
-})
-
--- Иконка подставится автоматически из слова "Настройки"
-local SettingsTab = Window:CreateTab({
-    Name = "Настройки"
-})
-
--- Вкладка с любым кастомным названием получит аккуратный fallback
-local CustomTab = Window:CreateTab({
-    Name = "Кастомная Вкладка"
-})
-
--- Тестовая кнопка внутри вкладки
-MainTab:CreateButton({
-    Name = "Тестовая Кнопка",
-    Callback = function()
-        print("Кнопка нажата!")
-    end
-})
 
 return Library
