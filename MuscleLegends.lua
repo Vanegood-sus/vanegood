@@ -4,7 +4,7 @@ local success, Library = pcall(function()
 end)
 
 if not success or not Library then
-    warn("Ошибка загрузки UI библиотеки!")
+    warn("Ошибка загрузки UI библиотеки! Подробности: " .. tostring(Library))
     return
 end
 
@@ -152,7 +152,6 @@ addToggle(MainTab, "Анти-АФК", true, function(state)
 end)
 setupAntiAFK()
 
--- Скрытие рамок UI 1 в 1 по запросу
 addToggle(MainTab, "Скрывать рамки (GUI)", false, function(bool)
     for _, obj in pairs(ReplicatedStorage:GetChildren()) do
         if obj.Name:match("Frame$") then
@@ -289,7 +288,7 @@ addToggle(BrawlTab, "Автоматически вступать в бой", fal
 end)
 
 -- =======================================================
--- ВКЛАДКА: БАГ-ПЕРЕРОЖДЕНИЯ (ПОЛНЫЙ СПИСОК С ЧИСЛАМИ)
+-- ВКЛАДКА: БАГ-ПЕРЕРОЖДЕНИЯ
 -- =======================================================
 
 local fullGlitchRebirthListInfo = {
@@ -825,7 +824,7 @@ end)
 addToggle(MiscTab, "Авто-сбор подарков", false, function(state)
     _G.claimGifts = state
     if state then
-        task.spawn(function`()
+        task.spawn(function()
             while _G.claimGifts and task.wait(1) do
                 pcall(function()
                     for i = 1, 8 do
