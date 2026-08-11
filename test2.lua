@@ -63,7 +63,7 @@ function Library:CreateWindow(config)
     MinBarLabel.ZIndex = 51
     MinBarLabel.Parent = MinimizedBar
 
-    -- 2. Основное окно с вращающимся неоновым контуром
+    -- 2. Основное окно
     local OutlineFrame = Instance.new("Frame")
     OutlineFrame.Name = "OutlineFrame"
     OutlineFrame.Size = UDim2.new(0, 620, 0, 420)
@@ -125,7 +125,7 @@ function Library:CreateWindow(config)
     Title.ZIndex = 6
     Title.Parent = Topbar
 
-    -- Контролы окна: Сворачивание и Полное закрытие
+    -- Контролы окна: Сворачивание и Закрытие
     local ControlsHolder = Instance.new("Frame")
     ControlsHolder.Name = "Controls"
     ControlsHolder.Size = UDim2.new(0, 70, 1, 0)
@@ -139,17 +139,20 @@ function Library:CreateWindow(config)
     ControlsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     ControlsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     ControlsLayout.Padding = UDim.new(0, 6)
+    ControlsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ControlsLayout.Parent = ControlsHolder
 
+    -- Кнопка сворачивания (слева, LayoutOrder = 1)
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Name = "Minimize"
+    MinimizeBtn.LayoutOrder = 1
     MinimizeBtn.Size = UDim2.new(0, 26, 0, 26)
     MinimizeBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 34)
     MinimizeBtn.AutoButtonColor = false
-    MinimizeBtn.Text = "—"
+    MinimizeBtn.Text = "-"
     MinimizeBtn.Font = Enum.Font.GothamBold
     MinimizeBtn.TextColor3 = Color3.fromRGB(160, 160, 175)
-    MinimizeBtn.TextSize = 12
+    MinimizeBtn.TextSize = 14
     MinimizeBtn.ZIndex = 7
     MinimizeBtn.Parent = ControlsHolder
 
@@ -157,15 +160,17 @@ function Library:CreateWindow(config)
     MinCorner.CornerRadius = UDim.new(0, 6)
     MinCorner.Parent = MinimizeBtn
 
+    -- Кнопка закрытия (справа, LayoutOrder = 2)
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Name = "Close"
+    CloseBtn.LayoutOrder = 2
     CloseBtn.Size = UDim2.new(0, 26, 0, 26)
     CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 34)
     CloseBtn.AutoButtonColor = false
-    CloseBtn.Text = "✕"
+    CloseBtn.Text = "X"
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.TextColor3 = Color3.fromRGB(160, 160, 175)
-    CloseBtn.TextSize = 12
+    CloseBtn.TextSize = 13
     CloseBtn.ZIndex = 7
     CloseBtn.Parent = ControlsHolder
 
@@ -173,7 +178,7 @@ function Library:CreateWindow(config)
     CloseCorner.CornerRadius = UDim.new(0, 6)
     CloseCorner.Parent = CloseBtn
 
-    -- Анимации для кнопок управления
+    -- Анимации и обработчики кнопок шапки
     MinimizeBtn.MouseEnter:Connect(function()
         TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(38, 42, 54), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
     end)
@@ -212,7 +217,7 @@ function Library:CreateWindow(config)
     TopbarDivider.BorderSizePixel = 0
     TopbarDivider.Parent = Topbar
 
-    -- Боковая панель для кнопок вкладок
+    -- Боковая панель вкладок
     local Sidebar = Instance.new("ScrollingFrame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 160, 1, -42)
@@ -311,7 +316,7 @@ function Library:CreateWindow(config)
         TabCorner.CornerRadius = UDim.new(0, 8)
         TabCorner.Parent = TabButton
 
-        -- Стрелка-указатель (появляется только у активной вкладки)
+        -- Стрелка-указатель активной вкладки
         local ArrowIcon = Instance.new("ImageLabel")
         ArrowIcon.Name = "Arrow"
         ArrowIcon.Size = UDim2.new(0, 14, 0, 14)
@@ -323,7 +328,6 @@ function Library:CreateWindow(config)
         ArrowIcon.ZIndex = 5
         ArrowIcon.Parent = TabButton
 
-        -- Название вкладки
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.Name = "Label"
         TitleLbl.Size = UDim2.new(1, -24, 1, 0)
@@ -337,7 +341,6 @@ function Library:CreateWindow(config)
         TitleLbl.ZIndex = 5
         TitleLbl.Parent = TabButton
 
-        -- Неоновая полоска снизу активной вкладки
         local BottomGlow = Instance.new("Frame")
         BottomGlow.Name = "BottomGlow"
         BottomGlow.Size = UDim2.new(0.85, 0, 0, 2)
@@ -446,11 +449,11 @@ function Library:CreateWindow(config)
         end
 
         -- ==========================================
-        -- ЭЛЕМЕНТЫ ВНУТРИ ВКЛАДКИ
+        -- МЕТОДЫ ЭЛЕМЕНТОВ
         -- ==========================================
         local TabElements = {}
 
-        -- Кнопка (Button)
+        -- Кнопка
         function TabElements:CreateButton(btnConfig)
             btnConfig = btnConfig or {}
             local btnName = btnConfig.Name or "Button"
@@ -523,7 +526,6 @@ function Library:CreateWindow(config)
             TglTitle.ZIndex = 6
             TglTitle.Parent = ToggleFrame
 
-            -- Внешний контейнер свитча
             local SwitchOuter = Instance.new("Frame")
             SwitchOuter.Size = UDim2.new(0, 38, 0, 20)
             SwitchOuter.Position = UDim2.new(1, -50, 0.5, -10)
@@ -536,7 +538,6 @@ function Library:CreateWindow(config)
             SwitchOuterCorner.CornerRadius = UDim.new(1, 0)
             SwitchOuterCorner.Parent = SwitchOuter
 
-            -- Кружок внутри свитча
             local SwitchDot = Instance.new("Frame")
             SwitchDot.Size = UDim2.new(0, 14, 0, 14)
             SwitchDot.Position = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
