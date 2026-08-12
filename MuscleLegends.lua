@@ -1,10 +1,10 @@
 -- Muscle Legends GUI [vanegood]
-local success, Library = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Vanegood-sus/vanegood/main/test2.lua"))()
+local success, Rayfield = pcall(function()
+    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 end)
 
-if not success or not Library then
-    warn("Ошибка загрузки vanegood UI!")
+if not success or not Rayfield then
+    warn("Ошибка загрузки Rayfield!")
     return
 end
 
@@ -18,40 +18,37 @@ local player = Players.LocalPlayer
 
 local function notify(title, text, duration)
     pcall(function()
-        if Library.Notify then
-            Library:Notify({
-                Title = title or "Уведомление",
-                Content = text or "",
-                Duration = duration or 3
-            })
-        else
-            StarterGui:SetCore("SendNotification", {
-                Title = title or "Уведомление",
-                Text = text or "",
-                Duration = duration or 3
-            })
-        end
+        Rayfield:Notify({
+            Title = title or "Уведомление",
+            Content = text or "",
+            Duration = duration or 3,
+            Image = 4483362458
+        })
     end)
 end
 
 -- Create Main Window
-local Window = Library:CreateWindow({
-    Title = "Muscle Legends - vanegood",
-    Subtitle = "vanegood Hub",
-    Size = UDim2.fromOffset(580, 460)
+local Window = Rayfield:CreateWindow({
+    Name = "Muscle Legends - vanegood",
+    LoadingTitle = "vanegood Hub",
+    LoadingSubtitle = "Muscle Legends",
+    ConfigurationSaving = {
+        Enabled = false
+    },
+    KeySystem = false
 })
 
 -- Create Tabs
-local MainTab = Window:CreateTab("Меню")
-local FarmTab = Window:CreateTab("Фарм")
-local RocksTab = Window:CreateTab("Камни")
-local RebirthsTab = Window:CreateTab("Перерождения")
-local GlitchListTab = Window:CreateTab("Информация")
-local BrawlTab = Window:CreateTab("Драка")
-local KillerTab = Window:CreateTab("Убийства")
-local PetsTab = Window:CreateTab("Петы")
-local TeleportTab = Window:CreateTab("Телепорт")
-local MiscTab = Window:CreateTab("Другое")
+local MainTab = Window:CreateTab("Меню", 4483362458)
+local FarmTab = Window:CreateTab("Фарм", 4483362458)
+local RocksTab = Window:CreateTab("Камни", 4483362458)
+local RebirthsTab = Window:CreateTab("Перерождения", 4483362458)
+local GlitchListTab = Window:CreateTab("Баг-рерождения", 4483362458)
+local BrawlTab = Window:CreateTab("Драка", 4483362458)
+local KillerTab = Window:CreateTab("Убийства", 4483362458)
+local PetsTab = Window:CreateTab("Петы", 4483362458)
+local TeleportTab = Window:CreateTab("Телепорт", 4483362458)
+local MiscTab = Window:CreateTab("Другое", 4483362458)
 
 -- =======================================================
 -- ВКЛАДКА: МЕНЮ
@@ -67,8 +64,8 @@ local function setupAntiAFK()
 end
 
 MainTab:CreateToggle({
-    Title = "Анти-АФК",
-    Default = true,
+    Name = "Анти-АФК",
+    CurrentValue = true,
     Callback = function(state)
         if state then
             setupAntiAFK()
@@ -83,8 +80,8 @@ MainTab:CreateToggle({
 setupAntiAFK()
 
 MainTab:CreateToggle({
-    Title = "Скрывать рамки (GUI)",
-    Default = false,
+    Name = "Скрывать рамки (GUI)",
+    CurrentValue = false,
     Callback = function(bool)
         for _, obj in pairs(ReplicatedStorage:GetChildren()) do
             if obj.Name:match("Frame$") then
@@ -153,8 +150,8 @@ local function safeTouchInterest(targetPart, localPart)
 end
 
 BrawlTab:CreateToggle({
-    Title = "Авто выигрыш в бою",
-    Default = false,
+    Name = "Авто выигрыш в бою",
+    CurrentValue = false,
     Callback = function(state)
         getgenv().autoWinBrawl = state
         if state then
@@ -210,8 +207,8 @@ BrawlTab:CreateToggle({
 })
 
 BrawlTab:CreateToggle({
-    Title = "Автоматически вступать в бой",
-    Default = false,
+    Name = "Автоматически вступать в бой",
+    CurrentValue = false,
     Callback = function(state)
         getgenv().autoJoinBrawl = state
         if state then
@@ -235,239 +232,23 @@ BrawlTab:CreateToggle({
 
 local fullGlitchRebirthListInfo = {
     "--- УСЛОВИЕ ---",
-    "Необходимые условия: Unique pet (Легендарный пет)",
-    
-    "--- KING ROCK (Королевский камень) ---",
-    "80 (+ 5)",
-    "280 (+ 10)",
-    "580 (+ 15)",
-    "980 (+ 20)",
-    "1480 (+ 25)",
-    "2080 (+ 30)",
-    "2780 (+ 35)",
-    "3580 (+ 40)",
-    "4480 (+ 45)",
-    "5480 (+ 50)",
-    "6580 (+ 55)",
-    "7780 (+ 60)",
-    "9080 (+ 65)",
-    "10480 (+ 70)",
-    "11980 (+ 75)",
-    "13580 (+ 80)",
-    "15280 (+ 85)",
-    "17080 (+ 90)",
-    "18980 (+ 95)",
-
-    "--- JUNGLE ROCK (Камень Джунглей) ---",
-    "56 (+ 5) [add 15 exp before using]",
-    "60 (+ 5) [add 1200 exp at lvl 2 before using]",
-    "208 (+ 10) [add 45 exp before using]",
-    "440 (+ 15) [add 25 exp before using]",
-    "748 (+ 20) [add 20 exp before using]",
-    "1132 (+ 25) [add 30 exp before using]",
-    "1592 (+ 30) [add 55 exp before using]",
-    "2132 (+ 35) [add 30 exp before using]",
-    "2748 (+ 40) [add 20 exp before using]",
-    "3440 (+ 45) [add 25 exp before using]",
-    "4208 (+ 50) [add 45 exp before using]",
-    "5056 (+ 55) [add 15 exp before using]",
-    "5980 (+ 60)",
-    "6980 (+ 65)",
-    "8056 (+ 70) [add 15 exp before using]",
-    "9208 (+ 75) [add 45 exp before using]",
-    "10440 (+ 80) [add 25 exp before using]",
-    "11748 (+ 85) [add 20 exp before using]",
-    "13132 (+ 90) [add 30 exp before using]",
-    "14580 (+ 95) [add 250 exp before using]",
-    "14592 (+ 95) [add 55 exp before using]",
-
-    "--- LEGENDS ROCK (Легендарный камень) ---",
-    "480 (+ 5)",
-    "1480 (+ 10)",
-    "2980 (+ 15)",
-    "4980 (+ 20)",
-    "7480 (+ 25)",
-    "10480 (+ 30)",
-    "13980 (+ 35)",
-    "17980 (+ 40)",
-    "22480 (+ 45)",
-    "27480 (+ 50)",
-    "32980 (+ 55)",
-    "38980 (+ 60)",
-    "45480 (+ 65)",
-    "52480 (+ 70)",
-    "59980 (+ 75)",
-    "67980 (+ 80)",
-    "76480 (+ 85)",
-    "85480 (+ 90)",
-    "94980 (+ 95)",
-
-    "--- INFERNO ROCK (Адский камень) ---",
-    "1084 (+ 5) [add 8 exp before using]",
-    "3308 (+ 10) [add 6 exp before using]",
-    "6644 (+ 15) [add 3 exp before using]",
-    "11084 (+ 20) [add 8 exp before using]",
-    "16644 (+ 25) [add 3 exp before using]",
-    "23308 (+ 30) [add 6 exp before using]",
-    "31084 (+ 35) [add 8 exp before using]",
-    "39980 (+ 40)",
-    "49980 (+ 45)",
-    "61084 (+ 50) [add 8 exp before using]",
-    "73308 (+ 55) [add 6 exp before using]",
-    "86644 (+ 60) [add 3 exp before using]",
-    "101084 (+ 65) [add 8 exp before using]",
-    "116644 (+ 70) [add 3 exp before using]",
-    "133308 (+ 75) [add 6 exp before using]",
-    "151084 (+ 80) [add 8 exp before using]",
-    "169980 (+ 85)",
-    "189980 (+ 90)",
-    "210980 (+ 95) [add 125 exp before using]",
-    "211084 (+ 95) [add 8 exp before using]",
-
-    "--- MYTHICAL ROCK (Мифический камень) ---",
-    "1644 (+ 5) [add 2 exp before using]",
-    "4980 (+ 10)",
-    "9980 (+ 15)",
-    "16644 (+ 20) [add 2 exp before using]",
-    "24980 (+ 25)",
-    "34980 (+ 30)",
-    "46644 (+ 35) [add 2 exp before using]",
-    "59980 (+ 40)",
-    "74980 (+ 45)",
-    "91644 (+ 50) [add 2 exp before using]",
-    "109980 (+ 55)",
-    "129980 (+ 60)",
-    "151644 (+ 65) [add 2 exp before using]",
-    "174980 (+ 70)",
-    "199980 (+ 75)",
-    "226644 (+ 80) [add 2 exp before using]",
-    "254980 (+ 85)",
-    "284980 (+ 90)",
-    "316480 (+ 95) [add 125 exp before using]",
-    "316644 (+ 95) [add 2 exp before using]",
-
-    "--- FROZEN ROCK (Ледяной камень) ---",
-    "3308 (+ 5) [add 2 exp before using]",
-    "9980 (+ 10)",
-    "19980 (+ 15)",
-    "33308 (+ 20) [add 2 exp before using]",
-    "49980 (+ 25)",
-    "69980 (+ 30)",
-    "93308 (+ 35) [add 2 exp before using]",
-    "119980 (+ 40)",
-    "149980 (+ 45)",
-    "183308 (+ 50) [add 2 exp before using]",
-    "219980 (+ 55)",
-    "259980 (+ 60)",
-    "303308 (+ 65) [add 2 exp before using]",
-    "349980 (+ 70)",
-    "399980 (+ 75)",
-    "453308 (+ 80) [add 2 exp before using]",
-    "509980 (+ 85)",
-    "569980 (+ 90)",
-    "632980 (+ 95) [add 125 exp before using]",
-    "633308 (+ 95) [add 2 exp before using]",
-
-    "--- GOLDEN ROCK (Золотой камень) ---",
-    "6230 (+ 5)",
-    "18730 (+ 10)",
-    "37480 (+ 15)",
-    "62480 (+ 20)",
-    "93730 (+ 25)",
-    "131230 (+ 30)",
-    "174980 (+ 35)",
-    "224980 (+ 40)",
-    "281230 (+ 45)",
-    "343730 (+ 50)",
-    "412480 (+ 55)",
-    "487480 (+ 60)",
-    "568730 (+ 65)",
-    "656230 (+ 70)",
-    "749980 (+ 75)",
-    "849980 (+ 80)",
-    "956230 (+ 85)",
-    "1068730 (+ 90) [Start 1M+]",
-    "1187480 (+ 95)",
-
-    "--- LARGE ROCK (Большой камень) ---",
-    "16620 (+ 5) [add 2 exp before using]",
-    "49980 (+ 10)",
-    "99980 (+ 15)",
-    "166620 (+ 20) [add 2 exp before using]",
-    "249980 (+ 25)",
-    "349980 (+ 30)",
-    "466620 (+ 35) [add 2 exp before using]",
-    "599980 (+ 40)",
-    "749980 (+ 45)",
-    "916620 (+ 50) [add 2 exp before using]",
-    "1099980 (+ 55)",
-    "1299980 (+ 60)",
-    "1516620 (+ 65) [add 2 exp before using]",
-    "1749980 (+ 70)",
-    "1999980 (+ 75)",
-    "2266620 (+ 80) [add 2 exp before using]",
-    "2549980 (+ 85)",
-    "2849980 (+ 90)",
-    "3164980 (+ 95) [add 125 exp before using]",
-    "3166620 (+ 95) [add 2 exp before using]",
-
-    "--- PUNCHING ROCK (Камень для ударов) ---",
-    "24980 (+ 5)",
-    "74980 (+ 10)",
-    "149980 (+ 15)",
-    "249980 (+ 20)",
-    "374980 (+ 25)",
-    "524980 (+ 30)",
-    "699980 (+ 35)",
-    "899980 (+ 40)",
-    "1124980 (+ 45)",
-    "1374980 (+ 50)",
-    "1649980 (+ 55)",
-    "1949980 (+ 60)",
-    "2274980 (+ 65)",
-    "2624980 (+ 70)",
-    "2999980 (+ 75)",
-    "3399980 (+ 80)",
-    "3824980 (+ 85)",
-    "4274980 (+ 90)",
-    "4749980 (+ 95)",
-
-    "--- TINY ROCK (Маленький камень) ---",
-    "49980 (+ 5)",
-    "149980 (+ 10)",
-    "299980 (+ 15)",
-    "499980 (+ 20)",
-    "749980 (+ 25)",
-    "1049980 (+ 30)",
-    "1399980 (+ 35)",
-    "1799980 (+ 40)",
-    "2249980 (+ 45)",
-    "2749980 (+ 50)",
-    "3299980 (+ 55)",
-    "3899980 (+ 60)",
-    "4549980 (+ 65)",
-    "5249980 (+ 70)",
-    "5999980 (+ 75)",
-    "6799980 (+ 80)",
-    "7649980 (+ 85)",
-    "8549980 (+ 90)",
-    "9499980 (+ 95) [MAX UNIQUE PET]"
+    "Необходимые условия: Unique pet",
+    "--- KING ROCK ---",
+    "80 (+ 5)", "280 (+ 10)", "580 (+ 15)", "980 (+ 20)", "1480 (+ 25)",
+    "2080 (+ 30)", "2780 (+ 35)", "3580 (+ 40)", "4480 (+ 45)", "5480 (+ 50)",
+    "6580 (+ 55)", "7780 (+ 60)", "9080 (+ 65)", "10480 (+ 70)", "11980 (+ 75)",
+    "13580 (+ 80)", "15280 (+ 85)", "17080 (+ 90)", "18980 (+ 95)",
+    "--- JUNGLE ROCK ---",
+    "56 (+ 5)", "60 (+ 5)", "208 (+ 10)", "440 (+ 15)", "748 (+ 20)",
+    "1132 (+ 25)", "1592 (+ 30)", "2132 (+ 35)", "2748 (+ 40)", "3440 (+ 45)",
+    "4208 (+ 50)", "5056 (+ 55)", "5980 (+ 60)", "6980 (+ 65)", "8056 (+ 70)",
+    "9208 (+ 75)", "10440 (+ 80)", "11748 (+ 85)", "13132 (+ 90)", "14580 (+ 95)"
 }
 
 GlitchListTab:CreateDropdown({
-    Title = "Справочник багов",
+    Name = "Справочник багов",
     Options = fullGlitchRebirthListInfo,
-    Default = fullGlitchRebirthListInfo[1],
-    Callback = function(val)
-        notify("Баг-рерождения", "Выбрано: " .. tostring(val), 3)
-    end
-})
-
-
-GlitchListTab:CreateDropdown({
-    Title = "Справочник багов",
-    Options = fullGlitchRebirthListInfo,
-    Default = fullGlitchRebirthListInfo[1],
+    CurrentOption = fullGlitchRebirthListInfo[1],
     Callback = function(val)
         notify("Баг-рерождения", "Выбрано: " .. tostring(val), 3)
     end
@@ -491,8 +272,8 @@ end
 
 local function createRockToggle(name, durReq)
     RocksTab:CreateToggle({
-        Title = name .. " [" .. durReq .. "]",
-        Default = false,
+        Name = name .. " [" .. durReq .. "]",
+        CurrentValue = false,
         Callback = function(state)
             getgenv()["rockFarm_" .. durReq] = state
             if state then
@@ -538,8 +319,9 @@ createRockToggle("Камень в Джунглях", 10000000)
 local targetRebirthValue = 0
 
 RebirthsTab:CreateInput({
-    Title = "Сколько нужно перерождений?",
-    Placeholder = "Введите число...",
+    Name = "Сколько нужно перерождений?",
+    PlaceholderText = "Введите число...",
+    RemoveTextAfterFocusLost = false,
     Callback = function(text)
         local newValue = tonumber(text)
         if newValue and newValue > 0 then
@@ -550,8 +332,8 @@ RebirthsTab:CreateInput({
 })
 
 RebirthsTab:CreateToggle({
-    Title = "Перерождаться по лимиту",
-    Default = false,
+    Name = "Перерождаться по лимиту",
+    CurrentValue = false,
     Callback = function(bool)
         _G.targetRebirthActive = bool
         if bool then
@@ -573,8 +355,8 @@ RebirthsTab:CreateToggle({
 })
 
 RebirthsTab:CreateToggle({
-    Title = "Авто-перерождения (Бесконечно)",
-    Default = false,
+    Name = "Авто-перерождения (Бесконечно)",
+    CurrentValue = false,
     Callback = function(state)
         _G.infRebirth = state
         if state then
@@ -594,8 +376,8 @@ RebirthsTab:CreateToggle({
 -- =======================================================
 
 FarmTab:CreateToggle({
-    Title = "Всегда рост 1",
-    Default = false,
+    Name = "Всегда рост 1",
+    CurrentValue = false,
     Callback = function(state)
         _G.lockSize1 = state
         if state then
@@ -611,7 +393,7 @@ FarmTab:CreateToggle({
 })
 
 FarmTab:CreateButton({
-    Title = "Разблокировать AutoLift Gamepass",
+    Name = "Разблокировать AutoLift Gamepass",
     Callback = function()
         pcall(function()
             local gpFolder = ReplicatedStorage.gamepassIds
@@ -628,8 +410,8 @@ FarmTab:CreateButton({
 
 local function setupAutoTool(name, toolName)
     FarmTab:CreateToggle({
-        Title = name,
-        Default = false,
+        Name = name,
+        CurrentValue = false,
         Callback = function(state)
             _G["auto_" .. toolName] = state
             if state then
@@ -657,8 +439,8 @@ setupAutoTool("Авто стойка на руках", "Handstands")
 setupAutoTool("Авто пресс", "Situps")
 
 FarmTab:CreateToggle({
-    Title = "Быстрые удары",
-    Default = false,
+    Name = "Быстрые удары",
+    CurrentValue = false,
     Callback = function(state)
         _G.fastHits = state
         if state then
@@ -724,17 +506,18 @@ local function getTargetList()
 end
 
 KillerTab:CreateDropdown({
-    Title = "Выбрать цель",
+    Name = "Выбрать цель",
     Options = getTargetList(),
-    Default = getTargetList()[1],
+    CurrentOption = getTargetList()[1],
     Callback = function(val)
         targetPlayerName = val
     end
 })
 
 KillerTab:CreateInput({
-    Title = "Лимит убийств",
-    Placeholder = "Число...",
+    Name = "Лимит убийств",
+    PlaceholderText = "Число...",
+    RemoveTextAfterFocusLost = false,
     Callback = function(text)
         local num = tonumber(text)
         if num then
@@ -745,8 +528,8 @@ KillerTab:CreateInput({
 })
 
 KillerTab:CreateToggle({
-    Title = "Авто-убийство цели",
-    Default = false,
+    Name = "Авто-убийство цели",
+    CurrentValue = false,
     Callback = function(state)
         _G.killTargetActive = state
         if state then
@@ -771,8 +554,8 @@ KillerTab:CreateToggle({
 })
 
 KillerTab:CreateToggle({
-    Title = "Убивать всех (Kill All)",
-    Default = false,
+    Name = "Убивать всех (Kill All)",
+    CurrentValue = false,
     Callback = function(state)
         _G.killAllActive = state
         if state then
@@ -801,8 +584,8 @@ KillerTab:CreateToggle({
 })
 
 KillerTab:CreateToggle({
-    Title = "Авто-вайтлист друзей",
-    Default = false,
+    Name = "Авто-вайтлист друзей",
+    CurrentValue = false,
     Callback = function(state)
         if state then
             for _, p in ipairs(Players:GetPlayers()) do
@@ -834,17 +617,17 @@ local petList = {
 local selectedPetName = petList[1]
 
 PetsTab:CreateDropdown({
-    Title = "Выбери пета",
+    Name = "Выбери пета",
     Options = petList,
-    Default = petList[1],
+    CurrentOption = petList[1],
     Callback = function(val)
         selectedPetName = val
     end
 })
 
 PetsTab:CreateToggle({
-    Title = "Авто открытие петов",
-    Default = false,
+    Name = "Авто открытие петов",
+    CurrentValue = false,
     Callback = function(state)
         _G.autoHatchPet = state
         if state then
@@ -874,15 +657,15 @@ local function tpTo(cf, msg)
     end
 end
 
-TeleportTab:CreateButton({ Title = "Спавн", Callback = function() tpTo(CFrame.new(2, 8, 115), "Спавн") end })
-TeleportTab:CreateButton({ Title = "Секретная арена", Callback = function() tpTo(CFrame.new(1947, 2, 6191), "Секретная арена") end })
-TeleportTab:CreateButton({ Title = "Маленький остров", Callback = function() tpTo(CFrame.new(-34, 7, 1903), "Маленький остров") end })
-TeleportTab:CreateButton({ Title = "Ледяной зал", Callback = function() tpTo(CFrame.new(-2600, 4, -404), "Ледяной зал") end })
-TeleportTab:CreateButton({ Title = "Мифический портал", Callback = function() tpTo(CFrame.new(2255, 7, 1071), "Мифический портал") end })
-TeleportTab:CreateButton({ Title = "Адский портал", Callback = function() tpTo(CFrame.new(-6768, 7, -1287), "Адский портал") end })
-TeleportTab:CreateButton({ Title = "Легендарный остров", Callback = function() tpTo(CFrame.new(4604, 991, -3887), "Легендарный остров") end })
-TeleportTab:CreateButton({ Title = "Мускульный Король", Callback = function() tpTo(CFrame.new(-8646, 17, -5738), "Мускульный Король") end })
-TeleportTab:CreateButton({ Title = "Джунгли", Callback = function() tpTo(CFrame.new(-8659, 6, 2384), "Джунгли") end })
+TeleportTab:CreateButton({ Name = "Спавн", Callback = function() tpTo(CFrame.new(2, 8, 115), "Спавн") end })
+TeleportTab:CreateButton({ Name = "Секретная арена", Callback = function() tpTo(CFrame.new(1947, 2, 6191), "Секретная арена") end })
+TeleportTab:CreateButton({ Name = "Маленький остров", Callback = function() tpTo(CFrame.new(-34, 7, 1903), "Маленький остров") end })
+TeleportTab:CreateButton({ Name = "Ледяной зал", Callback = function() tpTo(CFrame.new(-2600, 4, -404), "Ледяной зал") end })
+TeleportTab:CreateButton({ Name = "Мифический портал", Callback = function() tpTo(CFrame.new(2255, 7, 1071), "Мифический портал") end })
+TeleportTab:CreateButton({ Name = "Адский портал", Callback = function() tpTo(CFrame.new(-6768, 7, -1287), "Адский портал") end })
+TeleportTab:CreateButton({ Name = "Легендарный остров", Callback = function() tpTo(CFrame.new(4604, 991, -3887), "Легендарный остров") end })
+TeleportTab:CreateButton({ Name = "Мускульный Король", Callback = function() tpTo(CFrame.new(-8646, 17, -5738), "Мускульный Король") end })
+TeleportTab:CreateButton({ Name = "Джунгли", Callback = function() tpTo(CFrame.new(-8659, 6, 2384), "Джунгли") end })
 
 -- =======================================================
 -- ВКЛАДКА: ДРУГОЕ
@@ -890,8 +673,8 @@ TeleportTab:CreateButton({ Title = "Джунгли", Callback = function() tpTo(
 
 local posLockConn = nil
 MiscTab:CreateToggle({
-    Title = "Стоять на месте (Freeze)",
-    Default = false,
+    Name = "Стоять на месте (Freeze)",
+    CurrentValue = false,
     Callback = function(state)
         if state then
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -912,7 +695,7 @@ MiscTab:CreateToggle({
 })
 
 MiscTab:CreateButton({
-    Title = "Включить Анти-лаг (Boost FPS)",
+    Name = "Включить Анти-лаг (Boost FPS)",
     Callback = function()
         game:GetService("Lighting").GlobalShadows = false
         game:GetService("Lighting").FogEnd = 9e9
@@ -929,8 +712,8 @@ MiscTab:CreateButton({
 })
 
 MiscTab:CreateToggle({
-    Title = "Авто-рулетка колеса",
-    Default = false,
+    Name = "Авто-рулетка колеса",
+    CurrentValue = false,
     Callback = function(state)
         _G.spinWheel = state
         if state then
@@ -946,8 +729,8 @@ MiscTab:CreateToggle({
 })
 
 MiscTab:CreateToggle({
-    Title = "Авто-сбор подарков",
-    Default = false,
+    Name = "Авто-сбор подарков",
+    CurrentValue = false,
     Callback = function(state)
         _G.claimGifts = state
         if state then
