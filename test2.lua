@@ -29,7 +29,7 @@ function Library:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Parent = parentObj
 
-    -- 1. Свернутая плашка (теперь её тоже можно двигать!)
+    -- 1. Свернутая плашка
     local MinimizedBar = Instance.new("TextButton")
     MinimizedBar.Name = "MinimizedBar"
     MinimizedBar.Size = UDim2.new(0, 180, 0, 30)
@@ -87,7 +87,12 @@ function Library:CreateWindow(config)
     MainGradient.Parent = OutlineFrame
 
     local rotSpeed = 90
-    RunService.RenderStepped:Connect(function(dt)
+    local renderConn
+    renderConn = RunService.RenderStepped:Connect(function(dt)
+        if not OutlineFrame or not OutlineFrame.Parent then
+            if renderConn then renderConn:Disconnect() end
+            return
+        end
         MainGradient.Rotation = (MainGradient.Rotation + (rotSpeed * dt)) % 360
     end)
 
@@ -176,6 +181,8 @@ function Library:CreateWindow(config)
     CloseCorner.CornerRadius = UDim.new(0, 6)
     CloseCorner.Parent = CloseBtn
 
+    local lastFramePos = OutlineFrame.Position
+
     MinimizeBtn.MouseButton1Click:Connect(function()
         lastFramePos = OutlineFrame.Position
         OutlineFrame.Visible = false
@@ -183,13 +190,13 @@ function Library:CreateWindow(config)
     end)
 
     MinimizedBar.MouseButton1Click:Connect(function()
-        -- Клик сработает только если плашку не тащили
         MinimizedBar.Visible = false
         OutlineFrame.Position = lastFramePos
         OutlineFrame.Visible = true
     end)
 
     CloseBtn.MouseButton1Click:Connect(function()
+        if renderConn then renderConn:Disconnect() end
         ScreenGui:Destroy()
     end)
 
@@ -201,18 +208,12 @@ function Library:CreateWindow(config)
     TopbarDivider.Parent = Topbar
 
     -- Перетаскивание основного окна
-    local dragging, dragInput, dragStart, startPos
+    local dragging, dragStart, startPos = false, nil, nil
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = OutlineFrame.Position
-        end
-    end)
-
-    Topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
         end
     end)
 
@@ -229,11 +230,10 @@ function Library:CreateWindow(config)
 
     UserInputService.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-            if dragging then
+            if dragging and dragStart and startPos then
                 local delta = input.Position - dragStart
                 OutlineFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            elseif minDragging then
+            elseif minDragging and minDragStart and minStartPos then
                 local delta = input.Position - minDragStart
                 if delta.Magnitude > 5 then hasMovedMin = true end
                 MinimizedBar.Position = UDim2.new(minStartPos.X.Scale, minStartPos.X.Offset + delta.X, minStartPos.Y.Scale, minStartPos.Y.Offset + delta.Y)
@@ -247,7 +247,6 @@ function Library:CreateWindow(config)
             if minDragging then
                 minDragging = false
                 if hasMovedMin then
-                    -- Перехватываем клик чтобы не разворачивалось при перетаскивании
                     task.defer(function()
                         MinimizedBar.Visible = true
                     end)
@@ -401,11 +400,14 @@ function Library:CreateWindow(config)
         end)
 
         Tabs[TabName] = {SetActive = SetActive}
-        if activeTab == nil then activeTab = TabName SetActive(true) end
+        if activeTab == nil then 
+            activeTab = TabName 
+            SetActive(true) 
+        end
 
         local TabElements = {}
 
-        -- Кнопка с иконкой указательного пальца и белым оформлением
+        -- Кнопка
         function TabElements:CreateButton(btnConfig)
             btnConfig = btnConfig or {}
             local btnName = btnConfig.Name or "Button"
@@ -435,12 +437,11 @@ function Library:CreateWindow(config)
             BtnTitle.ZIndex = 6
             BtnTitle.Parent = BtnFrame
 
-            -- Иконка указательного пальца (белая)
             local HandIcon = Instance.new("ImageLabel")
             HandIcon.Size = UDim2.new(0, 18, 0, 18)
             HandIcon.Position = UDim2.new(1, -26, 0.5, -9)
             HandIcon.BackgroundTransparency = 1
-            HandIcon.Image = "rbxassetid://6034292263" -- Иконка клика/пальца
+            HandIcon.Image = "rbxassetid://6034292263"
             HandIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             HandIcon.ZIndex = 6
             HandIcon.Parent = BtnFrame
@@ -526,10 +527,15 @@ function Library:CreateWindow(config)
                 UpdateToggle()
             end)
 
-            return {Set = function(_, val) state = val UpdateToggle() end}
+            return {
+                Set = function(_, val) 
+                    state = val 
+                    UpdateToggle() 
+                end
+            }
         end
 
-        -- Ползунок (Slider) - уменьшение налево, увеличение направо
+        -- Ползунок (Slider)
         function TabElements:CreateSlider(sliderConfig)
             sliderConfig = sliderConfig or {}
             local sliderName = sliderConfig.Name or "Slider"
@@ -723,6 +729,104 @@ function Library:CreateWindow(config)
             end)
 
             return DropFrame
+        end
+
+        -- Поле ввода текста / чисел (Input)
+        function TabElements:CreateInput(inputConfig)
+            inputConfig = inputConfig or {}
+            local inputTitle = inputConfig.Name or "Input"
+            local placeholder = inputConfig.PlaceholderText or "Введите текст..."
+            local clearOnFocus = (inputConfig.ClearTextOnFocus ~= nil) and inputConfig.ClearTextOnFocus or false
+            local numericOnly = inputConfig.Numeric or false
+            local defaultText = inputConfig.Default or ""
+            local callback = inputConfig.Callback or function() end
+
+            local InputFrame = Instance.new("Frame")
+            InputFrame.Size = UDim2.new(1, 0, 0, 36)
+            InputFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 30)
+            InputFrame.BorderSizePixel = 0
+            InputFrame.ZIndex = 5
+            InputFrame.Parent = TabPage
+
+            local InputCorner = Instance.new("UICorner")
+            InputCorner.CornerRadius = UDim.new(0, 8)
+            InputCorner.Parent = InputFrame
+
+            local TitleLabel = Instance.new("TextLabel")
+            TitleLabel.Size = UDim2.new(0.45, 0, 1, 0)
+            TitleLabel.Position = UDim2.new(0, 12, 0, 0)
+            TitleLabel.BackgroundTransparency = 1
+            TitleLabel.Font = Enum.Font.GothamMedium
+            TitleLabel.Text = inputTitle
+            TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TitleLabel.TextSize = 13
+            TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLabel.ZIndex = 6
+            TitleLabel.Parent = InputFrame
+
+            local TextBoxContainer = Instance.new("Frame")
+            TextBoxContainer.Size = UDim2.new(0.5, -12, 0, 26)
+            TextBoxContainer.Position = UDim2.new(0.5, 0, 0.5, -13)
+            TextBoxContainer.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+            TextBoxContainer.BorderSizePixel = 0
+            TextBoxContainer.ZIndex = 6
+            TextBoxContainer.Parent = InputFrame
+
+            local BoxCorner = Instance.new("UICorner")
+            BoxCorner.CornerRadius = UDim.new(0, 6)
+            BoxCorner.Parent = TextBoxContainer
+
+            local BoxStroke = Instance.new("UIStroke")
+            BoxStroke.Color = Color3.fromRGB(35, 37, 45)
+            BoxStroke.Thickness = 1
+            BoxStroke.Parent = TextBoxContainer
+
+            local TextBox = Instance.new("TextBox")
+            TextBox.Size = UDim2.new(1, -12, 1, 0)
+            TextBox.Position = UDim2.new(0, 6, 0, 0)
+            TextBox.BackgroundTransparency = 1
+            TextBox.Font = Enum.Font.Gotham
+            TextBox.PlaceholderText = placeholder
+            TextBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 130)
+            TextBox.Text = defaultText
+            TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TextBox.TextSize = 12
+            TextBox.ClearTextOnFocus = clearOnFocus
+            TextBox.ClipsDescendants = true
+            TextBox.ZIndex = 7
+            TextBox.Parent = TextBoxContainer
+
+            TextBox.Focused:Connect(function()
+                TweenService:Create(BoxStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(255, 255, 255)}):Play()
+            end)
+
+            TextBox.FocusLost:Connect(function(enterPressed)
+                TweenService:Create(BoxStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(35, 37, 45)}):Play()
+                if numericOnly then
+                    local cleanNum = TextBox.Text:gsub("%D+", "")
+                    TextBox.Text = cleanNum
+                end
+                pcall(callback, TextBox.Text, enterPressed)
+            end)
+
+            if numericOnly then
+                TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    local cleanNum = TextBox.Text:gsub("%D+", "")
+                    if TextBox.Text ~= cleanNum then
+                        TextBox.Text = cleanNum
+                    end
+                end)
+            end
+
+            return {
+                Set = function(_, text)
+                    TextBox.Text = tostring(text)
+                    pcall(callback, TextBox.Text, false)
+                end,
+                Get = function(_)
+                    return TextBox.Text
+                end
+            }
         end
 
         return TabElements
