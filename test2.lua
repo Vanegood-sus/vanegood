@@ -19,9 +19,18 @@ end
 local Library = {}
 Library.__index = Library
 
+-- Хелпер для извлечения названия из любой структуры конфига
+local function parseName(cfg, default)
+    if type(cfg) == "string" then
+        return cfg
+    elseif type(cfg) == "table" then
+        return cfg.Name or cfg.Title or cfg.Text or default
+    end
+    return default
+end
+
 function Library:CreateWindow(config)
-    config = config or {}
-    local TitleText = config.Name or "vanegood"
+    local TitleText = parseName(config, "vanegood")
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "vanegood_UI"
@@ -301,7 +310,7 @@ function Library:CreateWindow(config)
 
     function Window:CreateTab(tabConfig)
         tabCount = tabCount + 1
-        local TabName = (type(tabConfig) == "table" and tabConfig.Name) or tabConfig or ("Tab " .. tabCount)
+        local TabName = parseName(tabConfig, "Tab " .. tabCount)
 
         local TabButton = Instance.new("TextButton")
         TabButton.LayoutOrder = tabCount
@@ -407,11 +416,10 @@ function Library:CreateWindow(config)
 
         local TabElements = {}
 
-        -- Кнопка
-        function TabElements:CreateButton(btnConfig)
-            btnConfig = btnConfig or {}
-            local btnName = btnConfig.Name or "Button"
-            local callback = btnConfig.Callback or function() end
+        -- Кнопка (Button)
+        function TabElements:CreateButton(btnConfig, altCallback)
+            local btnName = parseName(btnConfig, "Button")
+            local callback = (type(btnConfig) == "table" and (btnConfig.Callback or btnConfig.Function)) or (type(altCallback) == "function" and altCallback) or function() end
 
             local BtnFrame = Instance.new("TextButton")
             BtnFrame.Size = UDim2.new(1, 0, 0, 36)
@@ -453,15 +461,31 @@ function Library:CreateWindow(config)
                 pcall(callback)
             end)
 
-            return BtnFrame
+            return {
+                Set = function(_, newText)
+                    BtnTitle.Text = tostring(newText)
+                end
+            }
         end
 
         -- Переключатель (Toggle)
-        function TabElements:CreateToggle(toggleConfig)
-            toggleConfig = toggleConfig or {}
-            local toggleName = toggleConfig.Name or "Toggle"
-            local state = toggleConfig.CurrentValue or toggleConfig.Default or false
-            local callback = toggleConfig.Callback or function() end
+        function TabElements:CreateToggle(toggleConfig, altCallback)
+            local toggleName = parseName(toggleConfig, "Toggle")
+            local state = false
+            local callback = function() end
+
+            if type(toggleConfig) == "table" then
+                if toggleConfig.CurrentValue ~= nil then
+                    state = toggleConfig.CurrentValue
+                elseif toggleConfig.Default ~= nil then
+                    state = toggleConfig.Default
+                elseif toggleConfig.Value ~= nil then
+                    state = toggleConfig.Value
+                end
+                callback = toggleConfig.Callback or toggleConfig.Function or function() end
+            elseif type(altCallback) == "function" then
+                callback = altCallback
+            end
 
             local ToggleFrame = Instance.new("TextButton")
             ToggleFrame.Size = UDim2.new(1, 0, 0, 36)
@@ -531,6 +555,9 @@ function Library:CreateWindow(config)
                 Set = function(_, val) 
                     state = val 
                     UpdateToggle() 
+                end,
+                GetValue = function(_)
+                    return state
                 end
             }
         end
@@ -538,11 +565,11 @@ function Library:CreateWindow(config)
         -- Ползунок (Slider)
         function TabElements:CreateSlider(sliderConfig)
             sliderConfig = sliderConfig or {}
-            local sliderName = sliderConfig.Name or "Slider"
-            local min = sliderConfig.Min or 0
-            local max = sliderConfig.Max or 100
-            local default = sliderConfig.Default or min
-            local callback = sliderConfig.Callback or function() end
+            local sliderName = parseName(sliderConfig, "Slider")
+            local min = sliderConfig.Min or sliderConfig.Minimum or 0
+            local max = sliderConfig.Max or sliderConfig.Maximum or 100
+            local default = sliderConfig.CurrentValue or sliderConfig.Default or sliderConfig.Value or min
+            local callback = sliderConfig.Callback or sliderConfig.Function or function() end
 
             local value = math.clamp(default, min, max)
 
@@ -632,18 +659,29 @@ function Library:CreateWindow(config)
                 end
             end)
 
-            return SliderFrame
+            return {
+                Set = function(_, val)
+                    value = math.clamp(val, min, max)
+                    local sizeX = (value - min) / (max - min)
+                    Fill.Size = UDim2.new(sizeX, 0, 1, 0)
+                    ValueLabel.Text = tostring(value)
+                    pcall(callback, value)
+                end,
+                GetValue = function(_)
+                    return value
+                end
+            }
         end
 
         -- Выпадающий список (Dropdown)
         function TabElements:CreateDropdown(dropConfig)
             dropConfig = dropConfig or {}
-            local dropName = dropConfig.Name or "Dropdown"
-            local options = dropConfig.Options or {"Опция 1", "Опция 2"}
-            local callback = dropConfig.Callback or function() end
+            local dropName = parseName(dropConfig, "Dropdown")
+            local options = dropConfig.Options or dropConfig.Values or dropConfig.List or {"Опция 1", "Опция 2"}
+            local callback = dropConfig.Callback or dropConfig.Function or function() end
 
             local opened = false
-            local selected = options[1] or ""
+            local selected = dropConfig.CurrentValue or dropConfig.Default or dropConfig.Value or options[1] or ""
 
             local DropFrame = Instance.new("Frame")
             DropFrame.Size = UDim2.new(1, 0, 0, 36)
@@ -669,7 +707,7 @@ function Library:CreateWindow(config)
             DropTitle.Position = UDim2.new(0, 12, 0, 0)
             DropTitle.BackgroundTransparency = 1
             DropTitle.Font = Enum.Font.GothamMedium
-            DropTitle.Text = dropName .. ": " .. selected
+            DropTitle.Text = dropName .. ": " .. tostring(selected)
             DropTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
             DropTitle.TextSize = 13
             DropTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -704,7 +742,7 @@ function Library:CreateWindow(config)
                 OptBtn.BackgroundColor3 = Color3.fromRGB(28, 30, 38)
                 OptBtn.BorderSizePixel = 0
                 OptBtn.Font = Enum.Font.GothamMedium
-                OptBtn.Text = "  " .. opt
+                OptBtn.Text = "  " .. tostring(opt)
                 OptBtn.TextColor3 = Color3.fromRGB(200, 200, 215)
                 OptBtn.TextSize = 12
                 OptBtn.TextXAlignment = Enum.TextXAlignment.Left
@@ -713,7 +751,7 @@ function Library:CreateWindow(config)
 
                 OptBtn.MouseButton1Click:Connect(function()
                     selected = opt
-                    DropTitle.Text = dropName .. ": " .. selected
+                    DropTitle.Text = dropName .. ": " .. tostring(selected)
                     opened = false
                     TweenService:Create(DropFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 36)}):Play()
                     TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
@@ -728,18 +766,27 @@ function Library:CreateWindow(config)
                 TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = opened and 180 or 0}):Play()
             end)
 
-            return DropFrame
+            return {
+                Set = function(_, val)
+                    selected = val
+                    DropTitle.Text = dropName .. ": " .. tostring(selected)
+                    pcall(callback, selected)
+                end,
+                GetValue = function(_)
+                    return selected
+                end
+            }
         end
 
         -- Поле ввода текста / чисел (Input)
         function TabElements:CreateInput(inputConfig)
             inputConfig = inputConfig or {}
-            local inputTitle = inputConfig.Name or "Input"
-            local placeholder = inputConfig.PlaceholderText or "Введите текст..."
+            local inputTitle = parseName(inputConfig, "Input")
+            local placeholder = inputConfig.PlaceholderText or inputConfig.Placeholder or "Введите..."
             local clearOnFocus = (inputConfig.ClearTextOnFocus ~= nil) and inputConfig.ClearTextOnFocus or false
             local numericOnly = inputConfig.Numeric or false
-            local defaultText = inputConfig.Default or ""
-            local callback = inputConfig.Callback or function() end
+            local defaultText = inputConfig.Default or inputConfig.CurrentValue or inputConfig.Value or ""
+            local callback = inputConfig.Callback or inputConfig.Function or function() end
 
             local InputFrame = Instance.new("Frame")
             InputFrame.Size = UDim2.new(1, 0, 0, 36)
@@ -788,7 +835,7 @@ function Library:CreateWindow(config)
             TextBox.Font = Enum.Font.Gotham
             TextBox.PlaceholderText = placeholder
             TextBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 130)
-            TextBox.Text = defaultText
+            TextBox.Text = tostring(defaultText)
             TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
             TextBox.TextSize = 12
             TextBox.ClearTextOnFocus = clearOnFocus
